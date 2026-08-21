@@ -3,7 +3,8 @@
 Same-name people are never assumed to be the same person. Profile URLs and
 professional e-mails become strong identity evidence only when upstream evidence
 explicitly marks them as person-unique. Shared or scope-unknown signals may
-justify review, never irreversible auto-merge.
+justify review, never irreversible auto-merge. Contradictory person-unique
+signals always veto automatic matching and route the pair to review.
 """
 from __future__ import annotations
 
@@ -150,6 +151,28 @@ def compare_person_features(left: PersonRecord, right: PersonRecord) -> PersonMa
 
 def resolve_person_pair(left: PersonRecord, right: PersonRecord) -> PersonResolutionDecision:
     features = compare_person_features(left, right)
+
+    # Contradictory person-unique identifiers are stronger evidence than one
+    # agreeing identifier. Never auto-merge across an explicit unique conflict.
+    strong_conflicts: list[str] = []
+    if (
+        features.name_exact is True
+        and features.profile_person_unique_both
+        and features.profile_url_exact is False
+    ):
+        strong_conflicts.append("profile_unique_conflict")
+    if (
+        features.name_exact is True
+        and features.professional_email_person_unique_both
+        and features.professional_email_exact is False
+    ):
+        strong_conflicts.append("professional_email_unique_conflict")
+    if strong_conflicts:
+        return PersonResolutionDecision(
+            PersonResolutionDisposition.REVIEW,
+            features,
+            ("name_exact", *strong_conflicts),
+        )
 
     # Auto-match requires agreement on human name plus an identifier that both
     # source observations explicitly classify as person-unique.
