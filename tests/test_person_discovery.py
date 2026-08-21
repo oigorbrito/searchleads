@@ -33,6 +33,17 @@ class PersonDiscoveryTests(unittest.TestCase):
     def test_company_and_person_are_distinct_entities(self):
         with SQLiteLeadStore() as store:
             c=Company("company:cnpj:33683111000280",created_at=NOW); store.save_company(c); r=OfficialPeopleSource().ingest(store,c.company_id,URL,html=HTML,retrieved_at=NOW); self.assertTrue(all(p.person_id != c.company_id for p in r.people))
+    def test_same_name_different_observations_do_not_premerge_before_person_er(self):
+        html='''<h3>Diretor Financeiro</h3><p>João Silva</p><h3>Diretor Comercial</h3><p>João Silva</p>'''
+        with SQLiteLeadStore() as store:
+            c=Company("company:cnpj:1",created_at=NOW); store.save_company(c); r=OfficialPeopleSource().ingest(store,c.company_id,URL,html=html,retrieved_at=NOW)
+            self.assertEqual(len(r.people),2); self.assertNotEqual(r.people[0].person_id,r.people[1].person_id)
+    def test_changed_snapshot_creates_new_person_observation_identity(self):
+        base='<h3>Diretor Financeiro</h3><p>João Silva</p>'
+        changed=base+'<p>Atualizado</p>'
+        with SQLiteLeadStore() as store:
+            c=Company("company:cnpj:1",created_at=NOW); store.save_company(c); src=OfficialPeopleSource(); a=src.ingest(store,c.company_id,URL,html=base,retrieved_at=NOW); b=src.ingest(store,c.company_id,URL,html=changed,retrieved_at=NOW)
+            self.assertNotEqual(a.evidence.evidence_id,b.evidence.evidence_id); self.assertNotEqual(a.people[0].person_id,b.people[0].person_id)
     def test_missing_company_rejected_before_evidence(self):
         with SQLiteLeadStore() as store:
             with self.assertRaises(ValueError): OfficialPeopleSource().ingest(store,"missing",URL,html=HTML,retrieved_at=NOW)
