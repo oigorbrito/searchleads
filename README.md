@@ -26,9 +26,10 @@ Additional measured capabilities implemented during the staged work:
 
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion;
-- `ICP_DECISION_SUPPORT_V1`, which measures readiness of the eight handoff ICP dimensions without defining target values or a default policy;
-- `QUALIFICATION_EVIDENCE_SIGNALS_V1`, which adds explicit exclusion operators and evidence-backed role/contact qualification inputs without defining an ICP;
-- `QUALIFICATION_FIELD_CANONICALIZATION_V1`, which applies the existing conservative fusion rule to explicit qualification-relevant fields.
+- `ICP_DECISION_SUPPORT_V1`;
+- `QUALIFICATION_EVIDENCE_SIGNALS_V1`;
+- `QUALIFICATION_FIELD_CANONICALIZATION_V1`;
+- `COMPANY_SIZE_REGISTRY_SIGNAL_V1`, using the existing BrasilAPI `porte` field without interpreting it as employees or revenue.
 
 ## Final V1 acceptance state
 
@@ -41,28 +42,26 @@ COMMERCIAL_END_TO_END_ACCEPTANCE = BLOCKED_BY_UNDEFINED_ICP
 
 ## ICP readiness progression
 
-Baseline accepted full-run:
-
 ```text
+BASE_ACCEPTANCE
 READY = 0
 PARTIAL = 6
 BLOCKED = 2
-```
 
-After typed qualification evidence signals:
-
-```text
+WITH_QUALIFICATION_SIGNAL_BRIDGE
 READY = 2
 PARTIAL = 4
 BLOCKED = 2
-```
 
-After qualification-field canonicalization:
-
-```text
+WITH_FIELD_CANONICALIZATION
 READY = 4
 PARTIAL = 2
 BLOCKED = 2
+
+WITH_REGISTRY_SIZE_SIGNAL
+READY = 4
+PARTIAL = 3
+BLOCKED = 1
 ```
 
 Current READY dimensions:
@@ -78,19 +77,19 @@ Current PARTIAL dimensions:
 
 ```text
 GEOGRAPHY
+COMPANY_SIZE
 REQUIRED_CONTACTABILITY
 ```
 
-Current BLOCKED dimensions:
+Current sole BLOCKED dimension:
 
 ```text
 TARGET_MARKET
-COMPANY_SIZE
 ```
 
-This remains a readiness measurement, not an ICP. Geography is partial because city evidence remains explicitly conflicted while state is canonical. Contactability is partial because official publication/corroboration is not deliverability/reachability. Target market is a business decision; company size has no implemented source/field.
+This remains a readiness measurement, not an ICP. `COMPANY_SIZE` is only PARTIAL: BrasilAPI's registry `porte` is available as `registry_size_class`, but it is not treated as employee count, revenue or a business-selected size band. Geography remains partial because city evidence is conflicted while state is canonical. Contactability remains partial because official publication/corroboration is not deliverability/reachability. `TARGET_MARKET` is a business decision and is never inferred from the B2B hypothesis.
 
-See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, and `QUALIFICATION-FIELD-CANONICALIZATION-V1.md`.
+See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, `QUALIFICATION-FIELD-CANONICALIZATION-V1.md`, and `COMPANY-SIZE-REGISTRY-SIGNAL-V1.md`.
 
 ## Core V1 policies
 
@@ -107,6 +106,7 @@ See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, and `Q
 - qualification exclusions are explicit operators, not opaque score penalties;
 - validated contacts and professional roles enter qualification only as typed evidence-backed inputs, not as invented company facts;
 - qualification-relevant source facts can be canonicalized only through the existing conservative fusion/conflict rule;
+- registry `porte` remains an explicit source classification and is not silently converted into employee/revenue size;
 - ambiguous/high-impact cases can be routed selectively to human review;
 - export is independent and validates that Company, People, Contacts, Facts, Evidence and provenance belong to one coherent record;
 - gap automation only selects implemented known capabilities, blocks unknown sources, and represents bounded retry/cache/rate-limit metadata;
