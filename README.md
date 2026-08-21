@@ -25,7 +25,8 @@ Implemented:
 Additional measured capabilities implemented during the staged work:
 
 - conservative field fusion / truth-discovery diagnostics;
-- controlled CNPJ-seed expansion.
+- controlled CNPJ-seed expansion;
+- `ICP_DECISION_SUPPORT_V1`, which measures readiness of the eight handoff ICP dimensions without defining target values or a default policy.
 
 ## Final V1 acceptance state
 
@@ -37,6 +38,20 @@ COMMERCIAL_END_TO_END_ACCEPTANCE = BLOCKED_BY_UNDEFINED_ICP
 ```
 
 The deterministic SERPRO acceptance run passes real-company discovery, multi-source enrichment, exact-CNPJ entity resolution/deduplication, provenance, contact discovery/corroboration, person/role extraction, selective review, export, and bit-reproducibility. A synthetic acceptance-only qualification policy proves the engine composes, but is never represented as the product ICP.
+
+## ICP decision-support state
+
+The handoff's eight future ICP dimensions are now measured against the accepted full-run:
+
+```text
+ICP_DIMENSIONS = 8
+READY = 0
+PARTIAL = 6
+BLOCKED = 2
+ICP_DEFINED = NO
+```
+
+This is a readiness measurement, not an ICP. See `ICP-DECISION-SUPPORT-V1.md` and run `python scripts/run_icp_decision_support.py`.
 
 ## Core V1 policies
 
@@ -60,6 +75,7 @@ The deterministic SERPRO acceptance run passes real-company discovery, multi-sou
 ```bash
 python -m unittest discover -s tests -v
 python scripts/run_end_to_end_acceptance.py
+python scripts/run_icp_decision_support.py
 ```
 
 Measured ER and fusion benchmarks:
