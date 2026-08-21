@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from html.parser import HTMLParser
 import hashlib
 import re
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Protocol
 from urllib.parse import urljoin, urlsplit
 
 from .domain import ContactKind, ContactPoint, ContactStatus, EntityRef, EntityType, Evidence, Person, Provenance
@@ -174,3 +174,12 @@ def build_person_contact_points(
             )
         )
     return tuple(contacts)
+
+
+class ContactPointStore(Protocol):
+    def save_contact_point(self, contact: ContactPoint) -> None: ...
+
+
+def persist_person_contact_points(store: ContactPointStore, contacts: Iterable[ContactPoint]) -> None:
+    for contact in contacts:
+        store.save_contact_point(contact)
