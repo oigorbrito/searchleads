@@ -11,21 +11,9 @@ Implemented work units:
 5. `COMPANY_ENTITY_RESOLUTION_V1`
 6. `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
 7. `CONTACT_DISCOVERY_V1`
+8. `CONTACT_VALIDATION_V1`
 
-The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, and deterministic non-destructive company-field normalization. The source path is:
-
-```text
-known CNPJ
-→ BrasilAPI JSON
-→ raw Evidence
-→ Company shell
-→ source-derived CandidateFact records
-→ SQLite persistence
-```
-
-The BrasilAPI adapter does not create canonical facts, contacts, people, leads, or qualification decisions. It performs only point lookup by known CNPJ. It does not crawl or full-scan BrasilAPI; broad discovery remains a later concern.
-
-Normalization is a projection over raw `CandidateFact` records. It preserves `raw_value`, emits `normalized_value` plus an explicit `normalization_rule`, and can be recomputed from persisted facts without rewriting source evidence.
+The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, deterministic company normalization, measured entity resolution, explicit field conflicts, professional contact discovery, and non-invasive official-publication contact validation.
 
 ## Run tests
 
@@ -35,9 +23,7 @@ python -m unittest discover -s tests -v
 
 ## Entity resolution V1
 
-`COMPANY_ENTITY_RESOLUTION_V1` adds a transparent pairwise matcher, blocking keys, a curated 54-pair benchmark, threshold sweeps, and an operational triage policy. The measured V1 recommendation is intentionally conservative: exact registry/CNPJ equality may auto-match; fuzzy multi-signal evidence is routed to review rather than irreversible merge.
-
-Reproduce the measured comparison with:
+`COMPANY_ENTITY_RESOLUTION_V1` adds a transparent pairwise matcher, blocking keys, a curated 54-pair benchmark, threshold sweeps, and an operational triage policy. Exact registry/CNPJ equality may auto-match; fuzzy multi-signal evidence is routed to review rather than irreversible merge.
 
 ```bash
 python scripts/evaluate_entity_resolution.py
@@ -45,14 +31,14 @@ python scripts/evaluate_entity_resolution.py
 
 ## Field fusion V1
 
-`COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1` fuses only homogeneous candidate facts for one company field. Equivalent normalized values may become one canonical fact; disagreements remain an explicit open `Conflict`. Naive majority is measured only as a diagnostic and is not allowed to silently choose truth.
-
-Reproduce the fusion benchmark with:
+`COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1` canonicalizes only unanimous effective values. Disagreements remain open `Conflict` records; majority support is diagnostic only.
 
 ```bash
 python scripts/evaluate_field_fusion.py
 ```
 
-## Contact discovery V1
+## Contact discovery and validation V1
 
-`CONTACT_DISCOVERY_V1` preserves a company contact page as evidence and extracts professional e-mail, phone, contact-form, LinkedIn, and Instagram observations. Every discovered contact remains `DISCOVERED`; this work unit does not validate deliverability, ownership, or reachability.
+`CONTACT_DISCOVERY_V1` preserves a company contact page as evidence and extracts professional e-mail, phone, contact-form, LinkedIn, and Instagram observations. Discovered contacts remain `DISCOVERED`.
+
+`CONTACT_VALIDATION_V1` may create a separate `VALIDATED` snapshot only when the same contact is corroborated by at least two official page observations (or a strictly later official snapshot of the same page). This validates official publication/association only. Mailbox deliverability and phone reachability remain explicitly unverified.
