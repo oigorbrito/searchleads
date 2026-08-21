@@ -27,7 +27,12 @@ from searchleads.dental_facial_surgery_icp import (
     select_dental_icp,
     signals_from_existing_evidence,
 )
-from searchleads.dental_person_lead import lead_from_dental_person_qualification
+from searchleads.dental_regulatory import (
+    DentalOfferTrack,
+    RegulatoryEligibility,
+    qualify_dental_person_for_offer,
+)
+from searchleads.dental_person_lead import lead_from_dental_offer_qualification
 
 P = "person-1"
 C = "company-1"
@@ -154,17 +159,36 @@ class DentalICPMVPTests(unittest.TestCase):
         self.assertIn(DentalSignalKind.VALIDATED_CONTACT, kinds)
         self.assertNotIn(DentalSignalKind.LEARNING_INTENT, kinds)
 
-    def test_person_qualification_materializes_company_linked_lead_with_person_target(self):
-        result = qualify_dental_person(
+    def test_offer_track_keeps_generalist_for_specialization_but_gates_exclusive_short_course(self):
+        generalist_signals = [
+            sig("title", DentalSignalKind.PROFESSIONAL_TITLE, "Cirurgião-Dentista")
+        ]
+        formation = qualify_dental_person_for_offer(
             P,
-            [sig("title", DentalSignalKind.PROFESSIONAL_TITLE, "Cirurgião Bucomaxilofacial")],
+            generalist_signals,
             company_id=C,
+            offer_track=DentalOfferTrack.CEOF_SPECIALIZATION,
         )
-        lead = lead_from_dental_person_qualification(result)
-        self.assertEqual(lead.company_id, C)
+        short_course = qualify_dental_person_for_offer(
+            P,
+            generalist_signals,
+            company_id=C,
+            offer_track=DentalOfferTrack.COMPLEMENTARY_EXCLUSIVE_CEOF,
+        )
+        ceof = qualify_dental_person_for_offer(
+            P,
+            [sig("ceof", DentalSignalKind.SPECIALTY, "Especialista em Cirurgia Estética Orofacial (CEOF)")],
+            company_id=C,
+            offer_track=DentalOfferTrack.COMPLEMENTARY_EXCLUSIVE_CEOF,
+        )
+        self.assertEqual(formation.regulatory_eligibility, RegulatoryEligibility.ELIGIBLE)
+        self.assertEqual(short_course.status, LeadStatus.NOT_QUALIFIED)
+        self.assertEqual(short_course.priority, LeadPriority.EXCLUDE)
+        self.assertEqual(ceof.regulatory_eligibility, RegulatoryEligibility.ELIGIBLE)
+        lead = lead_from_dental_offer_qualification(ceof)
         self.assertEqual(lead.metadata["primary_commercial_entity"], "PERSON")
-        self.assertEqual(lead.metadata["person_id"], P)
-        self.assertEqual(lead.metadata["fit"], "HIGH")
+        self.assertEqual(lead.metadata["offer_track"], "COMPLEMENTARY_EXCLUSIVE_CEOF")
+        self.assertEqual(lead.metadata["regulatory_eligibility"], "ELIGIBLE")
 
 
 if __name__ == "__main__":
