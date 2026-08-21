@@ -1,4 +1,4 @@
-"""SearchLeads domain foundation."""
+"""SearchLeads domain and persistence foundation."""
 
 from .domain import (
     CandidateFact,
@@ -21,6 +21,13 @@ from .domain import (
     Source,
     SourceType,
 )
+from .persistence import (
+    IdentityCollisionError,
+    MissingReferenceError,
+    PersistenceError,
+    SCHEMA_VERSION,
+    SQLiteLeadStore,
+)
 
 __all__ = [
     "CandidateFact",
@@ -35,11 +42,16 @@ __all__ = [
     "EntityRef",
     "EntityType",
     "Evidence",
+    "IdentityCollisionError",
     "Lead",
     "LeadStatus",
+    "MissingReferenceError",
+    "PersistenceError",
     "Person",
     "ProfessionalRole",
     "Provenance",
+    "SCHEMA_VERSION",
+    "SQLiteLeadStore",
     "Source",
     "SourceType",
 ]
