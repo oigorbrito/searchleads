@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "searchleads"
-version = "0.19.0"
-description = "Evidence-preserving B2B lead pipeline with typed qualification evidence signals"
+version = "0.20.0"
+description = "Evidence-preserving B2B lead pipeline with qualification-ready field canonicalization"
 requires-python = ">=3.11"
 dependencies = []
 
