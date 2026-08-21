@@ -1,8 +1,8 @@
 """ICP decision-support without defining an ICP.
 
-This module measures whether each handoff ICP dimension has evidence that is
-usable by the current qualification path. It never supplies target values,
-weights, thresholds, or a default policy.
+Measures whether each handoff ICP dimension has evidence usable by the current
+qualification path. It never supplies target values, weights, thresholds, or a
+default policy.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -41,7 +41,21 @@ def assess_icp_readiness(snapshot:ICPReadinessSnapshot)->ICPDecisionSupportRepor
     if set(ga)-set(gc): gb.append("some geography evidence is not canonical")
     if not(gc or ga): gb.append("no geography evidence available")
     items.append(DimensionAssessment(ICPDimension.GEOGRAPHY,gl,tuple(sorted(set(gc+ga))),tuple(gb)))
-    sc=_has_any(canonical,("company_size","employee_count","revenue","size_band")); sa=_has_any(candidates,("company_size","employee_count","revenue","size_band")); items.append(DimensionAssessment(ICPDimension.COMPANY_SIZE,ReadinessLevel.READY if sc else ReadinessLevel.PARTIAL if sa else ReadinessLevel.BLOCKED,sc or sa,() if sc else ("size evidence is not canonical/qualification-ready",) if sa else ("no company-size evidence/source is implemented",)))
+
+    # Registry `porte` is useful size evidence but is not equivalent to employee
+    # count, revenue, or a business-defined size band. Keep it PARTIAL even when
+    # canonical until the business explicitly accepts registry class semantics.
+    full_size_canonical=_has_any(canonical,("company_size","employee_count","revenue","size_band")); full_size_candidate=_has_any(candidates,("company_size","employee_count","revenue","size_band")); registry_size_canonical=_has_any(canonical,("registry_size_class","registry_size_code")); registry_size_candidate=_has_any(candidates,("registry_size_class","registry_size_code"))
+    if full_size_canonical:
+        size_level=ReadinessLevel.READY; size_support=full_size_canonical; size_blockers=()
+    elif registry_size_canonical:
+        size_level=ReadinessLevel.PARTIAL; size_support=registry_size_canonical; size_blockers=("registry size classification is canonical, but it is not employee count/revenue and its commercial meaning must be chosen explicitly",)
+    elif full_size_candidate or registry_size_candidate:
+        size_level=ReadinessLevel.PARTIAL; size_support=full_size_candidate or registry_size_candidate; size_blockers=("size evidence exists but is not fully qualification-ready or its business semantics are not defined",)
+    else:
+        size_level=ReadinessLevel.BLOCKED; size_support=(); size_blockers=("no company-size evidence/source is implemented",)
+    items.append(DimensionAssessment(ICPDimension.COMPANY_SIZE,size_level,size_support,size_blockers))
+
     bf=("registration_status","website","domain","social_activity","technology","hiring_signal","growth_signal"); bc=_has_any(canonical,bf); ba=_has_any(candidates,bf); items.append(DimensionAssessment(ICPDimension.BUSINESS_SIGNAL,ReadinessLevel.READY if bc else ReadinessLevel.PARTIAL if ba else ReadinessLevel.BLOCKED,bc or ba,() if bc else ("business-signal evidence exists but is not canonical/qualification-ready",) if ba else ("no business-signal evidence is currently qualification-ready",)))
     neg=bool(snapshot.qualification_operators.intersection({"NE","NOT_IN","NOT_EXISTS","NOT_CONTAINS"})); items.append(DimensionAssessment(ICPDimension.EXCLUSION_CRITERIA,ReadinessLevel.READY if neg else ReadinessLevel.PARTIAL,tuple(sorted(snapshot.qualification_operators)),() if neg else ("qualification engine has no first-class negative/exclusion operator",)))
     role_signal="professional_role_title" in signals
@@ -64,3 +78,5 @@ def qualification_bridge_snapshot()->ICPReadinessSnapshot:
     base=acceptance_fixture_snapshot(); return ICPReadinessSnapshot(canonical_predicates=base.canonical_predicates,candidate_predicates=base.candidate_predicates,unresolved_predicates=base.unresolved_predicates,professional_role_count=base.professional_role_count,validated_contact_kinds=base.validated_contact_kinds,qualification_operators=frozenset({"EQ","NE","IN","NOT_IN","EXISTS","NOT_EXISTS","CONTAINS","NOT_CONTAINS"}),qualification_signal_predicates=frozenset({"professional_role_title","validated_contact_kind","validated_contact_present"}),deliverability_verified=False)
 def qualification_field_canonicalization_snapshot()->ICPReadinessSnapshot:
     base=qualification_bridge_snapshot(); return ICPReadinessSnapshot(canonical_predicates=base.canonical_predicates.union({"primary_cnae_code","primary_cnae_description","registration_status"}),candidate_predicates=base.candidate_predicates,unresolved_predicates=base.unresolved_predicates,professional_role_count=base.professional_role_count,validated_contact_kinds=base.validated_contact_kinds,qualification_operators=base.qualification_operators,qualification_signal_predicates=base.qualification_signal_predicates,deliverability_verified=False)
+def registry_size_signal_snapshot()->ICPReadinessSnapshot:
+    base=qualification_field_canonicalization_snapshot(); return ICPReadinessSnapshot(canonical_predicates=base.canonical_predicates.union({"registry_size_class"}),candidate_predicates=base.candidate_predicates.union({"registry_size_class"}),unresolved_predicates=base.unresolved_predicates,professional_role_count=base.professional_role_count,validated_contact_kinds=base.validated_contact_kinds,qualification_operators=base.qualification_operators,qualification_signal_predicates=base.qualification_signal_predicates,deliverability_verified=False)
