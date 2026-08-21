@@ -17,13 +17,15 @@ Implemented:
 9. `CONTACT_VALIDATION_V1`
 10. `REPEATABLE_WEB_DISCOVERY_V1`
 11. `LEAD_QUALIFICATION_V1` engine — implemented, but the real business gate remains blocked because `ICP_DEFINED = NO`.
+12. `SELECTIVE_REVIEW_V1`
+13. `LEADS_EXPORT_V1`
 
 Additional measured capabilities implemented during the staged work:
 
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion.
 
-Still pending from the original handoff: Work Units 12–15.
+Still pending from the original handoff: Work Units 14–15.
 
 ## Core V1 policies
 
@@ -37,6 +39,8 @@ Still pending from the original handoff: Work Units 12–15.
 - contact `VALIDATED` means official-publication corroboration, not deliverability;
 - every `ProfessionalRole` requires explicit evidence linking Person, Company and title;
 - no lead is qualified without an explicit externally supplied policy/ICP;
+- ambiguous/high-impact cases can be routed selectively to human review;
+- export is independent and validates that Company, People, Contacts, Facts, Evidence and provenance belong to one coherent record;
 - controlled expansion is seed-driven and is not a crawler.
 
 ## Run tests
