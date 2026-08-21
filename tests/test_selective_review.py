@@ -3,8 +3,9 @@ import unittest
 from datetime import datetime, timezone
 from searchleads.domain import Conflict, ContactKind, ContactPoint, ContactStatus, EntityRef, EntityType, LeadStatus, Provenance
 from searchleads.entity_resolution import CompanyRecord, triage_pair
+from searchleads.person_entity_resolution import PersonRecord, resolve_person_pair
 from searchleads.qualification import QualificationResult
-from searchleads.selective_review import ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_qualification
+from searchleads.selective_review import ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_person_resolution, review_qualification
 
 NOW=datetime(2026,8,21,14,0,tzinfo=timezone.utc)
 PROV=Provenance(("ev-1",),"test",generated_at=NOW)
@@ -16,6 +17,11 @@ class SelectiveReviewTests(unittest.TestCase):
         a=CompanyRecord("a",registry_id="123"); b=CompanyRecord("b",registry_id="123"); self.assertIsNone(review_company_match(a,b,triage_pair(a,b)))
     def test_explicit_person_ambiguity_is_reviewable_without_auto_merge(self):
         item=review_person_match("p1","p2","c1","same name and role; profile identity unresolved",("ev-1","ev-2")); self.assertEqual(item.kind,ReviewKind.PERSON_MATCH); self.assertEqual(len(item.evidence_ids),2)
+    def test_typed_person_er_review_is_queued(self):
+        decision=resolve_person_pair(PersonRecord("p1",name="Ana Costa",company_id="c1",role="CFO"),PersonRecord("p2",name="Ana Costa",company_id="c1",role="CFO")); item=review_person_resolution("p1","p2","c1",decision,("ev-1","ev-2")); self.assertIsNotNone(item); self.assertEqual(item.kind,ReviewKind.PERSON_MATCH); self.assertEqual(item.evidence_ids,("ev-1","ev-2"))
+    def test_non_review_person_er_decisions_are_not_queued(self):
+        insufficient=resolve_person_pair(PersonRecord("p1",name="Ana Costa"),PersonRecord("p2",name="Ana Costa")); self.assertIsNone(review_person_resolution("p1","p2","c1",insufficient))
+        auto=resolve_person_pair(PersonRecord("p3",name="Ana Costa",profile_url="https://linkedin.com/in/ana",profile_is_person_unique=True),PersonRecord("p4",name="Ana Costa",profile_url="https://linkedin.com/in/ana/",profile_is_person_unique=True)); self.assertIsNone(review_person_resolution("p3","p4","c1",auto))
     def test_authoritative_open_conflict_is_high_priority(self):
         conflict=Conflict("conf-1",EntityRef(EntityType.COMPANY,"c1"),"business_registry_id",("cf1","cf2")); item=review_conflict(conflict,authoritative=True,evidence_ids=("ev-1","ev-2")); self.assertEqual(item.priority,ReviewPriority.HIGH)
     def test_resolved_conflict_is_not_requeued(self):
