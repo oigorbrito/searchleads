@@ -27,7 +27,8 @@ Additional measured capabilities implemented during the staged work:
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion;
 - `ICP_DECISION_SUPPORT_V1`, which measures readiness of the eight handoff ICP dimensions without defining target values or a default policy;
-- `QUALIFICATION_EVIDENCE_SIGNALS_V1`, which adds explicit exclusion operators and evidence-backed role/contact qualification inputs without defining an ICP.
+- `QUALIFICATION_EVIDENCE_SIGNALS_V1`, which adds explicit exclusion operators and evidence-backed role/contact qualification inputs without defining an ICP;
+- `QUALIFICATION_FIELD_CANONICALIZATION_V1`, which applies the existing conservative fusion rule to explicit qualification-relevant fields.
 
 ## Final V1 acceptance state
 
@@ -38,32 +39,58 @@ REAL_QUALIFICATION = NOT_EVALUABLE
 COMMERCIAL_END_TO_END_ACCEPTANCE = BLOCKED_BY_UNDEFINED_ICP
 ```
 
-The deterministic SERPRO acceptance run passes real-company discovery, multi-source enrichment, exact-CNPJ entity resolution/deduplication, provenance, contact discovery/corroboration, person/role extraction, selective review, export, and bit-reproducibility. A synthetic acceptance-only qualification policy proves the engine composes, but is never represented as the product ICP.
+## ICP readiness progression
 
-## ICP decision-support state
-
-Baseline against the accepted full-run:
+Baseline accepted full-run:
 
 ```text
-ICP_DIMENSIONS = 8
 READY = 0
 PARTIAL = 6
 BLOCKED = 2
-ICP_DEFINED = NO
 ```
 
-After the qualification evidence-signal bridge:
+After typed qualification evidence signals:
 
 ```text
 READY = 2
 PARTIAL = 4
 BLOCKED = 2
-EXCLUSION_CRITERIA = READY
-TARGET_ROLE = READY
-REQUIRED_CONTACTABILITY = PARTIAL
 ```
 
-Contactability remains partial because officially corroborated contact presence is still not deliverability/reachability. This is readiness measurement, not an ICP. See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, and run `python scripts/run_icp_decision_support.py`.
+After qualification-field canonicalization:
+
+```text
+READY = 4
+PARTIAL = 2
+BLOCKED = 2
+```
+
+Current READY dimensions:
+
+```text
+INDUSTRY
+BUSINESS_SIGNAL
+EXCLUSION_CRITERIA
+TARGET_ROLE
+```
+
+Current PARTIAL dimensions:
+
+```text
+GEOGRAPHY
+REQUIRED_CONTACTABILITY
+```
+
+Current BLOCKED dimensions:
+
+```text
+TARGET_MARKET
+COMPANY_SIZE
+```
+
+This remains a readiness measurement, not an ICP. Geography is partial because city evidence remains explicitly conflicted while state is canonical. Contactability is partial because official publication/corroboration is not deliverability/reachability. Target market is a business decision; company size has no implemented source/field.
+
+See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, and `QUALIFICATION-FIELD-CANONICALIZATION-V1.md`.
 
 ## Core V1 policies
 
@@ -79,6 +106,7 @@ Contactability remains partial because officially corroborated contact presence 
 - no real lead is qualified without an explicit externally supplied policy/ICP;
 - qualification exclusions are explicit operators, not opaque score penalties;
 - validated contacts and professional roles enter qualification only as typed evidence-backed inputs, not as invented company facts;
+- qualification-relevant source facts can be canonicalized only through the existing conservative fusion/conflict rule;
 - ambiguous/high-impact cases can be routed selectively to human review;
 - export is independent and validates that Company, People, Contacts, Facts, Evidence and provenance belong to one coherent record;
 - gap automation only selects implemented known capabilities, blocks unknown sources, and represents bounded retry/cache/rate-limit metadata;
