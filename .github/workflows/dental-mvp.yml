@@ -1,0 +1,20 @@
+name: dental-mvp
+
+on:
+  pull_request:
+    paths:
+      - "searchleads/dental_facial_surgery_icp.py"
+      - "searchleads/dental_person_lead.py"
+      - "tests/test_dental_facial_surgery_icp.py"
+      - ".github/workflows/dental-mvp.yml"
+  workflow_dispatch:
+
+jobs:
+  focused-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m unittest tests.test_dental_facial_surgery_icp -v
