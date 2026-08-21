@@ -14,6 +14,20 @@ from .contact_validation import (
     ContactValidationResult,
     validate_contact_from_official_evidence,
 )
+from .person_discovery import (
+    OfficialPeopleSource,
+    PersonAcquisitionError,
+    PersonDiscoveryError,
+    PersonDiscoveryResult,
+    PersonRoleObservation,
+    discover_person_roles_from_html,
+)
+from .role_persistence import (
+    ROLE_SCHEMA_VERSION,
+    ensure_professional_role_schema,
+    get_professional_role,
+    save_professional_role,
+)
 from .domain import (
     CandidateFact,
     CanonicalFact,
@@ -99,6 +113,16 @@ __all__ = [
     "ContactValidationMethod",
     "ContactValidationResult",
     "validate_contact_from_official_evidence",
+    "OfficialPeopleSource",
+    "PersonAcquisitionError",
+    "PersonDiscoveryError",
+    "PersonDiscoveryResult",
+    "PersonRoleObservation",
+    "discover_person_roles_from_html",
+    "ROLE_SCHEMA_VERSION",
+    "ensure_professional_role_schema",
+    "get_professional_role",
+    "save_professional_role",
     "CandidateFact",
     "CanonicalFact",
     "Company",
