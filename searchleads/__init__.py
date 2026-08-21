@@ -8,6 +8,7 @@ from .qualification import CriterionEvaluation, CriterionOperator, Qualification
 from .expansion import ExpansionItemResult, ExpansionRunResult, expand_cnpj_seeds
 from .company_enrichment import CompanyEnrichmentAcquisitionError, CompanyEnrichmentError, CompanyEnrichmentResult, OfficialCompanyLocationSource, extract_official_location_facts
 from .repeatable_discovery import DiscoveredCompanySeed, RECIPE_ID, RepeatableDiscoveryResult, SerproOfficeDirectorySource, discover_serpro_office_seeds
+from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_qualification
 from .domain import CandidateFact, CanonicalFact, Company, Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, DecisionClass, EntityRef, EntityType, Evidence, Lead, LeadStatus, Person, ProfessionalRole, Provenance, Source, SourceType
 from .brasilapi import BASE_URL as BRASILAPI_BASE_URL, BrasilAPIAcquisitionError, BrasilAPIError, BrasilAPIIngestionResult, BrasilAPIPayloadError, BrasilAPISource
 from .entity_resolution import BlockingMetrics, CompanyRecord, EvaluationMetrics, LabeledPair, MatchDecision, MatchFeatures, ResolutionDisposition, Strategy, TriageDecision, blocking_keys, compare_features, evaluate, evaluate_blocking, evaluate_blocking_corpus, is_blocked_candidate, resolve_pair, triage_pair
