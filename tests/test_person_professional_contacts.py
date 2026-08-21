@@ -2,7 +2,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 from searchleads.domain import ContactKind, ContactStatus, Evidence, Person
-from searchleads.person_professional_contacts import discover_person_professional_channels, build_person_contact_points
+from searchleads.person_professional_contacts import discover_person_professional_channels, build_person_contact_points, persist_person_contact_points
 
 URL="https://example.org/people"
 NOW=datetime(2026,8,21,17,0,tzinfo=timezone.utc)
@@ -43,6 +43,18 @@ class PersonProfessionalContactTests(unittest.TestCase):
         self.assertEqual(contacts[0].owner.entity_id,"p1")
         self.assertEqual(contacts[0].status,ContactStatus.DISCOVERED)
         self.assertEqual(contacts[0].provenance.evidence_ids,("e1",))
+
+    def test_contact_points_can_be_persisted_through_store_boundary(self):
+        html="<p>Ana Silva</p><p>E-mail: ana@example.org</p>"
+        r=discover_person_professional_channels(URL,html,["Ana Silva"])
+        ev=Evidence("e1","s1",NOW,{"body":html})
+        contacts=build_person_contact_points({"Ana Silva":Person("p1",NOW)},ev,r)
+        class Store:
+            def __init__(self): self.saved=[]
+            def save_contact_point(self, contact): self.saved.append(contact)
+        store=Store()
+        persist_person_contact_points(store,contacts)
+        self.assertEqual(store.saved,list(contacts))
 
     def test_unknown_page_person_does_not_create_contact(self):
         html="<p>Other Person</p><p>E-mail: other@example.org</p>"
