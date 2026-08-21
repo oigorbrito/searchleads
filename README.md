@@ -26,7 +26,8 @@ Additional measured capabilities implemented during the staged work:
 
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion;
-- `ICP_DECISION_SUPPORT_V1`, which measures readiness of the eight handoff ICP dimensions without defining target values or a default policy.
+- `ICP_DECISION_SUPPORT_V1`, which measures readiness of the eight handoff ICP dimensions without defining target values or a default policy;
+- `QUALIFICATION_EVIDENCE_SIGNALS_V1`, which adds explicit exclusion operators and evidence-backed role/contact qualification inputs without defining an ICP.
 
 ## Final V1 acceptance state
 
@@ -41,7 +42,7 @@ The deterministic SERPRO acceptance run passes real-company discovery, multi-sou
 
 ## ICP decision-support state
 
-The handoff's eight future ICP dimensions are now measured against the accepted full-run:
+Baseline against the accepted full-run:
 
 ```text
 ICP_DIMENSIONS = 8
@@ -51,7 +52,18 @@ BLOCKED = 2
 ICP_DEFINED = NO
 ```
 
-This is a readiness measurement, not an ICP. See `ICP-DECISION-SUPPORT-V1.md` and run `python scripts/run_icp_decision_support.py`.
+After the qualification evidence-signal bridge:
+
+```text
+READY = 2
+PARTIAL = 4
+BLOCKED = 2
+EXCLUSION_CRITERIA = READY
+TARGET_ROLE = READY
+REQUIRED_CONTACTABILITY = PARTIAL
+```
+
+Contactability remains partial because officially corroborated contact presence is still not deliverability/reachability. This is readiness measurement, not an ICP. See `ICP-DECISION-SUPPORT-V1.md`, `QUALIFICATION-EVIDENCE-SIGNALS-V1.md`, and run `python scripts/run_icp_decision_support.py`.
 
 ## Core V1 policies
 
@@ -65,6 +77,8 @@ This is a readiness measurement, not an ICP. See `ICP-DECISION-SUPPORT-V1.md` an
 - contact `VALIDATED` means official-publication corroboration, not deliverability;
 - every `ProfessionalRole` requires explicit evidence linking Person, Company and title;
 - no real lead is qualified without an explicit externally supplied policy/ICP;
+- qualification exclusions are explicit operators, not opaque score penalties;
+- validated contacts and professional roles enter qualification only as typed evidence-backed inputs, not as invented company facts;
 - ambiguous/high-impact cases can be routed selectively to human review;
 - export is independent and validates that Company, People, Contacts, Facts, Evidence and provenance belong to one coherent record;
 - gap automation only selects implemented known capabilities, blocks unknown sources, and represents bounded retry/cache/rate-limit metadata;
