@@ -2,7 +2,7 @@
 
 ## Scope boundary
 
-Work Unit 1 establishes the scientific/domain foundation. Work Unit 2 adds evidence-preserving persistence. The project still intentionally does **not** implement crawling, real-source acquisition, normalization algorithms, entity-resolution scoring, contact validation, qualification scoring, exports, retries, scheduling, or a universal framework.
+The repository is implemented incrementally by work unit. Through Work Unit 3 it includes the scientific/domain foundation, evidence-preserving persistence, and exactly one narrow real-source adapter. It still intentionally does **not** implement broad crawling, company normalization, entity-resolution scoring, contact discovery/validation, person discovery, qualification scoring, exports, retries/scheduling, or a universal framework.
 
 ## Principles
 
@@ -105,6 +105,44 @@ Evidence requires a persisted source; contact provenance and fact provenance req
 
 SQLite was selected for Work Unit 2 because it is deterministic, transactional, file-backed, available in the Python standard library, and sufficient to validate round-trip/reprocessing gates without introducing external infrastructure. It is not treated as a permanent architectural mandate.
 
+## Real-source principles — Work Unit 3
+
+### P15 — One source before many sources
+
+`ENGINEERING_CHOICE` following the staged handoff.
+
+Work Unit 3 integrates only Minha Receita. No source registry, plugin framework, or generic crawler is introduced.
+
+### P16 — Acquisition precedes interpretation
+
+`EVIDENCE_BACKED` architectural direction from the supplied handoff.
+
+The complete JSON mapping returned by the source transport is persisted as `Evidence.payload` before derived `CandidateFact` records are saved. A change in future extraction logic can therefore be replayed from stored evidence.
+
+### P17 — Minha Receita is treated as a secondary source
+
+`LOCALLY_VERIFIED` against current source documentation.
+
+Minha Receita documents that it serves CNPJ data derived from Receita Federal public files and explicitly warns that the API is a secondary source whose data can contain staleness, errors, incompleteness, or inconsistencies. The adapter therefore creates candidate facts, never verified/canonical facts.
+
+### P18 — Stable CNPJ lookup before experimental broad search
+
+`ENGINEERING_CHOICE` informed by current source documentation.
+
+The documented single-CNPJ endpoint is used for this first integration. Minha Receita marks its paginated filter search as experimental, so this work unit does not make that unstable search contract part of the engine.
+
+### P19 — Source fields are extracted, not normalized
+
+`ENGINEERING_CHOICE` preserving roadmap boundaries.
+
+The adapter maps a small set of raw source fields to domain predicates (`business_registry_id`, `legal_name`, `trade_name`, registration status, primary CNAE, city, state). It intentionally leaves `normalized_value` empty. `COMPANY_NORMALIZATION_V1` remains the next work unit.
+
+### P20 — Contacts and people remain deferred
+
+`ENGINEERING_CHOICE` preserving roadmap order.
+
+Even if Minha Receita returns phone, email, or QSA data, Work Unit 3 does not turn those fields into `ContactPoint`, `Person`, or `ProfessionalRole` records. Those capabilities have dedicated later work units.
+
 ## Explicitly unsupported assumptions
 
 None are intentionally introduced. In particular, the project does not assume:
@@ -114,6 +152,8 @@ None are intentionally introduced. In particular, the project does not assume:
 - any contact-validation technique;
 - any ICP;
 - any source authority ordering;
-- any source-specific extraction strategy;
 - any matching threshold or score;
-- that SQLite is the final production database.
+- that SQLite is the final production database;
+- that Minha Receita is authoritative or sufficient for company identity;
+- that the experimental paginated Minha Receita search is stable;
+- that CNPJ lookup alone provides discovery coverage.
