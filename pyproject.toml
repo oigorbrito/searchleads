@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "searchleads"
-version = "0.17.0"
-description = "Evidence-preserving B2B lead pipeline with deterministic end-to-end acceptance"
+version = "0.18.0"
+description = "Evidence-preserving B2B lead pipeline with measured ICP decision support"
 requires-python = ">=3.11"
 dependencies = []
 
