@@ -13,8 +13,10 @@ Implemented work units:
 7. `CONTACT_DISCOVERY_V1`
 8. `CONTACT_VALIDATION_V1`
 9. `PERSON_DISCOVERY_AND_COMPANY_LINK_V1`
+10. `LEAD_QUALIFICATION_V1`
+11. `LEADS_EXPANSION_V1`
 
-The project now has evidence-preserving company acquisition, normalization, measured entity resolution, explicit field conflicts, professional contact discovery/validation, and evidence-backed person/company role links.
+The project now has evidence-preserving company acquisition, normalization, measured entity resolution, explicit field conflicts, professional contact discovery/validation, evidence-backed person/company role links, policy-required lead qualification, and controlled expansion from explicit CNPJ seeds.
 
 ## Run tests
 
@@ -28,8 +30,9 @@ python -m unittest discover -s tests -v
 - only unanimous effective field values auto-canonicalize; disagreement remains a `Conflict`;
 - contact discovery never implies validation;
 - contact `VALIDATED` means official-publication corroboration, not deliverability;
-- a `Person` is separate from a `Company`, and every `ProfessionalRole` requires provenance linking that person to the company and title;
-- no lead is qualified without explicit externally supplied criteria.
+- a `Person` is separate from a `Company`, and every `ProfessionalRole` requires provenance;
+- no lead is qualified without explicit externally supplied criteria;
+- expansion accepts explicit seeds, deduplicates them, skips already-persisted companies before acquisition, and reports failures per seed instead of turning into a crawler.
 
 Measured ER and fusion benchmarks remain reproducible with:
 
