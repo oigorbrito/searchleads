@@ -4,7 +4,8 @@ from .contact_discovery import ContactAcquisitionError, ContactDiscoveryError, C
 from .contact_validation import ContactValidationDisposition, ContactValidationMethod, ContactValidationResult, validate_contact_from_official_evidence
 from .person_discovery import OfficialPeopleSource, PersonAcquisitionError, PersonDiscoveryError, PersonDiscoveryResult, PersonRoleObservation, discover_person_roles_from_html
 from .role_persistence import ROLE_SCHEMA_VERSION, ensure_professional_role_schema, get_professional_role, save_professional_role
-from .qualification import CriterionEvaluation, CriterionOperator, QualificationCriterion, QualificationPolicy, QualificationResult, lead_from_qualification, qualify_company
+from .qualification import CriterionEvaluation, CriterionOperator, QualificationCriterion, QualificationPolicy, QualificationResult, criterion_matches, lead_from_qualification, qualify_company
+from .qualification_signals import QualificationInputType, QualificationInput, SignalCriterionEvaluation, SignalQualificationResult, inputs_from_evidence, qualify_company_inputs
 from .expansion import ExpansionItemResult, ExpansionRunResult, expand_cnpj_seeds
 from .company_enrichment import CompanyEnrichmentAcquisitionError, CompanyEnrichmentError, CompanyEnrichmentResult, OfficialCompanyLocationSource, extract_official_location_facts
 from .repeatable_discovery import DiscoveredCompanySeed, RECIPE_ID, RepeatableDiscoveryResult, SerproOfficeDirectorySource, discover_serpro_office_seeds
@@ -12,7 +13,7 @@ from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_revi
 from .lead_export import LeadExportBundle, export_csv, export_json, to_export_dict
 from .gap_automation import ActionDisposition, ActionKind, AutomationAction, AutomationPlan, Gap, GapKind, GapRequirements, detect_gaps, plan_gap_actions
 from .acceptance import AcceptanceResult, run_acceptance_fixture
-from .icp_decision_support import ICPDimension, ICPReadinessSnapshot, ReadinessLevel, DimensionAssessment, ICPDecisionSupportReport, acceptance_fixture_snapshot, assess_icp_readiness
+from .icp_decision_support import ICPDimension, ICPReadinessSnapshot, ReadinessLevel, DimensionAssessment, ICPDecisionSupportReport, acceptance_fixture_snapshot, qualification_bridge_snapshot, assess_icp_readiness
 from .domain import CandidateFact, CanonicalFact, Company, Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, DecisionClass, EntityRef, EntityType, Evidence, Lead, LeadStatus, Person, ProfessionalRole, Provenance, Source, SourceType
 from .brasilapi import BASE_URL as BRASILAPI_BASE_URL, BrasilAPIAcquisitionError, BrasilAPIError, BrasilAPIIngestionResult, BrasilAPIPayloadError, BrasilAPISource
 from .entity_resolution import BlockingMetrics, CompanyRecord, EvaluationMetrics, LabeledPair, MatchDecision, MatchFeatures, ResolutionDisposition, Strategy, TriageDecision, blocking_keys, compare_features, evaluate, evaluate_blocking, evaluate_blocking_corpus, is_blocked_candidate, resolve_pair, triage_pair
