@@ -8,6 +8,12 @@ from .contact_discovery import (
     OfficialPageContactSource,
     discover_contacts_from_html,
 )
+from .contact_validation import (
+    ContactValidationDisposition,
+    ContactValidationMethod,
+    ContactValidationResult,
+    validate_contact_from_official_evidence,
+)
 from .domain import (
     CandidateFact,
     CanonicalFact,
@@ -89,6 +95,10 @@ __all__ = [
     "DiscoveredContact",
     "OfficialPageContactSource",
     "discover_contacts_from_html",
+    "ContactValidationDisposition",
+    "ContactValidationMethod",
+    "ContactValidationResult",
+    "validate_contact_from_official_evidence",
     "CandidateFact",
     "CanonicalFact",
     "Company",
