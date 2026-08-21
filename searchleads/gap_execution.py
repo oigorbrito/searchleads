@@ -1,8 +1,9 @@
 """Bounded synchronous execution/reassessment for SearchLeads Work Unit 14.
 
 The runner only executes ActionKind values already selected by gap_automation.
-It adds finite retry, cache, rate-limit scheduling metadata, and reassessment.
-It is not a background scheduler or a generic workflow engine.
+It adds finite retry, cache, rate-limit scheduling metadata, explicit resolve and
+validate lifecycle hooks, and reassessment. It is not a background scheduler or
+a generic workflow engine.
 """
 from __future__ import annotations
 
@@ -37,6 +38,18 @@ class ActionExecutionRecord:
 class GapRuntimeState:
     successful_cache_keys: set[str] = field(default_factory=set)
     last_attempt_at: dict[str, datetime] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class GapLifecycleHooks:
+    """Explicit post-enrichment stages required by the handoff loop.
+
+    Hooks are supplied by SearchLeads-specific orchestration code. They are not
+    dynamically discovered and cannot introduce new action/source types.
+    """
+
+    resolve: Callable[[], None]
+    validate: Callable[[], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,13 +198,25 @@ def execute_and_reassess_gap_cycle(
     *,
     clock: Clock,
     runtime: GapRuntimeState,
+    lifecycle_hooks: GapLifecycleHooks | None = None,
 ) -> GapCycleResult:
+    """Run detect → enrich → resolve → validate → reassess for one bounded cycle.
+
+    The lifecycle hooks run only after at least one enrichment/action succeeds.
+    This prevents blocked, failed, cached, or merely scheduled work from being
+    mislabeled as a fresh resolution/validation pass.
+    """
     plan_before = plan_factory()
     now = clock()
     _require_aware(now)
     records = execute_gap_plan(plan_before, handlers, now=now, runtime=runtime)
-    # Source-specific handlers are expected to persist/enrich using already
-    # implemented capabilities. Replanning reads that resulting state.
+
+    if lifecycle_hooks is not None and any(
+        record.status is ActionExecutionStatus.SUCCEEDED for record in records
+    ):
+        lifecycle_hooks.resolve()
+        lifecycle_hooks.validate()
+
     plan_after = plan_factory()
     return GapCycleResult(plan_before, records, plan_after)
 
@@ -202,9 +227,10 @@ def run_gap_automation_until_stable(
     *,
     clock: Clock,
     runtime: GapRuntimeState | None = None,
+    lifecycle_hooks: GapLifecycleHooks | None = None,
     max_cycles: int = 3,
 ) -> GapRunResult:
-    """Run a finite synchronous detect→execute→reassess loop."""
+    """Run a finite synchronous detect→enrich→resolve→validate→reassess loop."""
     if max_cycles < 1:
         raise ValueError("max_cycles must be >= 1")
     state = runtime or GapRuntimeState()
@@ -219,6 +245,7 @@ def run_gap_automation_until_stable(
             handlers,
             clock=clock,
             runtime=state,
+            lifecycle_hooks=lifecycle_hooks,
         )
         cycles.append(cycle)
         if not cycle.plan_after.gaps:
