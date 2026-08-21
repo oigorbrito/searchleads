@@ -111,7 +111,7 @@ SQLite was selected for Work Unit 2 because it is deterministic, transactional, 
 
 `ENGINEERING_CHOICE` following the staged handoff.
 
-Work Unit 3 integrates only Minha Receita. No source registry, plugin framework, or generic crawler is introduced.
+Work Unit 3 integrates only BrasilAPI. No source registry, plugin framework, or generic crawler is introduced.
 
 ### P16 — Acquisition precedes interpretation
 
@@ -119,17 +119,17 @@ Work Unit 3 integrates only Minha Receita. No source registry, plugin framework,
 
 The complete JSON mapping returned by the source transport is persisted as `Evidence.payload` before derived `CandidateFact` records are saved. A change in future extraction logic can therefore be replayed from stored evidence.
 
-### P17 — Minha Receita is treated as a secondary source
+### P17 — BrasilAPI data remains source evidence, not canonical truth
 
-`LOCALLY_VERIFIED` against current source documentation.
+`LOCALLY_VERIFIED` against current documentation and issue history.
 
-Minha Receita documents that it serves CNPJ data derived from Receita Federal public files and explicitly warns that the API is a secondary source whose data can contain staleness, errors, incompleteness, or inconsistencies. The adapter therefore creates candidate facts, never verified/canonical facts.
+BrasilAPI documents its CNPJ endpoint as returning company-registration data and describes the endpoint as a Minha Receita-backed lookup. Recent BrasilAPI issue/discussion history contains examples of stale or divergent CNPJ data. The adapter therefore creates candidate facts, never verified/canonical facts.
 
-### P18 — Stable CNPJ lookup before experimental broad search
+### P18 — Point lookup only; no crawling/full scan
 
-`ENGINEERING_CHOICE` informed by current source documentation.
+`ENGINEERING_CHOICE` aligned with current BrasilAPI terms.
 
-The documented single-CNPJ endpoint is used for this first integration. Minha Receita marks its paginated filter search as experimental, so this work unit does not make that unstable search contract part of the engine.
+Work Unit 3 uses only `GET /api/cnpj/v1/{cnpj}` for a known CNPJ. BrasilAPI terms explicitly ask consumers not to use automated crawling or full scans, so this source adapter is not treated as a broad discovery mechanism.
 
 ### P19 — Source fields are extracted, not normalized
 
@@ -141,7 +141,7 @@ The adapter maps a small set of raw source fields to domain predicates (`busines
 
 `ENGINEERING_CHOICE` preserving roadmap order.
 
-Even if Minha Receita returns phone, email, or QSA data, Work Unit 3 does not turn those fields into `ContactPoint`, `Person`, or `ProfessionalRole` records. Those capabilities have dedicated later work units.
+Even if BrasilAPI returns phone, email, or QSA data, Work Unit 3 does not turn those fields into `ContactPoint`, `Person`, or `ProfessionalRole` records. Those capabilities have dedicated later work units.
 
 ## Explicitly unsupported assumptions
 
@@ -154,6 +154,5 @@ None are intentionally introduced. In particular, the project does not assume:
 - any source authority ordering;
 - any matching threshold or score;
 - that SQLite is the final production database;
-- that Minha Receita is authoritative or sufficient for company identity;
-- that the experimental paginated Minha Receita search is stable;
+- that BrasilAPI is authoritative or sufficient for company identity;
 - that CNPJ lookup alone provides discovery coverage.
