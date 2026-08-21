@@ -1,5 +1,13 @@
 """SearchLeads domain and persistence foundation."""
 
+from .contact_discovery import (
+    ContactAcquisitionError,
+    ContactDiscoveryError,
+    ContactDiscoveryResult,
+    DiscoveredContact,
+    OfficialPageContactSource,
+    discover_contacts_from_html,
+)
 from .domain import (
     CandidateFact,
     CanonicalFact,
@@ -75,6 +83,12 @@ from .persistence import (
 )
 
 __all__ = [
+    "ContactAcquisitionError",
+    "ContactDiscoveryError",
+    "ContactDiscoveryResult",
+    "DiscoveredContact",
+    "OfficialPageContactSource",
+    "discover_contacts_from_html",
     "CandidateFact",
     "CanonicalFact",
     "Company",
