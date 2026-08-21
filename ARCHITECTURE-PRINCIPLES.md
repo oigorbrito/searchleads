@@ -2,7 +2,7 @@
 
 ## Scope boundary
 
-The repository is implemented incrementally by work unit. Through Work Unit 3 it includes the scientific/domain foundation, evidence-preserving persistence, and exactly one narrow real-source adapter. It still intentionally does **not** implement broad crawling, company normalization, entity-resolution scoring, contact discovery/validation, person discovery, qualification scoring, exports, retries/scheduling, or a universal framework.
+The repository is implemented incrementally by work unit. Through Work Unit 4 it includes the scientific/domain foundation, evidence-preserving persistence, exactly one narrow real-source adapter, and deterministic company normalization. It still intentionally does **not** implement broad crawling, entity-resolution scoring, contact discovery/validation, person discovery, qualification scoring, exports, retries/scheduling, or a universal framework.
 
 ## Principles
 
@@ -156,3 +156,29 @@ None are intentionally introduced. In particular, the project does not assume:
 - that SQLite is the final production database;
 - that BrasilAPI is authoritative or sufficient for company identity;
 - that CNPJ lookup alone provides discovery coverage.
+
+## Normalization principles — Work Unit 4
+
+### P21 — Normalization is non-destructive
+
+`EVIDENCE_BACKED` architectural direction from the supplied handoff.
+
+Normalization never overwrites the persisted source-derived `CandidateFact`. A normalized projection keeps the same raw value and provenance while adding `normalized_value` and `normalization_rule`. Rules can therefore be changed and replayed from stored facts.
+
+### P22 — Normalization does not perform entity resolution
+
+`ENGINEERING_CHOICE` preserving roadmap boundaries.
+
+V1 normalization standardizes representation only. It does not decide that two companies, domains, phones, addresses, or industry labels refer to the same entity. Matching remains `COMPANY_ENTITY_RESOLUTION_V1`.
+
+### P23 — Conservative normalization avoids invented semantics
+
+`ENGINEERING_CHOICE`.
+
+V1 does not remove legal suffixes, infer a Brazilian country code for phones, assume HTTPS for scheme-less URLs, collapse subdomains to registrable domains, geocode addresses, or map free-text industries into a taxonomy. Those transformations can change meaning and require separate evidence or local validation.
+
+### P24 — Rule names are part of the audit trail
+
+`ENGINEERING_CHOICE`.
+
+Every successful normalized projection records a versioned rule identifier such as `company_name_nfkc_whitespace_v1`, `domain_lower_idna_v1`, or `cnae_digits7_v1`. Unsupported and invalid inputs are represented explicitly rather than silently coerced.
