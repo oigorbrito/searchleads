@@ -11,6 +11,7 @@ from searchleads.gap_automation import (
 )
 from searchleads.gap_execution import (
     ActionExecutionStatus,
+    GapLifecycleHooks,
     GapRuntimeState,
     execute_and_reassess_gap_cycle,
     execute_gap_plan,
@@ -136,6 +137,53 @@ class GapExecutionTests(unittest.TestCase):
         self.assertTrue(result.plan_before.gaps)
         self.assertFalse(result.plan_after.gaps)
 
+    def test_cycle_orders_enrich_resolve_validate_then_reassess(self):
+        events = []
+        missing = {"value": True}
+
+        def factory():
+            events.append("detect" if not events else "reassess")
+            return (
+                plan(action())
+                if missing["value"]
+                else AutomationPlan("company:1", (), ())
+            )
+
+        def enrich(_):
+            events.append("enrich")
+
+        def resolve():
+            events.append("resolve")
+
+        def validate():
+            events.append("validate")
+            missing["value"] = False
+
+        result = execute_and_reassess_gap_cycle(
+            factory,
+            {ActionKind.BRASILAPI_LOOKUP: enrich},
+            clock=lambda: NOW,
+            runtime=GapRuntimeState(),
+            lifecycle_hooks=GapLifecycleHooks(resolve=resolve, validate=validate),
+        )
+        self.assertEqual(events, ["detect", "enrich", "resolve", "validate", "reassess"])
+        self.assertFalse(result.plan_after.gaps)
+
+    def test_lifecycle_hooks_do_not_run_without_successful_enrichment(self):
+        events = []
+        current = plan(action(disposition=ActionDisposition.BLOCKED))
+        execute_and_reassess_gap_cycle(
+            lambda: current,
+            {},
+            clock=lambda: NOW,
+            runtime=GapRuntimeState(),
+            lifecycle_hooks=GapLifecycleHooks(
+                resolve=lambda: events.append("resolve"),
+                validate=lambda: events.append("validate"),
+            ),
+        )
+        self.assertEqual(events, [])
+
     def test_run_until_stable_resolves_gap(self):
         missing = {"value": True}
 
@@ -157,6 +205,36 @@ class GapExecutionTests(unittest.TestCase):
         )
         self.assertEqual(result.stop_reason, "GAPS_RESOLVED")
         self.assertEqual(len(result.cycles), 1)
+
+    def test_run_until_stable_passes_lifecycle_hooks(self):
+        state = {"enriched": False, "resolved": False, "validated": False}
+        events = []
+
+        def factory():
+            complete = all(state.values())
+            return AutomationPlan("company:1", (), ()) if complete else plan(action())
+
+        def enrich(_):
+            events.append("enrich")
+            state["enriched"] = True
+
+        def resolve():
+            events.append("resolve")
+            state["resolved"] = True
+
+        def validate():
+            events.append("validate")
+            state["validated"] = True
+
+        result = run_gap_automation_until_stable(
+            factory,
+            {ActionKind.BRASILAPI_LOOKUP: enrich},
+            clock=lambda: NOW,
+            lifecycle_hooks=GapLifecycleHooks(resolve=resolve, validate=validate),
+            max_cycles=3,
+        )
+        self.assertEqual(result.stop_reason, "GAPS_RESOLVED")
+        self.assertEqual(events, ["enrich", "resolve", "validate"])
 
     def test_run_stops_when_no_progress(self):
         current = plan(action(disposition=ActionDisposition.BLOCKED))
