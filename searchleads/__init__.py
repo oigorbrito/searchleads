@@ -48,6 +48,16 @@ from .entity_resolution import (
     resolve_pair,
     triage_pair,
 )
+from .field_fusion import (
+    FusionOutcome,
+    FusionPolicy,
+    FusionStatus,
+    ValueSupport,
+    fuse_candidate_facts,
+    fuse_persisted_candidates,
+    naive_majority_value,
+    persist_fusion_outcome,
+)
 from .normalization import (
     NormalizationError,
     NormalizationResult,
@@ -78,6 +88,14 @@ __all__ = [
     "EntityType",
     "Evidence",
     "IdentityCollisionError",
+    "FusionOutcome",
+    "FusionPolicy",
+    "FusionStatus",
+    "ValueSupport",
+    "fuse_candidate_facts",
+    "fuse_persisted_candidates",
+    "naive_majority_value",
+    "persist_fusion_outcome",
     "Lead",
     "LeadStatus",
     "MissingReferenceError",
