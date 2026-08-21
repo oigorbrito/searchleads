@@ -11,6 +11,7 @@ from .repeatable_discovery import DiscoveredCompanySeed, RECIPE_ID, RepeatableDi
 from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_qualification
 from .lead_export import LeadExportBundle, export_csv, export_json, to_export_dict
 from .gap_automation import ActionDisposition, ActionKind, AutomationAction, AutomationPlan, Gap, GapKind, GapRequirements, detect_gaps, plan_gap_actions
+from .acceptance import AcceptanceResult, run_acceptance_fixture
 from .domain import CandidateFact, CanonicalFact, Company, Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, DecisionClass, EntityRef, EntityType, Evidence, Lead, LeadStatus, Person, ProfessionalRole, Provenance, Source, SourceType
 from .brasilapi import BASE_URL as BRASILAPI_BASE_URL, BrasilAPIAcquisitionError, BrasilAPIError, BrasilAPIIngestionResult, BrasilAPIPayloadError, BrasilAPISource
 from .entity_resolution import BlockingMetrics, CompanyRecord, EvaluationMetrics, LabeledPair, MatchDecision, MatchFeatures, ResolutionDisposition, Strategy, TriageDecision, blocking_keys, compare_features, evaluate, evaluate_blocking, evaluate_blocking_corpus, is_blocked_candidate, resolve_pair, triage_pair
