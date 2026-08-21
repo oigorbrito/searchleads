@@ -10,6 +10,7 @@ Implemented work units:
 4. `COMPANY_NORMALIZATION_V1`
 5. `COMPANY_ENTITY_RESOLUTION_V1`
 6. `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
+7. `CONTACT_DISCOVERY_V1`
 
 The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, and deterministic non-destructive company-field normalization. The source path is:
 
@@ -22,7 +23,7 @@ known CNPJ
 → SQLite persistence
 ```
 
-The adapter does not create canonical facts, contacts, people, leads, or qualification decisions. It performs only point lookup by known CNPJ. It does not crawl or full-scan BrasilAPI; broad discovery remains a later concern.
+The BrasilAPI adapter does not create canonical facts, contacts, people, leads, or qualification decisions. It performs only point lookup by known CNPJ. It does not crawl or full-scan BrasilAPI; broad discovery remains a later concern.
 
 Normalization is a projection over raw `CandidateFact` records. It preserves `raw_value`, emits `normalized_value` plus an explicit `normalization_rule`, and can be recomputed from persisted facts without rewriting source evidence.
 
@@ -51,3 +52,7 @@ Reproduce the fusion benchmark with:
 ```bash
 python scripts/evaluate_field_fusion.py
 ```
+
+## Contact discovery V1
+
+`CONTACT_DISCOVERY_V1` preserves a company contact page as evidence and extracts professional e-mail, phone, contact-form, LinkedIn, and Instagram observations. Every discovered contact remains `DISCOVERED`; this work unit does not validate deliverability, ownership, or reachability.
