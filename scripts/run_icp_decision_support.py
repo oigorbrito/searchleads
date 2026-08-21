@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from searchleads.icp_decision_support import acceptance_fixture_snapshot, qualification_bridge_snapshot, assess_icp_readiness
+from searchleads.icp_decision_support import acceptance_fixture_snapshot, qualification_bridge_snapshot, qualification_field_canonicalization_snapshot, assess_icp_readiness
 
 
 def show(label, snapshot):
@@ -21,6 +21,7 @@ def show(label, snapshot):
 def main():
     show("BASE_ACCEPTANCE",acceptance_fixture_snapshot())
     show("WITH_QUALIFICATION_SIGNAL_BRIDGE",qualification_bridge_snapshot())
+    show("WITH_FIELD_CANONICALIZATION",qualification_field_canonicalization_snapshot())
 
 
 if __name__ == "__main__":
