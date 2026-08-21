@@ -2,7 +2,7 @@
 
 ## Scope
 
-Exactly one source was integrated: **Minha Receita CNPJ API**.
+Exactly one source was integrated: **BrasilAPI CNPJ API**.
 
 Pipeline implemented:
 
@@ -21,14 +21,14 @@ No broad search, second source, normalization, entity resolution, contact discov
 
 ## Source selection
 
-Minha Receita was selected because its current public documentation exposes a CNPJ API based on public Receita Federal files. The documentation also explicitly classifies the hosted API as a secondary source and warns that underlying data may be stale, incorrect, incomplete, or inconsistent. Those properties fit the existing candidate-fact/provenance model: source values are observations, not automatically canonical facts.
+BrasilAPI was selected because its current public documentation exposes a keyless CNPJ endpoint and the project terms allow point queries while explicitly discouraging crawling/full scans. The CNPJ endpoint is documented as a Minha Receita-backed lookup. Recent BrasilAPI issue/discussion history also records stale/divergent CNPJ results, which fits the existing candidate-fact/provenance model: source values are observations, not automatically canonical facts.
 
-The single-CNPJ endpoint is used in V1. The paginated filtered search documented by Minha Receita is explicitly experimental, so it is not made a dependency of this first source integration.
+The single-CNPJ endpoint `GET /api/cnpj/v1/{cnpj}` is used in V1. BrasilAPI terms explicitly discourage crawling/full scans, so this adapter remains a single-company lookup and is not a bulk discovery mechanism.
 
 ## Implemented files
 
-- `searchleads/minhareceita.py`
-- `tests/test_minhareceita.py`
+- `searchleads/brasilapi.py`
+- `tests/test_brasilapi.py`
 - `README.md`
 - `ARCHITECTURE-PRINCIPLES.md`
 - `searchleads/__init__.py`
@@ -80,9 +80,9 @@ Validated behaviors include:
 
 ## Real-source verification
 
-Current Minha Receita documentation (checked 2026-08-21) documents CNPJ `33683111000280` as `SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)` and shows a valid JSON response for the single-CNPJ endpoint. A separate current indexed company page also reports the same CNPJ/name pair.
+Current BrasilAPI documentation (checked 2026-08-21) documents the CNPJ endpoint and its Receita-derived schema. Current external evidence also shows the endpoint in active use in July–August 2026, including successful requests when a non-generic User-Agent is supplied. A separate current indexed company page reports CNPJ `33683111000280` as `SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)`.
 
-The execution container used for the local test suite has no outbound DNS, so the automated unit suite uses an injected transport and does not claim a live network request occurred inside the container. The production transport is implemented with Python stdlib `urllib` and targets the documented endpoint.
+The execution container used for the local test suite has no outbound DNS, so the automated unit suite uses an injected transport and does not claim a live network request occurred inside the container. The production transport is implemented with Python stdlib `urllib`, sends an explicit User-Agent, and targets the documented endpoint.
 
 This distinction is intentional:
 
@@ -117,15 +117,16 @@ Because the handoff gate literally states `REAL_COMPANIES_INGESTED > 0`, the str
 
 ### LOCALLY_VERIFIED
 
-- Minha Receita currently documents the single-CNPJ API and the SERPRO example;
-- Minha Receita describes its data as derived from Receita Federal public files;
-- source documentation warns that hosted data can be stale/incomplete/inconsistent.
+- BrasilAPI currently documents `GET /api/cnpj/v1/{cnpj}`;
+- BrasilAPI identifies the CNPJ lookup as Minha Receita-backed;
+- current BrasilAPI terms discourage crawling/full scans;
+- current BrasilAPI issue/discussion history shows that CNPJ data can lag or diverge from Receita, so values remain candidate facts rather than canonical truth.
 
 ### ENGINEERING_CHOICE
 
-- Minha Receita as the first source;
+- BrasilAPI as the first source;
 - direct known-CNPJ lookup for V1;
-- stdlib `urllib` transport;
+- stdlib `urllib` transport with explicit User-Agent;
 - deterministic source/evidence/candidate IDs;
 - the small initial field mapping above.
 
