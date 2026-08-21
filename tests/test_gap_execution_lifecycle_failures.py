@@ -17,16 +17,19 @@ from searchleads.gap_execution import (
 
 
 def plan_with_gap():
-    gap = Gap("gap-1", "company-1", GapKind.MISSING_FIELD, "state")
+    gap = Gap(
+        GapKind.COMPANY_FIELD,
+        "state",
+        "missing canonical company field: state",
+    )
     action = AutomationAction(
         action_id="action-1",
-        company_id="company-1",
-        gap_id="gap-1",
-        action_kind=ActionKind.BRASILAPI_LOOKUP,
+        gap=gap,
         disposition=ActionDisposition.READY,
+        action_kind=ActionKind.BRASILAPI_LOOKUP,
         reason="known registry capability",
-        cache_key="brasilapi:company-1",
         retry_max_attempts=1,
+        cache_key="brasilapi:company-1",
         min_interval_seconds=0,
     )
     return AutomationPlan("company-1", (gap,), (action,))
