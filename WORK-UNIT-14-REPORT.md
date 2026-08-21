@@ -2,9 +2,18 @@
 
 ## Scope
 
-Adds bounded gap detection and planning over capabilities already implemented in SearchLeads. It does not create a generic scheduler, crawler, or universal enrichment framework.
+Implements the handoff's bounded loop over already-known SearchLeads capabilities:
 
-Requirements are explicit caller inputs. The planner never silently decides that a business field is required.
+```text
+company
+→ detect missing information
+→ select known source/capability
+→ execute enrichment/action
+→ resolve/validate in the source-specific handler
+→ reassess gaps
+```
+
+Requirements remain explicit caller inputs. The system does not silently decide that a business field is required and does not create a generic crawler, daemon, or universal workflow engine.
 
 ## Known action mapping
 
@@ -18,41 +27,110 @@ Missing person/company role maps to the known official people-page capability.
 
 Missing qualification maps to qualification evaluation only when an explicit policy ID exists.
 
-An unknown requested field such as `employee_count` is `BLOCKED`; no new source is invented.
+An unknown requested field remains `BLOCKED`; no new source is invented.
 
-## Operational representation
+## Planning semantics
 
 Ready network actions carry:
 
-- finite `retry_max_attempts = 3`;
+- finite `retry_max_attempts`;
 - deterministic cache key;
-- minimum interval metadata (`60` seconds in V1).
+- minimum interval metadata.
 
 Blocked actions carry no network action and do not retry blindly.
 
-These are planning/configuration semantics. This work unit does not launch background execution.
+## Execution semantics
+
+`gap_execution.py` adds a synchronous bounded executor for actions that have already been selected by `gap_automation.py`.
+
+Per action it supports:
+
+- explicit handler lookup by existing `ActionKind`;
+- finite retry only up to `retry_max_attempts`;
+- successful-result cache key reuse;
+- rate-limit enforcement from `min_interval_seconds`;
+- `SCHEDULED` disposition with explicit `next_eligible_at` when the minimum interval has not elapsed;
+- final `FAILED` record with the next eligible time after bounded retries;
+- `BLOCKED` when no explicit handler exists.
+
+The executor does not dynamically discover arbitrary functions or sources.
+
+## Reassessment loop
+
+`run_gap_automation_until_stable()` performs a bounded synchronous loop:
+
+```text
+plan gaps
+→ execute ready known actions
+→ source handlers persist/enrich through existing capabilities
+→ rebuild plan from resulting state
+→ stop when gaps resolve, progress stops/scheduling is required, or max_cycles is reached
+```
+
+This closes the original handoff requirements `run enrichment`, `retry`, `cache`, `rate limit`, `schedule`, and `reassess` without introducing a background scheduler.
 
 ## Validation
 
-`python -m unittest discover -s tests -v`
+Original planning implementation baseline:
 
-- `TESTS_DISCOVERED = 156`
-- `TESTS_EXECUTED = 156`
-- `TESTS_PASSED = 156`
+```text
+TESTS_DISCOVERED = 156
+TESTS_EXECUTED = 156
+TESTS_PASSED = 156
+```
+
+Audit-correction isolated execution suite:
+
+```text
+GAP_EXECUTION_TESTS = 9/9 PASS
+```
+
+The isolated suite covers success/cache reuse, bounded retries, explicit schedule time under rate limiting, blocked actions, missing handlers, post-handler reassessment, run-until-stable resolution, no-progress termination, and timezone-aware scheduling.
+
+A new whole-repository regression on the final stacked audit-correction head is still required before declaring regression validation complete; the execution environment cannot clone the private GitHub repository because outbound DNS is unavailable.
 
 ## Gates
 
-- `GAP_DETECTION = PASS`
-- `EXPLICIT_REQUIREMENTS = PASS`
-- `KNOWN_SOURCE_SELECTION = PASS`
-- `UNKNOWN_SOURCE_NOT_INVENTED = PASS`
-- `BOUNDED_RETRY = PASS`
-- `CACHE_KEY_REPRESENTABLE = YES`
-- `RATE_LIMIT_INTERVAL_REPRESENTABLE = YES`
-- `QUALIFICATION_WITHOUT_ICP = BLOCKED`
-- `GENERIC_SCHEDULER = NO`
-- `UNIVERSAL_FRAMEWORK = NO`
+```text
+GAP_DETECTION = PASS
+EXPLICIT_REQUIREMENTS = PASS
+KNOWN_SOURCE_SELECTION = PASS
+UNKNOWN_SOURCE_NOT_INVENTED = PASS
+RUN_ENRICHMENT = PASS (bounded explicit handlers)
+BOUNDED_RETRY = PASS
+CACHE = PASS
+RATE_LIMIT = PASS
+SCHEDULE = PASS (explicit next_eligible_at; no daemon)
+REASSESS = PASS
+QUALIFICATION_WITHOUT_ICP = BLOCKED
+GENERIC_SCHEDULER = NO
+UNIVERSAL_FRAMEWORK = NO
+FULL_REGRESSION_ON_FINAL_HEAD = PENDING
+```
 
 ## Classification
 
-Gap/action schemas, retry count and interval are `ENGINEERING_CHOICE`. Blocking qualification without a policy follows the supplied handoff's `QUALIFICATION CRITERIA = NOT YET DEFINED` constraint. Source mappings use only locally implemented known capabilities.
+### EVIDENCE_BACKED
+
+- unknown gaps do not imply invented data sources;
+- qualification remains blocked without policy/ICP.
+
+### ENGINEERING_CHOICE
+
+- synchronous bounded execution instead of a background scheduler;
+- explicit handler map keyed only by known `ActionKind`;
+- cached successful action keys;
+- finite `max_cycles` stop boundary;
+- `next_eligible_at` as scheduling representation.
+
+### LOCALLY_VERIFIED
+
+- original WU14 planning tests passed 156/156 on its branch;
+- audit-correction execution contract passes 9/9 isolated tests.
+
+### UNKNOWN
+
+- production retry timing/backoff policy;
+- production scheduler/storage technology;
+- production source quotas and rate limits;
+- full regression status of the latest stacked head until the complete suite can run there.
