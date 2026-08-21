@@ -1,8 +1,9 @@
 """Conservative person entity resolution for evidence-backed professional identities.
 
-Same-name people are never assumed to be the same person. Strong identity-bearing
-signals (profile URL / professional email) are separated from contextual signals
-(company / role / location), and no opaque weights are used.
+Same-name people are never assumed to be the same person. Profile URLs and
+professional e-mails become strong identity evidence only when upstream evidence
+explicitly marks them as person-unique. Shared or scope-unknown signals may
+justify review, never irreversible auto-merge.
 """
 from __future__ import annotations
 
@@ -23,6 +24,8 @@ class PersonRecord:
     location: str | None = None
     profile_url: str | None = None
     professional_email: str | None = None
+    profile_is_person_unique: bool = False
+    professional_email_is_person_unique: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +36,8 @@ class PersonMatchFeatures:
     location_exact: bool | None
     profile_url_exact: bool | None
     professional_email_exact: bool | None
+    profile_person_unique_both: bool
+    professional_email_person_unique_both: bool
 
 
 class PersonResolutionDisposition(str, Enum):
@@ -84,7 +89,8 @@ def _fold(value: str | None) -> str | None:
     if not text:
         return None
     return "".join(
-        ch for ch in unicodedata.normalize("NFKD", text)
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
         if not unicodedata.combining(ch)
     )
 
@@ -101,9 +107,8 @@ def _email(value: str | None) -> str | None:
 def _profile(value: str | None) -> str | None:
     if value is None:
         return None
-    text = value.strip()
     try:
-        parts = urlsplit(text)
+        parts = urlsplit(value.strip())
     except ValueError:
         return None
     if parts.scheme.casefold() not in {"http", "https"} or not parts.hostname:
@@ -128,26 +133,65 @@ def compare_person_features(left: PersonRecord, right: PersonRecord) -> PersonMa
         role_exact=_exact(left.role, right.role),
         location_exact=_exact(left.location, right.location),
         profile_url_exact=_exact(left.profile_url, right.profile_url, _profile),
-        professional_email_exact=_exact(left.professional_email, right.professional_email, _email),
+        professional_email_exact=_exact(
+            left.professional_email,
+            right.professional_email,
+            _email,
+        ),
+        profile_person_unique_both=(
+            left.profile_is_person_unique and right.profile_is_person_unique
+        ),
+        professional_email_person_unique_both=(
+            left.professional_email_is_person_unique
+            and right.professional_email_is_person_unique
+        ),
     )
 
 
 def resolve_person_pair(left: PersonRecord, right: PersonRecord) -> PersonResolutionDecision:
     features = compare_person_features(left, right)
 
-    # Strong identifier evidence may auto-match only when the published human
-    # name also agrees. This avoids treating shared/functional accounts as IDs.
-    if features.name_exact is True and features.profile_url_exact is True:
+    # Auto-match requires agreement on human name plus an identifier that both
+    # source observations explicitly classify as person-unique.
+    if (
+        features.name_exact is True
+        and features.profile_url_exact is True
+        and features.profile_person_unique_both
+    ):
         return PersonResolutionDecision(
             PersonResolutionDisposition.AUTO_MATCH,
             features,
-            ("name_exact", "profile_url_exact"),
+            ("name_exact", "profile_url_exact", "profile_person_unique"),
         )
-    if features.name_exact is True and features.professional_email_exact is True:
+    if (
+        features.name_exact is True
+        and features.professional_email_exact is True
+        and features.professional_email_person_unique_both
+    ):
         return PersonResolutionDecision(
             PersonResolutionDisposition.AUTO_MATCH,
             features,
-            ("name_exact", "professional_email_exact"),
+            (
+                "name_exact",
+                "professional_email_exact",
+                "professional_email_person_unique",
+            ),
+        )
+
+    # Matching profile/e-mail observations whose scope is shared or unknown are
+    # useful evidence, but never sufficient for irreversible auto-merge.
+    uncertain_identity_signals: list[str] = []
+    if features.name_exact is True and features.profile_url_exact is True:
+        uncertain_identity_signals.append("profile_url_exact_scope_unverified")
+    if features.name_exact is True and features.professional_email_exact is True:
+        uncertain_identity_signals.append(
+            "professional_email_exact_scope_unverified"
+        )
+    if uncertain_identity_signals:
+        return PersonResolutionDecision(
+            PersonResolutionDisposition.REVIEW,
+            features,
+            ("name_exact", *uncertain_identity_signals),
         )
 
     # Context can justify review, never irreversible auto-merge in V1.
@@ -167,8 +211,6 @@ def resolve_person_pair(left: PersonRecord, right: PersonRecord) -> PersonResolu
             ("name_exact",) + contextual,
         )
 
-    # Same name + one company/role context signal remains ambiguous but
-    # reviewable. Same name + location alone is deliberately insufficient.
     if features.name_exact is True and (
         features.company_exact is True or features.role_exact is True
     ):
@@ -190,8 +232,11 @@ def resolve_person_pair(left: PersonRecord, right: PersonRecord) -> PersonResolu
     )
 
 
-def evaluate_person_resolution(pairs: Iterable[LabeledPersonPair]) -> PersonResolutionMetrics:
-    auto_true = auto_false = review_true = review_false = unresolved_true = unresolved_false = 0
+def evaluate_person_resolution(
+    pairs: Iterable[LabeledPersonPair],
+) -> PersonResolutionMetrics:
+    auto_true = auto_false = review_true = review_false = 0
+    unresolved_true = unresolved_false = 0
     for pair in pairs:
         disposition = resolve_person_pair(pair.left, pair.right).disposition
         if disposition is PersonResolutionDisposition.AUTO_MATCH:
