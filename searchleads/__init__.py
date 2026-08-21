@@ -12,7 +12,7 @@ from .qualification_field_canonicalization import QualificationFieldCanonicaliza
 from .expansion import ExpansionItemResult, ExpansionRunResult, expand_cnpj_seeds
 from .company_enrichment import CompanyEnrichmentAcquisitionError, CompanyEnrichmentError, CompanyEnrichmentResult, OfficialCompanyLocationSource, extract_official_location_facts
 from .repeatable_discovery import DiscoveredCompanySeed, RECIPE_ID, RepeatableDiscoveryResult, SerproOfficeDirectorySource, discover_serpro_office_seeds
-from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_qualification
+from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_person_resolution, review_qualification
 from .lead_export import LeadExportBundle, export_csv, export_json, to_export_dict
 from .gap_automation import ActionDisposition, ActionKind, AutomationAction, AutomationPlan, Gap, GapKind, GapRequirements, detect_gaps, plan_gap_actions
 from .gap_execution import ActionExecutionRecord, ActionExecutionStatus, GapCycleResult, GapRunResult, GapRuntimeState, execute_and_reassess_gap_cycle, execute_gap_plan, run_gap_automation_until_stable
