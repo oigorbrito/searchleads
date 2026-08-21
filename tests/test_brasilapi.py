@@ -5,13 +5,8 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
-from searchleads.brasilapi import (
-    BASE_URL,
-    BrasilAPIPayloadError,
-    BrasilAPISource,
-)
+from searchleads.brasilapi import BASE_URL, BrasilAPIPayloadError, BrasilAPISource
 from searchleads.persistence import SQLiteLeadStore
-
 
 NOW = datetime(2026, 8, 21, 14, 0, tzinfo=timezone.utc)
 SERPRO = {
@@ -35,117 +30,90 @@ SERPRO = {
     "qsa": [{"nome_socio": "ANDRE DE CESERO", "qualificacao_socio": "Diretor"}],
 }
 
-
 class BrasilAPISourceTests(unittest.TestCase):
     def test_ingest_preserves_full_raw_payload_and_creates_company_candidate(self) -> None:
         calls = []
-
         def transport(url: str):
-            calls.append(url)
-            return SERPRO
-
+            calls.append(url); return SERPRO
         with SQLiteLeadStore() as store:
-            result = BrasilAPISource(transport=transport).ingest(
-                store, "33.683.111/0002-80", retrieved_at=NOW
-            )
-
+            result = BrasilAPISource(transport=transport).ingest(store, "33.683.111/0002-80", retrieved_at=NOW)
             self.assertEqual(calls, [f"{BASE_URL}/33683111000280"])
             self.assertEqual(result.company.company_id, "company:cnpj:33683111000280")
             self.assertEqual(result.evidence.payload, SERPRO)
             self.assertEqual(store.get_evidence(result.evidence.evidence_id).payload, SERPRO)
             self.assertEqual(store.get_company(result.company.company_id), result.company)
-
             facts = {fact.predicate: fact.raw_value for fact in result.candidate_facts}
             self.assertEqual(facts["business_registry_id"], "33683111000280")
-            self.assertEqual(
-                facts["legal_name"],
-                "SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)",
-            )
+            self.assertEqual(facts["legal_name"], "SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)")
             self.assertEqual(facts["trade_name"], "REGIONAL BRASILIA-DF")
             self.assertEqual(facts["registration_status"], "ATIVA")
             self.assertEqual(facts["primary_cnae_code"], 6204000)
+            self.assertEqual(facts["registry_size_class"], "DEMAIS")
             self.assertEqual(facts["city"], "BRASILIA")
             self.assertEqual(facts["state"], "DF")
+            self.assertNotIn("employee_count", facts)
+            self.assertNotIn("revenue", facts)
+            self.assertNotIn("size_band", facts)
+
+    def test_registry_size_code_is_extracted_only_when_source_supplies_it(self) -> None:
+        payload = dict(SERPRO, codigo_porte=5)
+        with SQLiteLeadStore() as store:
+            result = BrasilAPISource(transport=lambda _: payload).ingest(store, payload["cnpj"], retrieved_at=NOW)
+            facts = {fact.predicate: fact.raw_value for fact in result.candidate_facts}
+            self.assertEqual(facts["registry_size_code"], 5)
+
+    def test_blank_registry_size_is_not_emitted(self) -> None:
+        payload = dict(SERPRO, porte="   ")
+        with SQLiteLeadStore() as store:
+            result = BrasilAPISource(transport=lambda _: payload).ingest(store, payload["cnpj"], retrieved_at=NOW)
+            predicates = {fact.predicate for fact in result.candidate_facts}
+            self.assertNotIn("registry_size_class", predicates)
 
     def test_source_does_not_extract_people_or_contacts_yet(self) -> None:
         with SQLiteLeadStore() as store:
-            result = BrasilAPISource(transport=lambda _: SERPRO).ingest(
-                store, SERPRO["cnpj"], retrieved_at=NOW
-            )
+            result = BrasilAPISource(transport=lambda _: SERPRO).ingest(store, SERPRO["cnpj"], retrieved_at=NOW)
             predicates = {fact.predicate for fact in result.candidate_facts}
-            self.assertNotIn("email", predicates)
-            self.assertNotIn("phone", predicates)
-            self.assertNotIn("person", predicates)
+            self.assertNotIn("email", predicates); self.assertNotIn("phone", predicates); self.assertNotIn("person", predicates)
 
     def test_response_cnpj_must_match_requested_cnpj(self) -> None:
         bad = dict(SERPRO, cnpj="00000000000000")
         with SQLiteLeadStore() as store:
-            with self.assertRaises(BrasilAPIPayloadError):
-                BrasilAPISource(transport=lambda _: bad).ingest(
-                    store, "33683111000280", retrieved_at=NOW
-                )
-            self.assertEqual(store.list_evidence(), ())
-            self.assertIsNone(store.get_company("company:cnpj:33683111000280"))
+            with self.assertRaises(BrasilAPIPayloadError): BrasilAPISource(transport=lambda _: bad).ingest(store, "33683111000280", retrieved_at=NOW)
+            self.assertEqual(store.list_evidence(), ()); self.assertIsNone(store.get_company("company:cnpj:33683111000280"))
 
     def test_legal_name_is_required_before_persistence(self) -> None:
         bad = dict(SERPRO, razao_social="")
         with SQLiteLeadStore() as store:
-            with self.assertRaises(BrasilAPIPayloadError):
-                BrasilAPISource(transport=lambda _: bad).ingest(
-                    store, "33683111000280", retrieved_at=NOW
-                )
+            with self.assertRaises(BrasilAPIPayloadError): BrasilAPISource(transport=lambda _: bad).ingest(store, "33683111000280", retrieved_at=NOW)
             self.assertEqual(store.list_evidence(), ())
 
     def test_same_payload_is_idempotent(self) -> None:
         with SQLiteLeadStore() as store:
             source = BrasilAPISource(transport=lambda _: SERPRO)
-            first = source.ingest(store, "33683111000280", retrieved_at=NOW)
-            second = source.ingest(store, "33683111000280", retrieved_at=NOW)
-            self.assertEqual(first, second)
-            self.assertEqual(len(store.list_evidence()), 1)
+            first = source.ingest(store, "33683111000280", retrieved_at=NOW); second = source.ingest(store, "33683111000280", retrieved_at=NOW)
+            self.assertEqual(first, second); self.assertEqual(len(store.list_evidence()), 1)
 
     def test_changed_payload_creates_new_evidence_snapshot(self) -> None:
-        changed = dict(SERPRO, nome_fantasia="SERPRO BRASILIA")
-        payloads = iter((SERPRO, changed))
+        changed = dict(SERPRO, nome_fantasia="SERPRO BRASILIA"); payloads = iter((SERPRO, changed))
         with SQLiteLeadStore() as store:
-            source = BrasilAPISource(transport=lambda _: next(payloads))
-            first = source.ingest(store, "33683111000280", retrieved_at=NOW)
-            second = source.ingest(
-                store,
-                "33683111000280",
-                retrieved_at=datetime(2026, 8, 21, 15, 0, tzinfo=timezone.utc),
-            )
-            self.assertNotEqual(first.evidence.evidence_id, second.evidence.evidence_id)
-            self.assertEqual(len(store.list_evidence()), 2)
+            source = BrasilAPISource(transport=lambda _: next(payloads)); first = source.ingest(store, "33683111000280", retrieved_at=NOW)
+            second = source.ingest(store, "33683111000280", retrieved_at=datetime(2026, 8, 21, 15, 0, tzinfo=timezone.utc))
+            self.assertNotEqual(first.evidence.evidence_id, second.evidence.evidence_id); self.assertEqual(len(store.list_evidence()), 2)
 
     def test_roundtrip_survives_database_reopen(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "leads.sqlite3"
             with SQLiteLeadStore(path) as store:
-                result = BrasilAPISource(transport=lambda _: SERPRO).ingest(
-                    store, "33683111000280", retrieved_at=NOW
-                )
-                evidence_id = result.evidence.evidence_id
-                company_id = result.company.company_id
+                result = BrasilAPISource(transport=lambda _: SERPRO).ingest(store, "33683111000280", retrieved_at=NOW); evidence_id = result.evidence.evidence_id; company_id = result.company.company_id
             with SQLiteLeadStore(path) as reopened:
-                self.assertEqual(reopened.get_evidence(evidence_id).payload, SERPRO)
-                self.assertIsNotNone(reopened.get_company(company_id))
+                self.assertEqual(reopened.get_evidence(evidence_id).payload, SERPRO); self.assertIsNotNone(reopened.get_company(company_id))
 
     def test_invalid_cnpj_is_rejected_before_transport(self) -> None:
         called = False
-
         def transport(_: str):
-            nonlocal called
-            called = True
-            return SERPRO
-
+            nonlocal called; called = True; return SERPRO
         with SQLiteLeadStore() as store:
-            with self.assertRaises(ValueError):
-                BrasilAPISource(transport=transport).ingest(
-                    store, "123", retrieved_at=NOW
-                )
+            with self.assertRaises(ValueError): BrasilAPISource(transport=transport).ingest(store, "123", retrieved_at=NOW)
         self.assertFalse(called)
 
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == "__main__": unittest.main()
