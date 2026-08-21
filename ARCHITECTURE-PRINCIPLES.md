@@ -2,7 +2,7 @@
 
 ## Scope boundary
 
-The repository is implemented incrementally by work unit. Through Work Unit 4 it includes the scientific/domain foundation, evidence-preserving persistence, exactly one narrow real-source adapter, and deterministic company normalization. It still intentionally does **not** implement broad crawling, entity-resolution scoring, contact discovery/validation, person discovery, qualification scoring, exports, retries/scheduling, or a universal framework.
+The repository is implemented incrementally by work unit. Through Work Unit 6 it includes the scientific/domain foundation, evidence-preserving persistence, exactly one narrow real-source adapter, deterministic company normalization, measured company entity resolution, and conservative per-field fusion with explicit conflicts. It still intentionally does **not** implement broad crawling, contact discovery/validation, person discovery, qualification scoring, exports, retries/scheduling, or a universal framework.
 
 ## Principles
 
@@ -48,11 +48,11 @@ A `ContactPoint` has its own identity, owner, kind, value, provenance, and state
 
 `ProfessionalRole` explicitly links person and company and requires provenance. The core `Person` object intentionally does not infer employer from a name.
 
-### P8 — No entity-resolution weights yet
+### P8 — Entity-resolution weights were initially unknown
 
-`UNKNOWN` / not yet locally validated.
+`UNKNOWN` at the domain-foundation stage.
 
-The model exposes identity-bearing facts but defines no similarity weights, thresholds, merge rules, or blocking strategy. Those belong to `COMPANY_ENTITY_RESOLUTION_V1`.
+The Work Unit 1 model intentionally defined no similarity weights, thresholds, merge rules, or blocking strategy. Work Unit 5 later measures candidate-generation and pairwise strategies without retroactively turning the initial unknowns into evidence-backed assumptions.
 
 ### P9 — No ICP or opaque scoring
 
@@ -152,7 +152,6 @@ None are intentionally introduced. In particular, the project does not assume:
 - any contact-validation technique;
 - any ICP;
 - any source authority ordering;
-- any matching threshold or score;
 - that SQLite is the final production database;
 - that BrasilAPI is authoritative or sufficient for company identity;
 - that CNPJ lookup alone provides discovery coverage.
@@ -182,3 +181,55 @@ V1 does not remove legal suffixes, infer a Brazilian country code for phones, as
 `ENGINEERING_CHOICE`.
 
 Every successful normalized projection records a versioned rule identifier such as `company_name_nfkc_whitespace_v1`, `domain_lower_idna_v1`, or `cnae_digits7_v1`. Unsupported and invalid inputs are represented explicitly rather than silently coerced.
+
+## Entity-resolution principles — Work Unit 5
+
+### P25 — Entity resolution is measured before merge automation
+
+`EVIDENCE_BACKED` architectural direction plus `LOCALLY_VERIFIED` benchmark result.
+
+Blocking, pairwise comparison, decision policy, and evaluation are separate operations. No fuzzy score is allowed to mutate or merge persisted companies merely because it exceeds a threshold.
+
+### P26 — Full registry-ID conflict is a hard V1 veto
+
+`ENGINEERING_CHOICE`, locally tested on the benchmark.
+
+When both records carry full normalized registry/CNPJ identifiers and they differ, V1 classifies the pair as distinct. When they are exactly equal, V1 may auto-match. This rule is deliberately scoped to the full source registry identifier, not CNPJ root/group identity.
+
+### P27 — Fuzzy evidence is review evidence in V1
+
+`LOCALLY_VERIFIED`.
+
+On the curated 54-pair benchmark, the best weighted F1 threshold produced an unacceptable false-merge rate. Therefore domain/name/phone/address/location/CNAE evidence may prioritize review but does not auto-merge without an exact registry identifier in V1.
+
+### P28 — Benchmark numbers are local calibration, not population accuracy
+
+`ENGINEERING_CHOICE` / limitation.
+
+The labeled benchmark is small, curated, balanced, and intentionally contains hard negative collisions. Its metrics support choosing among V1 policies and catching regressions; they do not estimate production prevalence or generalization error. A broader source-derived labeled set is required before widening automatic merge rules.
+
+## Field-fusion principles — Work Unit 6
+
+### P29 — Candidate facts are fused per subject and predicate
+
+`EVIDENCE_BACKED` architectural direction from the supplied handoff.
+
+Fusion never mixes different companies or fields. A fusion set must refer to one `EntityRef` and one predicate, preserving per-field provenance and making conflicts local and auditable.
+
+### P30 — Unanimous effective values may become canonical
+
+`ENGINEERING_CHOICE` supported by the local Work Unit 6 benchmark.
+
+The V1 auto-fusion rule uses `normalized_value` when available and otherwise `raw_value`. If all candidates agree on that effective value, one `CanonicalFact` is created with the complete candidate set and the union of evidence provenance.
+
+### P31 — Disagreement remains an explicit conflict
+
+`EVIDENCE_BACKED` requirement from the handoff and `LOCALLY_VERIFIED` in the benchmark.
+
+When two or more effective values disagree, V1 creates an open `Conflict`; it does not discard alternatives or silently select the most frequent observation. The majority value and ratio may be exposed as diagnostics only.
+
+### P32 — Observation count is not source authority
+
+`LOCALLY_VERIFIED` limitation.
+
+On the curated 32-scenario benchmark, naive majority failed on correlated repeated observations and unresolved ties. Source reliability, temporal authority, and source-dependence are therefore left unknown rather than encoded as invented weights. A future truth-discovery policy requires multi-source real data and labeled conflicts.
