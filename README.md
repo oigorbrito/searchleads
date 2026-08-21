@@ -20,13 +20,23 @@ Implemented:
 12. `SELECTIVE_REVIEW_V1`
 13. `LEADS_EXPORT_V1`
 14. `GAP_DETECTION_AND_AUTOMATION_V1` — bounded planning over known capabilities; no generic scheduler.
+15. `END_TO_END_ACCEPTANCE_V1` — technical pipeline accepted; real commercial qualification remains blocked by undefined ICP.
 
 Additional measured capabilities implemented during the staged work:
 
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion.
 
-Still pending from the original handoff: Work Unit 15 acceptance.
+## Final V1 acceptance state
+
+```text
+TECHNICAL_END_TO_END_ACCEPTANCE = PASS
+ICP_DEFINED = NO
+REAL_QUALIFICATION = NOT_EVALUABLE
+COMMERCIAL_END_TO_END_ACCEPTANCE = BLOCKED_BY_UNDEFINED_ICP
+```
+
+The deterministic SERPRO acceptance run passes real-company discovery, multi-source enrichment, exact-CNPJ entity resolution/deduplication, provenance, contact discovery/corroboration, person/role extraction, selective review, export, and bit-reproducibility. A synthetic acceptance-only qualification policy proves the engine composes, but is never represented as the product ICP.
 
 ## Core V1 policies
 
@@ -39,16 +49,17 @@ Still pending from the original handoff: Work Unit 15 acceptance.
 - contact discovery never implies validation;
 - contact `VALIDATED` means official-publication corroboration, not deliverability;
 - every `ProfessionalRole` requires explicit evidence linking Person, Company and title;
-- no lead is qualified without an explicit externally supplied policy/ICP;
+- no real lead is qualified without an explicit externally supplied policy/ICP;
 - ambiguous/high-impact cases can be routed selectively to human review;
 - export is independent and validates that Company, People, Contacts, Facts, Evidence and provenance belong to one coherent record;
 - gap automation only selects implemented known capabilities, blocks unknown sources, and represents bounded retry/cache/rate-limit metadata;
 - controlled expansion is seed-driven and is not a crawler.
 
-## Run tests
+## Validation
 
 ```bash
 python -m unittest discover -s tests -v
+python scripts/run_end_to_end_acceptance.py
 ```
 
 Measured ER and fusion benchmarks:
