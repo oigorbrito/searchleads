@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "searchleads"
-version = "0.3.0"
-description = "B2B lead discovery and enrichment with evidence-preserving persistence and a first real source"
+version = "0.4.0"
+description = "B2B lead discovery and enrichment with evidence-preserving persistence, a first real source, and company normalization"
 requires-python = ">=3.11"
 dependencies = []
 
