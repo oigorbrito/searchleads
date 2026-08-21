@@ -15,6 +15,7 @@ Implemented:
 7. `CONTACT_DISCOVERY_V1`
 8. `PERSON_AND_ROLE_DISCOVERY_V1`
 9. `CONTACT_VALIDATION_V1`
+10. `REPEATABLE_WEB_DISCOVERY_V1`
 11. `LEAD_QUALIFICATION_V1` engine — implemented, but the real business gate remains blocked because `ICP_DEFINED = NO`.
 
 Additional measured capabilities implemented during the staged work:
@@ -22,7 +23,7 @@ Additional measured capabilities implemented during the staged work:
 - conservative field fusion / truth-discovery diagnostics;
 - controlled CNPJ-seed expansion.
 
-Still pending from the original handoff: Work Units 10 and 12–15.
+Still pending from the original handoff: Work Units 12–15.
 
 ## Core V1 policies
 
@@ -30,7 +31,8 @@ Still pending from the original handoff: Work Units 10 and 12–15.
 - raw evidence is preserved and facts carry provenance;
 - exact full registry/CNPJ equality may auto-match companies; fuzzy matching goes to review;
 - only unanimous effective field values auto-canonicalize; disagreement remains a `Conflict`;
-- company enrichment now exercises two independent sources for the same real company: BrasilAPI plus an official Serpro institutional page;
+- company enrichment exercises two independent sources for the same real company;
+- known-source discovery uses a versioned deterministic recipe and does not invoke an LLM per page;
 - contact discovery never implies validation;
 - contact `VALIDATED` means official-publication corroboration, not deliverability;
 - every `ProfessionalRole` requires explicit evidence linking Person, Company and title;
