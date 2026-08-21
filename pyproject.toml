@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "searchleads"
-version = "0.15.0"
-description = "Evidence-preserving lead pipeline with validated independent export"
+version = "0.16.0"
+description = "Evidence-preserving lead pipeline with bounded gap/action planning"
 requires-python = ">=3.11"
 dependencies = []
 
