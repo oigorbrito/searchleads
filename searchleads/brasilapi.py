@@ -163,8 +163,6 @@ class BrasilAPISource:
             )
         )
 
-        # Persist source and raw evidence before derived records. If a later
-        # extraction rule changes, the original response remains reprocessable.
         store.save_source(source)
         store.save_evidence(evidence)
         store.save_company(company)
@@ -187,8 +185,9 @@ class BrasilAPISource:
         cnpj: str,
         digest: str,
     ) -> list[CandidateFact]:
-        # Mapping is intentionally small. These are direct source-field
-        # extractions, not normalization rules or canonical-fact decisions.
+        # Direct source-field extraction only. `porte` is exposed as an
+        # explicit registry size classification; it is not interpreted as
+        # employee count, revenue, or a generic commercial size band.
         fields = (
             ("cnpj", "business_registry_id"),
             ("razao_social", "legal_name"),
@@ -196,6 +195,8 @@ class BrasilAPISource:
             ("descricao_situacao_cadastral", "registration_status"),
             ("cnae_fiscal", "primary_cnae_code"),
             ("cnae_fiscal_descricao", "primary_cnae_description"),
+            ("porte", "registry_size_class"),
+            ("codigo_porte", "registry_size_code"),
             ("municipio", "city"),
             ("uf", "state"),
         )
