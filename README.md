@@ -12,8 +12,9 @@ Implemented work units:
 6. `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
 7. `CONTACT_DISCOVERY_V1`
 8. `CONTACT_VALIDATION_V1`
+9. `PERSON_DISCOVERY_AND_COMPANY_LINK_V1`
 
-The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, deterministic company normalization, measured entity resolution, explicit field conflicts, professional contact discovery, and non-invasive official-publication contact validation.
+The project now has evidence-preserving company acquisition, normalization, measured entity resolution, explicit field conflicts, professional contact discovery/validation, and evidence-backed person/company role links.
 
 ## Run tests
 
@@ -21,24 +22,18 @@ The project now has a minimal domain model, evidence-preserving SQLite persisten
 python -m unittest discover -s tests -v
 ```
 
-## Entity resolution V1
+## Key V1 policies
 
-`COMPANY_ENTITY_RESOLUTION_V1` adds a transparent pairwise matcher, blocking keys, a curated 54-pair benchmark, threshold sweeps, and an operational triage policy. Exact registry/CNPJ equality may auto-match; fuzzy multi-signal evidence is routed to review rather than irreversible merge.
+- exact full registry/CNPJ equality may auto-match companies; fuzzy matching goes to review;
+- only unanimous effective field values auto-canonicalize; disagreement remains a `Conflict`;
+- contact discovery never implies validation;
+- contact `VALIDATED` means official-publication corroboration, not deliverability;
+- a `Person` is separate from a `Company`, and every `ProfessionalRole` requires provenance linking that person to the company and title;
+- no lead is qualified without explicit externally supplied criteria.
+
+Measured ER and fusion benchmarks remain reproducible with:
 
 ```bash
 python scripts/evaluate_entity_resolution.py
-```
-
-## Field fusion V1
-
-`COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1` canonicalizes only unanimous effective values. Disagreements remain open `Conflict` records; majority support is diagnostic only.
-
-```bash
 python scripts/evaluate_field_fusion.py
 ```
-
-## Contact discovery and validation V1
-
-`CONTACT_DISCOVERY_V1` preserves a company contact page as evidence and extracts professional e-mail, phone, contact-form, LinkedIn, and Instagram observations. Discovered contacts remain `DISCOVERED`.
-
-`CONTACT_VALIDATION_V1` may create a separate `VALIDATED` snapshot only when the same contact is corroborated by at least two official page observations (or a strictly later official snapshot of the same page). This validates official publication/association only. Mailbox deliverability and phone reachability remain explicitly unverified.
