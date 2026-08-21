@@ -9,10 +9,9 @@ Implemented work units:
 3. `LEADS_FIRST_REAL_SOURCE_V1`
 4. `COMPANY_NORMALIZATION_V1`
 5. `COMPANY_ENTITY_RESOLUTION_V1`
+6. `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
 
-The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, deterministic non-destructive company-field normalization, and measured company entity resolution.
-
-The source path is:
+The project now has a minimal domain model, evidence-preserving SQLite persistence, one deliberately narrow real-source adapter for the BrasilAPI CNPJ API, and deterministic non-destructive company-field normalization. The source path is:
 
 ```text
 known CNPJ
@@ -41,4 +40,14 @@ Reproduce the measured comparison with:
 
 ```bash
 python scripts/evaluate_entity_resolution.py
+```
+
+## Field fusion V1
+
+`COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1` fuses only homogeneous candidate facts for one company field. Equivalent normalized values may become one canonical fact; disagreements remain an explicit open `Conflict`. Naive majority is measured only as a diagnostic and is not allowed to silently choose truth.
+
+Reproduce the fusion benchmark with:
+
+```bash
+python scripts/evaluate_field_fusion.py
 ```
