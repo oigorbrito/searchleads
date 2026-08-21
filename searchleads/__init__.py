@@ -14,6 +14,7 @@ from .repeatable_discovery import DiscoveredCompanySeed, RECIPE_ID, RepeatableDi
 from .selective_review import ReviewItem, ReviewKind, ReviewPriority, build_review_queue, review_company_match, review_conflict, review_contact, review_person_match, review_qualification
 from .lead_export import LeadExportBundle, export_csv, export_json, to_export_dict
 from .gap_automation import ActionDisposition, ActionKind, AutomationAction, AutomationPlan, Gap, GapKind, GapRequirements, detect_gaps, plan_gap_actions
+from .gap_execution import ActionExecutionRecord, ActionExecutionStatus, GapCycleResult, GapRunResult, GapRuntimeState, execute_and_reassess_gap_cycle, execute_gap_plan, run_gap_automation_until_stable
 from .acceptance import AcceptanceResult, run_acceptance_fixture
 from .icp_decision_support import ICPDimension, ICPReadinessSnapshot, ReadinessLevel, DimensionAssessment, ICPDecisionSupportReport, acceptance_fixture_snapshot, qualification_bridge_snapshot, qualification_field_canonicalization_snapshot, registry_size_signal_snapshot, assess_icp_readiness
 from .domain import CandidateFact, CanonicalFact, Company, Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, DecisionClass, EntityRef, EntityType, Evidence, Lead, LeadStatus, Person, ProfessionalRole, Provenance, Source, SourceType
