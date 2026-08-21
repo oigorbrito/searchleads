@@ -1,4 +1,4 @@
-"""SearchLeads domain, persistence, and first-source foundation."""
+"""SearchLeads domain and persistence foundation."""
 
 from .domain import (
     CandidateFact,
@@ -21,13 +21,13 @@ from .domain import (
     Source,
     SourceType,
 )
-from .minhareceita import (
-    BASE_URL as MINHARECEITA_BASE_URL,
-    MinhaReceitaAcquisitionError,
-    MinhaReceitaError,
-    MinhaReceitaIngestionResult,
-    MinhaReceitaPayloadError,
-    MinhaReceitaSource,
+from .brasilapi import (
+    BASE_URL as BRASILAPI_BASE_URL,
+    BrasilAPIAcquisitionError,
+    BrasilAPIError,
+    BrasilAPIIngestionResult,
+    BrasilAPIPayloadError,
+    BrasilAPISource,
 )
 from .persistence import (
     IdentityCollisionError,
@@ -54,12 +54,12 @@ __all__ = [
     "Lead",
     "LeadStatus",
     "MissingReferenceError",
-    "MINHARECEITA_BASE_URL",
-    "MinhaReceitaAcquisitionError",
-    "MinhaReceitaError",
-    "MinhaReceitaIngestionResult",
-    "MinhaReceitaPayloadError",
-    "MinhaReceitaSource",
+    "BRASILAPI_BASE_URL",
+    "BrasilAPIAcquisitionError",
+    "BrasilAPIError",
+    "BrasilAPIIngestionResult",
+    "BrasilAPIPayloadError",
+    "BrasilAPISource",
     "PersistenceError",
     "Person",
     "ProfessionalRole",
