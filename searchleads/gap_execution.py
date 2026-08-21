@@ -192,6 +192,27 @@ def execute_gap_plan(
     return tuple(records)
 
 
+def _invalidate_cycle_success_cache(
+    plan: AutomationPlan,
+    records: tuple[ActionExecutionRecord, ...],
+    runtime: GapRuntimeState,
+) -> None:
+    """Undo cache success when post-enrichment lifecycle stages fail.
+
+    A handler result is only safely reusable after resolve and validate complete.
+    Otherwise a retry could turn into CACHE_HIT and permanently skip unfinished
+    lifecycle work.
+    """
+    succeeded_action_ids = {
+        record.action_id
+        for record in records
+        if record.status is ActionExecutionStatus.SUCCEEDED
+    }
+    for action in plan.actions:
+        if action.action_id in succeeded_action_ids:
+            runtime.successful_cache_keys.discard(action.cache_key)
+
+
 def execute_and_reassess_gap_cycle(
     plan_factory: PlanFactory,
     handlers: Mapping[ActionKind, ActionHandler],
@@ -204,7 +225,9 @@ def execute_and_reassess_gap_cycle(
 
     The lifecycle hooks run only after at least one enrichment/action succeeds.
     This prevents blocked, failed, cached, or merely scheduled work from being
-    mislabeled as a fresh resolution/validation pass.
+    mislabeled as a fresh resolution/validation pass. If resolve or validate
+    fails, cache entries created by this cycle are invalidated so a retry cannot
+    skip unfinished lifecycle work.
     """
     plan_before = plan_factory()
     now = clock()
@@ -214,8 +237,12 @@ def execute_and_reassess_gap_cycle(
     if lifecycle_hooks is not None and any(
         record.status is ActionExecutionStatus.SUCCEEDED for record in records
     ):
-        lifecycle_hooks.resolve()
-        lifecycle_hooks.validate()
+        try:
+            lifecycle_hooks.resolve()
+            lifecycle_hooks.validate()
+        except Exception:
+            _invalidate_cycle_success_cache(plan_before, records, runtime)
+            raise
 
     plan_after = plan_factory()
     return GapCycleResult(plan_before, records, plan_after)
