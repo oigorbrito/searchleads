@@ -6,10 +6,20 @@ Implemented work units:
 
 1. `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1`
 2. `LEADS_PERSISTENCE_AND_EVIDENCE_V1`
+3. `LEADS_FIRST_REAL_SOURCE_V1`
 
-The project now has a minimal domain model plus SQLite-backed persistence for companies, people, contact points, sources, raw evidence, candidate facts, canonical facts, and conflicts. Raw evidence is preserved independently from normalized/canonical facts and can be reopened for reprocessing.
+The project now has a minimal domain model, evidence-preserving SQLite persistence, and one deliberately narrow real-source adapter for the Minha Receita CNPJ API. The source path is:
 
-It still intentionally stops before real-source acquisition, normalization algorithms, entity-resolution scoring, contact validation, qualification scoring, exports, scheduling, or any universal framework.
+```text
+known CNPJ
+→ Minha Receita JSON
+→ raw Evidence
+→ Company shell
+→ source-derived CandidateFact records
+→ SQLite persistence
+```
+
+The adapter does not create canonical facts, contacts, people, leads, or qualification decisions. It also does not implement the experimental paginated search endpoint; broad discovery remains a later concern.
 
 ## Run tests
 
