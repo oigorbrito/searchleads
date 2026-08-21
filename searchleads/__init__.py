@@ -29,6 +29,14 @@ from .brasilapi import (
     BrasilAPIPayloadError,
     BrasilAPISource,
 )
+from .normalization import (
+    NormalizationError,
+    NormalizationResult,
+    NormalizationStatus,
+    normalize_candidate_fact,
+    normalize_candidate_facts,
+    normalize_persisted_candidate,
+)
 from .persistence import (
     IdentityCollisionError,
     MissingReferenceError,
@@ -54,6 +62,12 @@ __all__ = [
     "Lead",
     "LeadStatus",
     "MissingReferenceError",
+    "NormalizationError",
+    "NormalizationResult",
+    "NormalizationStatus",
+    "normalize_candidate_fact",
+    "normalize_candidate_facts",
+    "normalize_persisted_candidate",
     "BRASILAPI_BASE_URL",
     "BrasilAPIAcquisitionError",
     "BrasilAPIError",
