@@ -2,9 +2,11 @@
 
 This is the operational bridge between public lead discovery and outreach preparation/sending.
 
-## Inputs
+## Active input
 
-Use `DENTAL-CFO-VERIFICATION-BATCH-20.csv` as the working sheet.
+Use `DENTAL-CFO-VERIFICATION-BATCH-50.csv` as the current working sheet. The earlier 20-row file is retained as the first historical smoke batch.
+
+The active sheet has 50 public candidates, balanced at 10 per Brazilian macro-region.
 
 Public discovery columns are intentionally separate from official verification columns:
 
@@ -53,7 +55,7 @@ The CEOF resolution has also been challenged politically through PDL 177/2026, w
 
 ## Two readiness layers
 
-The evaluator now preserves useful lead work even while campaign-level compliance is under review.
+The evaluator preserves useful lead work even while campaign-level compliance is under review.
 
 ```text
 PREPARATION_READY
@@ -76,18 +78,18 @@ This is a conservative operational control, not a claim that CFO-SEC-285/286 are
 
 `CONFIRMED_FOR_OUTREACH` allows sending after an explicit current review. `PAUSED` blocks sending.
 
-## Evaluate the sheet
+## Evaluate the active sheet
 
 ```bash
 PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py \
-  DENTAL-CFO-VERIFICATION-BATCH-20.csv \
-  --output DENTAL-CFO-VERIFICATION-BATCH-20-EVALUATED.csv
+  DENTAL-CFO-VERIFICATION-BATCH-50.csv \
+  --output DENTAL-CFO-VERIFICATION-BATCH-50-EVALUATED.csv
 ```
 
-The untouched sheet currently produces:
+The untouched 50-row sheet currently produces:
 
 ```text
-ROWS=20 PREP_READY=0 SEND_READY=0 REVIEW=20 EXCLUDE=0
+ROWS=50 PREP_READY=0 SEND_READY=0 REVIEW=50 EXCLUDE=0
 ```
 
 After official CFO verification, rows may become `PREP_READY=READY` even while `SEND_READY` remains under campaign review.
@@ -104,6 +106,12 @@ outreach_readiness
 priority
 decision_reason
 ```
+
+## Official-source attempt
+
+`MVP-CFO-VERIFICATION-ATTEMPT-01.md` records the first indexed official-source attempt on the original 20 rows. It produced zero safe current active confirmations; no public CRO claim was promoted.
+
+The remaining verification boundary is therefore interactive/manual CFO/CRO review, not more internal qualification code.
 
 ## MVP invariants
 
