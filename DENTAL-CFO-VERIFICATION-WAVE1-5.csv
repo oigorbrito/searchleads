@@ -1,0 +1,6 @@
+wave_order,batch50_id,name,region,claimed_cro_state,claimed_cro_number,public_profile_type,official_historical_identity,historical_specialty_evidence,current_active_status,manual_check_goal
+1,batch50-046,Claudia Judachesci,South,PR,22606,BUCOMAX_HOF,YES,HARMONIZACAO_OROFACIAL,PENDING,"Confirm current active registration, current name, and current specialties"
+2,batch50-028,Gabriela Alves Pinto,Northeast,PE,9029,BUCOMAX,YES,NONE_INDEXED,PENDING,"Confirm current active registration and specialties"
+3,batch50-043,Katleenn Martins,Southeast,MG,67976,FACIAL_HOF,YES,NONE_INDEXED,PENDING,"Confirm current active registration and specialties"
+4,batch50-048,Tainara Rieger Milnikel,South,RS,25342,FACIAL_HOF,YES,NONE_INDEXED,PENDING,"Confirm current active registration and specialties"
+5,batch50-045,Jessika Nascimento,South,PR,25373,HOF,YES,ENDODONTIA_2019,PENDING,"Confirm current active registration and whether HOF/CEOF was added after historical Endodontia record"
