@@ -1,0 +1,21 @@
+person_id,name,claimed_cro_state,claimed_cro_number,professional_title,has_public_professional_contact,public_evidence_url,company_id,offer_track,cfo_registration_state,verified_cro_state,verified_cro_number,verified_specialties,cfo_source_url,campaign_legal_status
+batch20-001,Gabriella Hübner,AM,4055,Especialista em Harmonização Orofacial,true,https://www.doctoralia.com.br/gabriella-hubner/dentista/manaus,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-002,Glaucia Medeiros Montenegro de Cantai,AM,8474,Cirurgião-Dentista,true,https://www.clinicaebenezer.com/equipe,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-003,Rafaella Guimarães,PE,14123,Especialista em Harmonização Orofacial,true,https://www.doctoralia.com.br/rafaella-guimaraes/especialista-em-harmonizacao-orofacial-dentista-ortodontista/recife,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-004,José Romar,PE,8620,Cirurgião Bucomaxilofacial,true,https://clinicarealface.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-005,Gabriella Lisboa,GO,11836,Especialista em Harmonização Orofacial,true,https://www.studiodental.dental/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-006,Milena Campos,GO,13686,Especialista em Harmonização Orofacial,true,https://www.dramilenacampos.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-007,Aline Maia,MG,42023,Dentista com atuação em Harmonização Orofacial,true,https://www.doctoralia.com.br/aline-maia-4/dentista-especialista-em-harmonizacao-orofacial/belo-horizonte,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-008,Natalia Messina,MG,071836,Especialista em Harmonização Orofacial,true,https://nataliamessina.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-009,Gabriela Dalaroza,PR,39995,Dentista com atuação em Harmonização Orofacial,true,https://gabrieladalaroza.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-010,Leonardo Marchesini Javorsky,PR,32047,Especialista em Harmonização Orofacial,true,https://www.ident.com.br/dr.leonardojavorsky,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-011,Yasmim Silva Vieira,PA,8900,Dentista em especialização em Harmonização Orofacial,true,https://www.doctoralia.com.br/yasmim-silva-vieira/dentista/belem,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-012,Carolina Souto Lima,PA,4110,Especialista em Harmonização Orofacial,true,https://oralclinicabelem.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-013,Bruno Cantharino,BA,7532,Cirurgião Bucomaxilofacial,true,https://www.doctoralia.com.br/servicos-de-tratamento/avaliacao-harmonizacao-orofacial/salvador,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-014,Viviane Rabelo,BA,9428,Dentista com atuação em Harmonização Orofacial,true,https://www.doctoralia.com.br/servicos-de-tratamento/avaliacao-harmonizacao-orofacial/salvador,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-015,Júlia Hummel,GO,20637,Dentista com atuação em Harmonização Orofacial,true,https://juliahummel.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-016,Claudiana Ávila,DF,4991,Dentista com atuação em estética facial,true,https://clinicaavila.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-017,Izabella Magalhães,MG,64076,Dentista com atuação em Harmonização Orofacial,true,https://www.doctoralia.com.br/servicos-de-tratamento/avaliacao-harmonizacao-orofacial/belo-horizonte,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-018,Thaís Bottacin,SP,172812,Dentista com atuação em Harmonização Orofacial,true,https://www.drathaisbottacin.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-019,Aline Souza,PR,39848,Especialista em Harmonização Orofacial,true,https://lineve.com.br/,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
+batch20-020,Juliane Sprenger,PR,13152,Especialista em Harmonização Orofacial,true,https://www.doctoralia.com.br/juliane-sprenger/dentista-especialista-em-harmonizacao-orofacial/curitiba,,CEOF_SPECIALIZATION,PENDING,,,,,PENDING_REVIEW
