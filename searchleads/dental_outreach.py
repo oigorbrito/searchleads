@@ -3,9 +3,15 @@
 The gate intentionally accepts CFO verification as an explicit external/manual
 input. It does not scrape or infer official registry status.
 
-A separate campaign-level legal-status input is required before any profile can
-become READY. This keeps individual professional verification distinct from the
-current legal/regulatory ability to run the campaign.
+Two readiness layers are kept separate:
+
+- preparation_readiness: whether the professional record is sufficiently verified
+  and contactable to prepare an outreach candidate;
+- readiness: whether the campaign may actually emit/send outreach after an
+  explicit current legal/compliance gate.
+
+This prevents a changing campaign-level legal context from erasing useful lead
+qualification work while still preventing unreviewed sending.
 """
 from __future__ import annotations
 
@@ -60,6 +66,7 @@ class CFOProfessionalVerification:
 @dataclass(frozen=True, slots=True)
 class DentalOutreachDecision:
     person_id: str
+    preparation_readiness: OutreachReadiness
     readiness: OutreachReadiness
     priority: str
     reasons: tuple[str, ...]
@@ -79,12 +86,14 @@ def _official_ceof(specialties: tuple[str, ...]) -> bool:
 def _decision(
     qualification: DentalOfferQualificationResult,
     verification: CFOProfessionalVerification,
+    preparation_readiness: OutreachReadiness,
     readiness: OutreachReadiness,
     reason: str,
     campaign_legal_status: CampaignLegalStatus,
 ) -> DentalOutreachDecision:
     return DentalOutreachDecision(
         qualification.base.person_id,
+        preparation_readiness,
         readiness,
         qualification.priority.value,
         (reason,),
@@ -108,6 +117,7 @@ def evaluate_dental_outreach_readiness(
             qualification,
             verification,
             OutreachReadiness.EXCLUDE,
+            OutreachReadiness.EXCLUDE,
             "profile or offer track is not eligible",
             campaign_legal_status,
         )
@@ -116,6 +126,7 @@ def evaluate_dental_outreach_readiness(
         return _decision(
             qualification,
             verification,
+            OutreachReadiness.EXCLUDE,
             OutreachReadiness.EXCLUDE,
             "official CFO verification does not show an active registration",
             campaign_legal_status,
@@ -126,6 +137,7 @@ def evaluate_dental_outreach_readiness(
             qualification,
             verification,
             OutreachReadiness.REVIEW,
+            OutreachReadiness.REVIEW,
             "official CFO verification is still pending",
             campaign_legal_status,
         )
@@ -134,6 +146,7 @@ def evaluate_dental_outreach_readiness(
         return _decision(
             qualification,
             verification,
+            OutreachReadiness.EXCLUDE,
             OutreachReadiness.EXCLUDE,
             "official CFO specialties do not verify CEOF for the complementary exclusive-procedure track",
             campaign_legal_status,
@@ -144,6 +157,7 @@ def evaluate_dental_outreach_readiness(
             qualification,
             verification,
             OutreachReadiness.REVIEW,
+            OutreachReadiness.REVIEW,
             "no public professional contact channel is available",
             campaign_legal_status,
         )
@@ -153,16 +167,20 @@ def evaluate_dental_outreach_readiness(
             qualification,
             verification,
             OutreachReadiness.REVIEW,
+            OutreachReadiness.REVIEW,
             "offer-track regulatory eligibility is not yet confirmed",
             campaign_legal_status,
         )
+
+    preparation = OutreachReadiness.READY
 
     if campaign_legal_status is CampaignLegalStatus.PAUSED:
         return _decision(
             qualification,
             verification,
+            preparation,
             OutreachReadiness.EXCLUDE,
-            "campaign is paused by the current legal/compliance gate",
+            "professional record is preparation-ready, but campaign sending is paused by the legal/compliance gate",
             campaign_legal_status,
         )
 
@@ -170,14 +188,16 @@ def evaluate_dental_outreach_readiness(
         return _decision(
             qualification,
             verification,
+            preparation,
             OutreachReadiness.REVIEW,
-            "campaign-level legal status requires current review before outreach",
+            "professional record is preparation-ready; campaign send requires current legal/compliance confirmation",
             campaign_legal_status,
         )
 
     return _decision(
         qualification,
         verification,
+        preparation,
         OutreachReadiness.READY,
         "active CFO registration, eligible offer track, ICP fit, public professional contact and campaign legal confirmation are present",
         campaign_legal_status,
