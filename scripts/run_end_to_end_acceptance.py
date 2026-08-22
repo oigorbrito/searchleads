@@ -4,9 +4,10 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from searchleads.acceptance import run_acceptance_fixture
+from searchleads.dental_facial_surgery_icp import DEFAULT_DENTAL_FACIAL_SURGERY_ICP_V1
 
 def main():
-    r=run_acceptance_fixture()
+    r=run_acceptance_fixture(icp_policy_id=DEFAULT_DENTAL_FACIAL_SURGERY_ICP_V1.policy_id)
     for key,value in r.gates: print(f"{key}={value}")
     print(f"DISCOVERED_COMPANIES={r.discovered_companies}")
     print(f"EVIDENCE_COUNT={r.evidence_count}")
