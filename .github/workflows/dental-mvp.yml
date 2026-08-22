@@ -12,7 +12,7 @@ on:
       - "tests/test_dental_repeatable_discovery.py"
       - "tests/test_dental_outreach.py"
       - "scripts/evaluate_dental_verification_batch.py"
-      - "DENTAL-CFO-VERIFICATION-BATCH-20.csv"
+      - "DENTAL-CFO-VERIFICATION-BATCH-50.csv"
       - ".github/workflows/dental-mvp.yml"
   workflow_dispatch:
 
@@ -33,5 +33,5 @@ jobs:
       - name: Smoke manual CFO batch workflow
         run: >-
           PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py
-          DENTAL-CFO-VERIFICATION-BATCH-20.csv
+          DENTAL-CFO-VERIFICATION-BATCH-50.csv
           --output /tmp/dental-batch-evaluated.csv
