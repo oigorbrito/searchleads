@@ -51,7 +51,7 @@ class AcceptanceResult:
     export_json: str
     def gate(self, name: str) -> str: return dict(self.gates)[name]
 
-def run_acceptance_fixture() -> AcceptanceResult:
+def run_acceptance_fixture(*, icp_policy_id: str | None = None) -> AcceptanceResult:
     with SQLiteLeadStore() as store:
         discovery = SerproOfficeDirectorySource().ingest(store, DISCOVERY_URL, DISCOVERY_HTML, retrieved_at=NOW)
         seed = next(item for item in discovery.seeds if item.cnpj == CNPJ)
@@ -79,5 +79,6 @@ def run_acceptance_fixture() -> AcceptanceResult:
         sources = (discovery.source, first.source, second.source, contacts1.source, contacts2.source, people.source)
         evidence = (discovery.evidence, first.evidence, second.evidence, contacts1.evidence, contacts2.evidence, people.evidence)
         exported = export_json(LeadExportBundle(company=first.company,lead=None,people=people.people,roles=people.roles,contacts=tuple(validated),candidate_facts=all_candidates,canonical_facts=tuple(canonical),conflicts=tuple(conflicts),sources=sources,evidence=evidence,qualification=business_qualification))
-        gates = (("REAL_COMPANIES", "YES"),("MULTI_SOURCE", "YES"),("DEDUPLICATION", "PASS" if er.disposition is ResolutionDisposition.AUTO_MATCH else "FAIL"),("COMPANY_ER", "PASS" if er.disposition is ResolutionDisposition.AUTO_MATCH else "FAIL"),("PROVENANCE", "PASS"),("CONTACT_DISCOVERY", "PASS" if contacts1.contacts else "FAIL"),("CONTACT_VALIDATION", "PASS" if len(validated) >= 2 else "FAIL"),("PERSON_ROLE", "PASS" if people.people and people.roles else "FAIL"),("QUALIFICATION_ENGINE", "PASS" if technical_qualification.status is LeadStatus.QUALIFIED else "FAIL"),("ICP_DEFINED", "NO"),("REAL_QUALIFICATION", "NOT_EVALUABLE"),("EXPORT", "PASS" if exported else "FAIL"),("REPRODUCIBLE", "PASS"))
+        icp_defined = "YES" if (icp_policy_id or "").strip() else "NO"
+        gates = (("REAL_COMPANIES", "YES"),("MULTI_SOURCE", "YES"),("DEDUPLICATION", "PASS" if er.disposition is ResolutionDisposition.AUTO_MATCH else "FAIL"),("COMPANY_ER", "PASS" if er.disposition is ResolutionDisposition.AUTO_MATCH else "FAIL"),("PROVENANCE", "PASS"),("CONTACT_DISCOVERY", "PASS" if contacts1.contacts else "FAIL"),("CONTACT_VALIDATION", "PASS" if len(validated) >= 2 else "FAIL"),("PERSON_ROLE", "PASS" if people.people and people.roles else "FAIL"),("QUALIFICATION_ENGINE", "PASS" if technical_qualification.status is LeadStatus.QUALIFIED else "FAIL"),("ICP_DEFINED", icp_defined),("REAL_QUALIFICATION", "NOT_EVALUABLE"),("EXPORT", "PASS" if exported else "FAIL"),("REPRODUCIBLE", "PASS"))
         return AcceptanceResult(gates,len(discovery.seeds),len(evidence),len(validated),len(people.people),len(people.roles),len(conflicts),len(review),technical_qualification.status,business_qualification.status,hashlib.sha256(exported.encode("utf-8")).hexdigest(),exported)
