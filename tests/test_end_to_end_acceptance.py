@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json, unittest
 from searchleads.acceptance import run_acceptance_fixture
+from searchleads.dental_facial_surgery_icp import DEFAULT_DENTAL_FACIAL_SURGERY_ICP_V1
 from searchleads.domain import LeadStatus
 
 class EndToEndAcceptanceTests(unittest.TestCase):
@@ -10,6 +11,14 @@ class EndToEndAcceptanceTests(unittest.TestCase):
             self.assertIn(result.gate(gate),{"YES","PASS"},gate)
     def test_real_business_qualification_remains_blocked_by_missing_icp(self):
         result=run_acceptance_fixture(); self.assertEqual(result.gate("ICP_DEFINED"),"NO"); self.assertEqual(result.gate("REAL_QUALIFICATION"),"NOT_EVALUABLE"); self.assertEqual(result.business_qualification_status,LeadStatus.UNKNOWN)
+    def test_dental_icp_bridge_marks_policy_defined_without_faking_company_qualification(self):
+        legacy=run_acceptance_fixture()
+        result=run_acceptance_fixture(icp_policy_id=DEFAULT_DENTAL_FACIAL_SURGERY_ICP_V1.policy_id)
+        self.assertEqual(result.gate("ICP_DEFINED"),"YES")
+        self.assertEqual(result.gate("REAL_QUALIFICATION"),"NOT_EVALUABLE")
+        self.assertEqual(result.business_qualification_status,LeadStatus.UNKNOWN)
+        self.assertEqual(result.export_sha256,legacy.export_sha256)
+        self.assertEqual(result.export_json,legacy.export_json)
     def test_technical_policy_exercises_qualification_without_becoming_product_icp(self):
         result=run_acceptance_fixture(); self.assertEqual(result.technical_qualification_status,LeadStatus.QUALIFIED)
     def test_pipeline_produces_evidence_contacts_people_conflict_and_review(self):
