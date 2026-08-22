@@ -2,6 +2,10 @@
 
 The gate intentionally accepts CFO verification as an explicit external/manual
 input. It does not scrape or infer official registry status.
+
+A separate campaign-level legal-status input is required before any profile can
+become READY. This keeps individual professional verification distinct from the
+current legal/regulatory ability to run the campaign.
 """
 from __future__ import annotations
 
@@ -22,6 +26,12 @@ class CFORegistrationState(str, Enum):
     VERIFIED_ACTIVE = "VERIFIED_ACTIVE"
     INACTIVE = "INACTIVE"
     NOT_FOUND = "NOT_FOUND"
+
+
+class CampaignLegalStatus(str, Enum):
+    PENDING_REVIEW = "PENDING_REVIEW"
+    CONFIRMED_FOR_OUTREACH = "CONFIRMED_FOR_OUTREACH"
+    PAUSED = "PAUSED"
 
 
 class OutreachReadiness(str, Enum):
@@ -54,6 +64,7 @@ class DentalOutreachDecision:
     priority: str
     reasons: tuple[str, ...]
     cfo_evidence_id: str
+    campaign_legal_status: CampaignLegalStatus
 
 
 def _fold(value: object) -> str:
@@ -65,72 +76,109 @@ def _official_ceof(specialties: tuple[str, ...]) -> bool:
     return any("cirurgia estetica orofacial" in _fold(item) or "ceof" in _fold(item) for item in specialties)
 
 
+def _decision(
+    qualification: DentalOfferQualificationResult,
+    verification: CFOProfessionalVerification,
+    readiness: OutreachReadiness,
+    reason: str,
+    campaign_legal_status: CampaignLegalStatus,
+) -> DentalOutreachDecision:
+    return DentalOutreachDecision(
+        qualification.base.person_id,
+        readiness,
+        qualification.priority.value,
+        (reason,),
+        verification.evidence_id,
+        campaign_legal_status,
+    )
+
+
 def evaluate_dental_outreach_readiness(
     qualification: DentalOfferQualificationResult,
     verification: CFOProfessionalVerification,
+    *,
+    campaign_legal_status: CampaignLegalStatus = CampaignLegalStatus.PENDING_REVIEW,
 ) -> DentalOutreachDecision:
     base = qualification.base
     if verification.person_id != base.person_id:
         raise ValueError("CFO verification person_id must match qualification person_id")
 
     if qualification.status is LeadStatus.NOT_QUALIFIED or qualification.regulatory_eligibility is RegulatoryEligibility.INELIGIBLE:
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.EXCLUDE,
-            qualification.priority.value,
-            ("profile or offer track is not eligible",),
-            verification.evidence_id,
+            "profile or offer track is not eligible",
+            campaign_legal_status,
         )
 
     if verification.registration_state in {CFORegistrationState.INACTIVE, CFORegistrationState.NOT_FOUND}:
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.EXCLUDE,
-            qualification.priority.value,
-            ("official CFO verification does not show an active registration",),
-            verification.evidence_id,
+            "official CFO verification does not show an active registration",
+            campaign_legal_status,
         )
 
     if verification.registration_state is not CFORegistrationState.VERIFIED_ACTIVE:
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.REVIEW,
-            qualification.priority.value,
-            ("official CFO verification is still pending",),
-            verification.evidence_id,
+            "official CFO verification is still pending",
+            campaign_legal_status,
         )
 
     if qualification.offer_track is DentalOfferTrack.COMPLEMENTARY_EXCLUSIVE_CEOF and not _official_ceof(verification.specialty_names):
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.EXCLUDE,
-            qualification.priority.value,
-            ("official CFO specialties do not verify CEOF for the complementary exclusive-procedure track",),
-            verification.evidence_id,
+            "official CFO specialties do not verify CEOF for the complementary exclusive-procedure track",
+            campaign_legal_status,
         )
 
     if not base.has_professional_contact:
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.REVIEW,
-            qualification.priority.value,
-            ("no public professional contact channel is available",),
-            verification.evidence_id,
+            "no public professional contact channel is available",
+            campaign_legal_status,
         )
 
     if qualification.regulatory_eligibility is not RegulatoryEligibility.ELIGIBLE:
-        return DentalOutreachDecision(
-            base.person_id,
+        return _decision(
+            qualification,
+            verification,
             OutreachReadiness.REVIEW,
-            qualification.priority.value,
-            ("offer-track regulatory eligibility is not yet confirmed",),
-            verification.evidence_id,
+            "offer-track regulatory eligibility is not yet confirmed",
+            campaign_legal_status,
         )
 
-    return DentalOutreachDecision(
-        base.person_id,
+    if campaign_legal_status is CampaignLegalStatus.PAUSED:
+        return _decision(
+            qualification,
+            verification,
+            OutreachReadiness.EXCLUDE,
+            "campaign is paused by the current legal/compliance gate",
+            campaign_legal_status,
+        )
+
+    if campaign_legal_status is not CampaignLegalStatus.CONFIRMED_FOR_OUTREACH:
+        return _decision(
+            qualification,
+            verification,
+            OutreachReadiness.REVIEW,
+            "campaign-level legal status requires current review before outreach",
+            campaign_legal_status,
+        )
+
+    return _decision(
+        qualification,
+        verification,
         OutreachReadiness.READY,
-        qualification.priority.value,
-        ("active CFO registration, eligible offer track, ICP fit and public professional contact are present",),
-        verification.evidence_id,
+        "active CFO registration, eligible offer track, ICP fit, public professional contact and campaign legal confirmation are present",
+        campaign_legal_status,
     )
