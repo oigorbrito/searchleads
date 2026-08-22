@@ -19,10 +19,12 @@ PRIMARY_COMMERCIAL_ENTITY = PERSON
 DENTAL_PERSON_QUALIFICATION = IMPLEMENTED_MVP
 REPEATABLE_DENTAL_DISCOVERY = IMPLEMENTED_MVP
 OUTREACH_READINESS_GATE = IMPLEMENTED_MVP
+PREPARATION_VS_SEND_GATE = IMPLEMENTED_MVP
 REAL_DENTAL_DISCOVERY_BATCH = 20
 CFO_VERIFIED_ACTIVE = 0/20
+PREPARATION_READY = 0/20
 CAMPAIGN_LEGAL_STATUS = PENDING_REVIEW
-OUTREACH_READY = 0/20
+SEND_READY = 0/20
 
 MAIN_INTEGRATION = NOT_DONE
 ```
@@ -78,29 +80,47 @@ public web discovery
 → Person-centered FIT / INTENT
 → offer-track regulatory gate
 → public professional contact
+→ PREPARATION_READY / REVIEW / EXCLUDE
 → campaign legal/compliance gate
-→ READY / REVIEW / EXCLUDE
+→ SEND_READY / REVIEW / EXCLUDE
 ```
 
 Public discovery claims never become official credential facts automatically. Name-only matching never auto-merges people.
 
-## Current campaign legal hold
+## Regulatory context
 
-On 2026-08-19 the TRF1 8th Panel concluded judgment in case `1003948-83.2019.4.01.3400` concerning CFO Resolution 198/2019. Current reporting indicates a majority decision against the resolution, with effect tied to publication of the judgment and with further procedural developments/appeal still relevant.
+The current MVP distinguishes the 2026 CEOF framework from the separate HOF litigation.
 
-SearchLeads does not encode a categorical legal conclusion from this developing event. Instead, the outreach gate defaults to:
+CFO-SEC-285/2026 amended the prior facial-surgery prohibition framework. CFO-SEC-286/2026 recognizes Cirurgia Estética Orofacial (CEOF), lists CEOF procedures and establishes formation requirements. CFO Technical Note 001/2026 emphasizes specialty-specific competence boundaries rather than extension by analogy.
+
+Separately, on 2026-08-19 the TRF1 8th Panel concluded judgment in case `1003948-83.2019.4.01.3400`, concerning CFO Resolution 198/2019 (Harmonização Orofacial). SearchLeads does not treat that event by itself as a direct suspension finding for CFO-SEC-285/286.
+
+PDL 177/2026 seeks to suspend CFO acts 283-286 and was still pending on 2026-08-21. A pending challenge is not silently converted into a legal conclusion by the application.
+
+Because this is a changing, high-stakes context, actual campaign sending still defaults to:
 
 ```text
 CampaignLegalStatus.PENDING_REVIEW
 ```
 
-Discovery and official professional verification may continue. No candidate can become `READY` until a current legal/compliance review explicitly provides:
+This is an operational risk-control gate, not a claim that CEOF rules are invalid or suspended.
+
+## Two readiness layers
+
+The MVP preserves useful lead work independently of campaign send approval.
 
 ```text
-CampaignLegalStatus.CONFIRMED_FOR_OUTREACH
+PREPARATION_READY
+= active official CFO registration
++ eligible ICP / offer track
++ public professional contact
+
+SEND_READY
+= PREPARATION_READY
++ explicit current campaign legal/compliance confirmation
 ```
 
-`PAUSED` explicitly blocks the campaign.
+`PAUSED` explicitly blocks campaign sending. A record can therefore become preparation-ready while sending remains under review.
 
 ## Bounded real batch
 
@@ -116,7 +136,8 @@ FIT_MEDIUM = 1
 INTENT_MEDIUM = 4
 INTENT_UNKNOWN = 16
 CFO_VERIFIED_ACTIVE = 0/20
-OUTREACH_READY = 0/20
+PREPARATION_READY = 0/20
+SEND_READY = 0/20
 ```
 
 These are discovery-smoke metrics, not production precision/recall or conversion claims.
@@ -126,12 +147,18 @@ These are discovery-smoke metrics, not production precision/recall or conversion
 Fill only official CFO/CRO-supported fields in `DENTAL-CFO-VERIFICATION-BATCH-20.csv`, then run:
 
 ```bash
-python scripts/evaluate_dental_verification_batch.py \
+PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py \
   DENTAL-CFO-VERIFICATION-BATCH-20.csv \
   --output DENTAL-CFO-VERIFICATION-BATCH-20-EVALUATED.csv
 ```
 
-The evaluator keeps public claims separate from official verification and applies the existing qualification, offer-track and campaign-level gates.
+The evaluator keeps public claims separate from official verification and reports preparation readiness separately from send readiness.
+
+The untouched sheet should produce:
+
+```text
+ROWS=20 PREP_READY=0 SEND_READY=0 REVIEW=20 EXCLUDE=0
+```
 
 ## Validation state
 
@@ -202,5 +229,6 @@ python scripts/run_live_brasilapi_smoke.py
 - contact validation does not claim deliverability;
 - FIT and INTENT remain explainable and separate;
 - missing evidence becomes `UNKNOWN`, not an invented conclusion;
+- professional preparation readiness is separate from campaign send approval;
 - campaign legal/compliance state is separate from individual professional eligibility;
 - gap execution remains bounded and uses known capabilities only.
