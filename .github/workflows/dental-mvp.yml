@@ -32,6 +32,6 @@ jobs:
           -v
       - name: Smoke manual CFO batch workflow
         run: >-
-          python scripts/evaluate_dental_verification_batch.py
+          PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py
           DENTAL-CFO-VERIFICATION-BATCH-20.csv
           --output /tmp/dental-batch-evaluated.csv
