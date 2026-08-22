@@ -20,11 +20,12 @@ DENTAL_PERSON_QUALIFICATION = IMPLEMENTED_MVP
 REPEATABLE_DENTAL_DISCOVERY = IMPLEMENTED_MVP
 OUTREACH_READINESS_GATE = IMPLEMENTED_MVP
 PREPARATION_VS_SEND_GATE = IMPLEMENTED_MVP
-REAL_DENTAL_DISCOVERY_BATCH = 20
-CFO_VERIFIED_ACTIVE = 0/20
-PREPARATION_READY = 0/20
+REAL_DENTAL_DISCOVERY_BATCH = 50
+CANDIDATES_PER_MACRO_REGION = 10
+CFO_VERIFIED_ACTIVE = 0/50
+PREPARATION_READY = 0/50
 CAMPAIGN_LEGAL_STATUS = PENDING_REVIEW
-SEND_READY = 0/20
+SEND_READY = 0/50
 
 MAIN_INTEGRATION = NOT_DONE
 ```
@@ -33,9 +34,11 @@ See:
 
 - `ICP-DENTAL-FACIAL-SURGERY-V1.md` — business definition;
 - `MVP-DENTAL-COHORT-V1.md` — first 10-profile cross-region smoke;
-- `MVP-DENTAL-BATCH-20.md` — bounded 20-candidate real discovery batch;
-- `DENTAL-CFO-VERIFICATION-BATCH-20.csv` — manual official-verification worksheet;
+- `MVP-DENTAL-BATCH-20.md` — first bounded 20-candidate batch;
+- `MVP-DENTAL-BATCH-50.md` — active balanced 50-candidate batch;
+- `DENTAL-CFO-VERIFICATION-BATCH-50.csv` — active manual official-verification worksheet;
 - `DENTAL-CFO-VERIFICATION-WORKFLOW.md` — operational CFO review flow;
+- `MVP-CFO-VERIFICATION-ATTEMPT-01.md` — first indexed official-source verification attempt;
 - `HANDOFF-AUDIT-CLOSURE.md` — earlier strict technical audit.
 
 ## ICP V1
@@ -122,43 +125,40 @@ SEND_READY
 
 `PAUSED` explicitly blocks campaign sending. A record can therefore become preparation-ready while sending remains under review.
 
-## Bounded real batch
+## Active real batch
 
-Current dental discovery smoke:
+The active dental discovery batch is balanced across Brazil:
 
 ```text
-CANDIDATES = 20
+CANDIDATES = 50
 MACRO_REGIONS = 5/5
-PUBLIC_CRO_CLAIM = 20/20
-PUBLIC_PROFESSIONAL_OR_BOOKING_CHANNEL = 20/20
-FIT_HIGH = 19
-FIT_MEDIUM = 1
-INTENT_MEDIUM = 4
-INTENT_UNKNOWN = 16
-CFO_VERIFIED_ACTIVE = 0/20
-PREPARATION_READY = 0/20
-SEND_READY = 0/20
+CANDIDATES_PER_MACRO_REGION = 10
+PUBLIC_CRO_CLAIM = 50/50
+PUBLIC_PROFESSIONAL_OR_BOOKING_CHANNEL = 50/50
+CFO_VERIFIED_ACTIVE = 0/50
+PREPARATION_READY = 0/50
+SEND_READY = 0/50
 ```
 
 These are discovery-smoke metrics, not production precision/recall or conversion claims.
 
+The latest CI smoke processed the entire active worksheet safely:
+
+```text
+ROWS=50 PREP_READY=0 SEND_READY=0 REVIEW=50 EXCLUDE=0
+```
+
 ## MVP verification workflow
 
-Fill only official CFO/CRO-supported fields in `DENTAL-CFO-VERIFICATION-BATCH-20.csv`, then run:
+Fill only official CFO/CRO-supported fields in `DENTAL-CFO-VERIFICATION-BATCH-50.csv`, then run:
 
 ```bash
 PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py \
-  DENTAL-CFO-VERIFICATION-BATCH-20.csv \
-  --output DENTAL-CFO-VERIFICATION-BATCH-20-EVALUATED.csv
+  DENTAL-CFO-VERIFICATION-BATCH-50.csv \
+  --output DENTAL-CFO-VERIFICATION-BATCH-50-EVALUATED.csv
 ```
 
 The evaluator keeps public claims separate from official verification and reports preparation readiness separately from send readiness.
-
-The untouched sheet should produce:
-
-```text
-ROWS=20 PREP_READY=0 SEND_READY=0 REVIEW=20 EXCLUDE=0
-```
 
 ## Validation state
 
@@ -188,7 +188,7 @@ For MVP speed, the dental vertical intentionally uses a focused suite protecting
 DENTAL_FOCUSED_TESTS = 13
 ```
 
-The CI also smoke-runs the manual 20-row CFO verification workflow. Exhaustive edge-case expansion is deferred until real lead flow.
+The CI also smoke-runs the active 50-row CFO verification worksheet. Exhaustive edge-case expansion is deferred until real lead flow.
 
 ## Commands
 
