@@ -21,7 +21,7 @@ def sig(sid, kind, value):
 
 
 class DentalOutreachMVPTests(unittest.TestCase):
-    def test_unknown_intent_is_eligible_but_current_legal_review_blocks_ready_by_default(self):
+    def test_unknown_intent_can_be_prep_ready_while_campaign_send_is_under_review(self):
         qualification = qualify_dental_person_for_offer(
             P,
             (
@@ -45,7 +45,9 @@ class DentalOutreachMVPTests(unittest.TestCase):
             verification,
             campaign_legal_status=CampaignLegalStatus.CONFIRMED_FOR_OUTREACH,
         )
+        self.assertEqual(pending.preparation_readiness, OutreachReadiness.READY)
         self.assertEqual(pending.readiness, OutreachReadiness.REVIEW)
+        self.assertEqual(confirmed.preparation_readiness, OutreachReadiness.READY)
         self.assertEqual(confirmed.readiness, OutreachReadiness.READY)
         self.assertEqual(qualification.base.intent.value, "UNKNOWN")
 
@@ -72,6 +74,7 @@ class DentalOutreachMVPTests(unittest.TestCase):
             verification,
             campaign_legal_status=CampaignLegalStatus.CONFIRMED_FOR_OUTREACH,
         )
+        self.assertEqual(decision.preparation_readiness, OutreachReadiness.EXCLUDE)
         self.assertEqual(decision.readiness, OutreachReadiness.EXCLUDE)
 
 
