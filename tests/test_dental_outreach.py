@@ -6,6 +6,7 @@ from searchleads.dental_facial_surgery_icp import DentalICPSignal, DentalSignalK
 from searchleads.dental_outreach import (
     CFOProfessionalVerification,
     CFORegistrationState,
+    CampaignLegalStatus,
     OutreachReadiness,
     evaluate_dental_outreach_readiness,
 )
@@ -20,7 +21,7 @@ def sig(sid, kind, value):
 
 
 class DentalOutreachMVPTests(unittest.TestCase):
-    def test_unknown_intent_does_not_block_specialization_outreach_when_core_gates_pass(self):
+    def test_unknown_intent_is_eligible_but_current_legal_review_blocks_ready_by_default(self):
         qualification = qualify_dental_person_for_offer(
             P,
             (
@@ -38,8 +39,14 @@ class DentalOutreachMVPTests(unittest.TestCase):
             (),
             "ev-cfo",
         )
-        decision = evaluate_dental_outreach_readiness(qualification, verification)
-        self.assertEqual(decision.readiness, OutreachReadiness.READY)
+        pending = evaluate_dental_outreach_readiness(qualification, verification)
+        confirmed = evaluate_dental_outreach_readiness(
+            qualification,
+            verification,
+            campaign_legal_status=CampaignLegalStatus.CONFIRMED_FOR_OUTREACH,
+        )
+        self.assertEqual(pending.readiness, OutreachReadiness.REVIEW)
+        self.assertEqual(confirmed.readiness, OutreachReadiness.READY)
         self.assertEqual(qualification.base.intent.value, "UNKNOWN")
 
     def test_complementary_exclusive_track_requires_ceof_in_official_specialties(self):
@@ -60,7 +67,11 @@ class DentalOutreachMVPTests(unittest.TestCase):
             ("Harmonização Orofacial",),
             "ev-cfo",
         )
-        decision = evaluate_dental_outreach_readiness(qualification, verification)
+        decision = evaluate_dental_outreach_readiness(
+            qualification,
+            verification,
+            campaign_legal_status=CampaignLegalStatus.CONFIRMED_FOR_OUTREACH,
+        )
         self.assertEqual(decision.readiness, OutreachReadiness.EXCLUDE)
 
 
