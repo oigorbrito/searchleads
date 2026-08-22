@@ -2,8 +2,13 @@
 """Evaluate a manually CFO-reviewed dental batch without scraping the CFO portal.
 
 Input rows keep public discovery claims separate from official verification fields.
+The evaluator reports two independent stages:
+
+- preparation_readiness: professional record can be prepared for outreach;
+- outreach_readiness: campaign send gate also passed.
+
 The default campaign legal status is PENDING_REVIEW, so the script cannot emit
-READY unless an explicit CONFIRMED_FOR_OUTREACH value is supplied.
+send READY unless an explicit CONFIRMED_FOR_OUTREACH value is supplied.
 """
 from __future__ import annotations
 
@@ -109,6 +114,7 @@ def evaluate_row(row: dict[str, str]) -> dict[str, str]:
         "intent": qualification.base.intent.value,
         "qualification_status": qualification.status.value,
         "regulatory_eligibility": qualification.regulatory_eligibility.value,
+        "preparation_readiness": decision.preparation_readiness.value,
         "outreach_readiness": decision.readiness.value,
         "priority": decision.priority,
         "decision_reason": " | ".join(decision.reasons),
@@ -126,10 +132,14 @@ def main() -> None:
         reader = csv.DictReader(handle)
         rows = [evaluate_row(dict(row)) for row in reader]
 
+    prep_ready = sum(row["preparation_readiness"] == "READY" for row in rows)
     ready = sum(row["outreach_readiness"] == "READY" for row in rows)
     review = sum(row["outreach_readiness"] == "REVIEW" for row in rows)
     exclude = sum(row["outreach_readiness"] == "EXCLUDE" for row in rows)
-    print(f"ROWS={len(rows)} READY={ready} REVIEW={review} EXCLUDE={exclude}")
+    print(
+        f"ROWS={len(rows)} PREP_READY={prep_ready} "
+        f"SEND_READY={ready} REVIEW={review} EXCLUDE={exclude}"
+    )
 
     if args.output:
         fieldnames = list(rows[0]) if rows else []
