@@ -20,6 +20,7 @@ Purpose: reduce the first current CFO review from 50 candidates to five high-con
 WAVE_SIZE = 5
 OFFICIAL_HISTORICAL_IDENTITY_MATCH = 5/5
 OFFICIAL_CURRENT_SPECIALTY_LIST = 1/5
+INDEXED_ADVERSE_STATUS_ACT_FOUND = 0/5
 EXPLICIT_CURRENT_ACTIVE_STATUS = 0/5
 PREPARATION_READY = 0/5
 ```
@@ -77,6 +78,32 @@ https://www.cropr.org.br/uploads/transparencia/ata_plenaria_807.pdf
 
 This does not disprove a later HOF/CEOF qualification; it means current specialty must be checked explicitly.
 
+## Current CRO-PR HOF cross-check
+
+The current CRO-PR page `Especialistas em Harmonização Orofacial` was also cross-checked against all six Paraná registrations in the active batch. Result:
+
+```text
+PR_CANDIDATES_CHECKED = 6
+CURRENT_OFFICIAL_HOF_ROSTER_MATCH = 1
+NOT_CORROBORATED_BY_CURRENT_HOF_ROSTER = 5
+```
+
+Only CRO-PR 22606 / Claudia Salete Judachesci was found in that current list. The five non-matches are recorded as **not corroborated**, not as a negative specialty determination; the list may not by itself establish every current individual status or later credential path.
+
+Detailed results are in `DENTAL-CROPR-CURRENT-HOF-CROSSCHECK.csv`.
+
+## Adverse-status search
+
+A separate indexed official-source search looked for explicit acts of cancellation, transfer or baixa for the five Wave 1 registrations. No such indexed act was found.
+
+This is only a prioritization signal:
+
+```text
+NO_INDEXED_ADVERSE_ACT_FOUND != VERIFIED_ACTIVE
+```
+
+Absence from indexed adverse-status material is never promoted to current active registration.
+
 ## Boundary confirmed
 
 The CFO professional search page exposes CRO/UF, category, registration number, specialty, habilitation and name fields and reports update date 2026-08-21, but indexed web access does not expose individual result pages or a reusable documented result endpoint.
@@ -89,4 +116,4 @@ indexed official evidence
 → CURRENT ACTIVE STATUS still manual in CFO portal
 ```
 
-No public profile or historical council document is promoted to `VERIFIED_ACTIVE` without current status evidence.
+No public profile, historical council document, current specialty roster, or absence of an adverse act is promoted to `VERIFIED_ACTIVE` without current status evidence.
