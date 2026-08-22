@@ -7,8 +7,10 @@ on:
       - "searchleads/dental_regulatory.py"
       - "searchleads/dental_person_lead.py"
       - "searchleads/dental_repeatable_discovery.py"
+      - "searchleads/dental_outreach.py"
       - "tests/test_dental_facial_surgery_icp.py"
       - "tests/test_dental_repeatable_discovery.py"
+      - "tests/test_dental_outreach.py"
       - ".github/workflows/dental-mvp.yml"
   workflow_dispatch:
 
@@ -20,4 +22,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m unittest tests.test_dental_facial_surgery_icp tests.test_dental_repeatable_discovery -v
+      - run: >-
+          python -m unittest
+          tests.test_dental_facial_surgery_icp
+          tests.test_dental_repeatable_discovery
+          tests.test_dental_outreach
+          -v
