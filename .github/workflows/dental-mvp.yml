@@ -3,35 +3,29 @@ name: dental-mvp
 on:
   pull_request:
     paths:
-      - "searchleads/dental_facial_surgery_icp.py"
-      - "searchleads/dental_regulatory.py"
-      - "searchleads/dental_person_lead.py"
-      - "searchleads/dental_repeatable_discovery.py"
-      - "searchleads/dental_outreach.py"
-      - "tests/test_dental_facial_surgery_icp.py"
-      - "tests/test_dental_repeatable_discovery.py"
-      - "tests/test_dental_outreach.py"
-      - "scripts/evaluate_dental_verification_batch.py"
+      - "searchleads/**"
+      - "tests/**"
+      - "scripts/**"
       - "DENTAL-CFO-VERIFICATION-BATCH-50.csv"
       - ".github/workflows/dental-mvp.yml"
   workflow_dispatch:
 
 jobs:
-  focused-tests:
+  full-regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: >-
-          python -m unittest
-          tests.test_dental_facial_surgery_icp
-          tests.test_dental_repeatable_discovery
-          tests.test_dental_outreach
-          -v
+      - name: Run full unittest suite
+        run: python -m unittest discover -s tests -v
+      - name: Run deterministic end-to-end acceptance
+        run: PYTHONPATH=. python scripts/run_end_to_end_acceptance.py
       - name: Smoke manual CFO batch workflow
         run: >-
           PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py
           DENTAL-CFO-VERIFICATION-BATCH-50.csv
           --output /tmp/dental-batch-evaluated.csv
+      - name: Run live BrasilAPI smoke
+        run: PYTHONPATH=. python scripts/run_live_brasilapi_smoke.py
