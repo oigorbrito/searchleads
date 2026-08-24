@@ -4,14 +4,14 @@ Evidence-preserving lead discovery, enrichment, entity-resolution and qualificat
 
 ## Current status
 
-The generic technical pipeline is implemented as a stacked draft-PR series. The first real commercial ICP is defined for dental facial-surgery education.
+The generic technical pipeline is implemented as a stacked draft-PR series. The first real commercial ICP is defined for dental facial-surgery education, and an external-API provider layer is being added without changing the evidence/provenance model.
 
 ```text
 ARCHITECTURAL_DIRECTION = ALIGNED
 TECHNICAL_END_TO_END_ACCEPTANCE = PASS
 PERSON_ENTITY_RESOLUTION = IMPLEMENTED_V1
 WU14_EXECUTION_REASSESSMENT = IMPLEMENTED_V1
-WU3_LIVE_HTTP = PENDING_EXTERNAL_SMOKE
+WU3_LIVE_HTTP = PASS
 
 ICP_DEFINED = YES
 ICP_ID = dental-facial-surgery-education-br-v1
@@ -21,27 +21,67 @@ REPEATABLE_DENTAL_DISCOVERY = IMPLEMENTED_MVP
 OUTREACH_READINESS_GATE = IMPLEMENTED_MVP
 PREPARATION_VS_SEND_GATE = IMPLEMENTED_MVP
 REAL_DENTAL_DISCOVERY_BATCH = 50
-CANDIDATES_PER_MACRO_REGION = 10
 CFO_VERIFIED_ACTIVE = 0/50
 PREPARATION_READY = 0/50
 CAMPAIGN_LEGAL_STATUS = PENDING_REVIEW
 SEND_READY = 0/50
 
+EXTERNAL_API_PROVIDER_LAYER = IMPLEMENTED_V1_ON_PR37
+APIFY_GOOGLE_SEARCH_PROVIDER = IMPLEMENTED_V1_ON_PR37
 MAIN_INTEGRATION = NOT_DONE
 ```
 
-See:
+## Validation
 
-- `ICP-DENTAL-FACIAL-SURGERY-V1.md` — business definition;
-- `MVP-DENTAL-COHORT-V1.md` — first 10-profile cross-region smoke;
-- `MVP-DENTAL-BATCH-20.md` — first bounded 20-candidate batch;
-- `MVP-DENTAL-BATCH-50.md` — active balanced 50-candidate batch;
-- `DENTAL-CFO-VERIFICATION-BATCH-50.csv` — active manual official-verification worksheet;
-- `DENTAL-CFO-VERIFICATION-WORKFLOW.md` — operational CFO review flow;
-- `MVP-CFO-VERIFICATION-ATTEMPT-01.md` — first indexed official-source verification attempt;
-- `HANDOFF-AUDIT-CLOSURE.md` — earlier strict technical audit.
+The current stacked branch before the external-API extension completed a literal full regression in GitHub Actions:
 
-## ICP V1
+```text
+FULL_CURRENT_TEST_COUNT = 234 / 234 PASS
+DETERMINISTIC_E2E = PASS
+E2E_EXPORT_SHA256 = 81af24599d7b0bc6ca012a397c243b4049d2e70f0e31a50e0c5eb1d747d0139d
+DENTAL_BATCH_50_SMOKE = PASS
+WU3_LIVE_HTTP = PASS
+```
+
+The live BrasilAPI smoke ingested SERPRO CNPJ `33683111000280` over HTTP and persisted 10 candidate facts.
+
+See `FULL-REGRESSION-REPORT-2026-08-22.md` and `WORK-UNIT-03-REPORT.md`.
+
+The external-API extension must pass the same full-regression workflow before it is considered validated.
+
+## Core architecture
+
+```text
+DISCOVERY
+→ ACQUISITION
+→ EVIDENCE
+→ STRUCTURED EXTRACTION
+→ NORMALIZATION
+→ ENTITY RESOLUTION
+→ ENRICHMENT / FUSION
+→ QUALIFICATION
+→ EXPORT
+```
+
+Cross-cutting requirements remain:
+
+```text
+PROVENANCE / VALIDATION / CONFIDENCE / REVIEW
+```
+
+Core rules:
+
+- `Company != Lead`;
+- `Found != Valid`;
+- `Name Match != Entity Match`;
+- `Contact Found != Contact Valid`;
+- `Value without evidence != verified fact`;
+- provider/API output is evidence from that provider, not automatic truth;
+- public CRO/title claims do not become official credentials without CFO/CRO verification;
+- FIT and INTENT remain separate;
+- missing evidence becomes `UNKNOWN`.
+
+## Dental ICP V1
 
 Target market:
 
@@ -54,80 +94,83 @@ Target market:
 
 Commercial qualification is Person-centered. Clinic/company remains context and evidence source.
 
-### FIT vs INTENT
-
 ```text
 FIT = HIGH / MEDIUM / LOW / UNKNOWN
 INTENT = HIGH / MEDIUM / LOW / UNKNOWN
 ```
 
-SearchLeads never converts absence of learning-intent evidence into `LOW` intent. Missing intent stays `UNKNOWN`.
-
-Priority:
-
-```text
-P1 = HIGH FIT + HIGH INTENT
-P2 = strong fit with weaker/unknown intent, or medium fit with high intent
-P3 = eligible lower-priority combinations
-REVIEW = insufficient evidence for an active filter
-EXCLUDE = explicit filter mismatch
-```
+Absence of learning-intent evidence remains `UNKNOWN`.
 
 ## Dental MVP flow
 
 ```text
-public web discovery
-→ candidate with explicit public evidence
+public discovery
+→ raw evidence
+→ candidate
 → conservative exact CRO / exact URL dedupe
 → CFO/CRO official verification
 → Person-centered FIT / INTENT
 → offer-track regulatory gate
-→ public professional contact
+→ professional contact
 → PREPARATION_READY / REVIEW / EXCLUDE
 → campaign legal/compliance gate
 → SEND_READY / REVIEW / EXCLUDE
 ```
 
-Public discovery claims never become official credential facts automatically. Name-only matching never auto-merges people.
+## External API provider layer
 
-## Regulatory context
-
-The current MVP distinguishes the 2026 CEOF framework from the separate HOF litigation.
-
-CFO-SEC-285/2026 amended the prior facial-surgery prohibition framework. CFO-SEC-286/2026 recognizes Cirurgia Estética Orofacial (CEOF), lists CEOF procedures and establishes formation requirements. CFO Technical Note 001/2026 emphasizes specialty-specific competence boundaries rather than extension by analogy.
-
-Separately, on 2026-08-19 the TRF1 8th Panel concluded judgment in case `1003948-83.2019.4.01.3400`, concerning CFO Resolution 198/2019 (Harmonização Orofacial). SearchLeads does not treat that event by itself as a direct suspension finding for CFO-SEC-285/286.
-
-PDL 177/2026 seeks to suspend CFO acts 283-286 and was still pending on 2026-08-21. A pending challenge is not silently converted into a legal conclusion by the application.
-
-Because this is a changing, high-stakes context, actual campaign sending still defaults to:
+External APIs plug into acquisition/discovery without replacing downstream scientific controls:
 
 ```text
-CampaignLegalStatus.PENDING_REVIEW
+explicit ICP / deterministic request
+→ external API adapter
+→ RAW PROVIDER RESPONSE AS EVIDENCE
+→ provider-neutral structured observation
+→ existing normalization / dedupe / verification / qualification
 ```
 
-This is an operational risk-control gate, not a claim that CEOF rules are invalid or suspended.
+### Apify
 
-## Two readiness layers
-
-The MVP preserves useful lead work independently of campaign send approval.
+The first provider implementation uses Apify's REST Actor API with the maintained Google Search Results Scraper by default.
 
 ```text
-PREPARATION_READY
-= active official CFO registration
-+ eligible ICP / offer track
-+ public professional contact
-
-SEND_READY
-= PREPARATION_READY
-+ explicit current campaign legal/compliance confirmation
+Actor = apify/google-search-scraper
+Credential = APIFY_API_TOKEN environment variable
+Token storage in Git = NO
+Raw dataset evidence persistence = YES
+CFO verification bypass = NO
+Intent inference = NO
 ```
 
-`PAUSED` explicitly blocks campaign sending. A record can therefore become preparation-ready while sending remains under review.
+Dry query-plan smoke:
 
-## Active real batch
+```bash
+PYTHONPATH=. python scripts/run_apify_dental_discovery.py --dry-run --max-queries 4
+```
 
-The active dental discovery batch is balanced across Brazil:
+Live bounded run:
+
+```bash
+APIFY_API_TOKEN=... PYTHONPATH=. python scripts/run_apify_dental_discovery.py \
+  --max-queries 4 \
+  --db searchleads-apify.db \
+  --output apify-dental-candidates.json
+```
+
+See `EXTERNAL-API-PROVIDERS-V1.md`.
+
+### Researched provider shortlist
+
+Recommended order after Apify:
+
+1. Brave Search API — fallback structured web discovery;
+2. Google Places API — clinic/location/phone/website context;
+3. Hunter API — email discovery and deliverability validation;
+4. SerpAPI — optional Google-SERP redundancy.
+
+Each provider is added only when it closes a concrete gap. No provider is allowed to silently become an authoritative credential source.
+
+## Active dental batch
 
 ```text
 CANDIDATES = 50
@@ -140,95 +183,43 @@ PREPARATION_READY = 0/50
 SEND_READY = 0/50
 ```
 
-These are discovery-smoke metrics, not production precision/recall or conversion claims.
-
-The latest CI smoke processed the entire active worksheet safely:
+The evaluator safely keeps all unverified rows under review:
 
 ```text
 ROWS=50 PREP_READY=0 SEND_READY=0 REVIEW=50 EXCLUDE=0
 ```
 
-## MVP verification workflow
+## Regulatory context
 
-Fill only official CFO/CRO-supported fields in `DENTAL-CFO-VERIFICATION-BATCH-50.csv`, then run:
+The application keeps professional/offer eligibility separate from campaign-send compliance. CFO-SEC-285/286 (2026 CEOF framework), the separate HOF litigation, and PDL 177/2026 are not collapsed into one automatic legal conclusion.
 
-```bash
-PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py \
-  DENTAL-CFO-VERIFICATION-BATCH-50.csv \
-  --output DENTAL-CFO-VERIFICATION-BATCH-50-EVALUATED.csv
-```
-
-The evaluator keeps public claims separate from official verification and reports preparation readiness separately from send readiness.
-
-## Validation state
-
-Historical whole-repository technical baseline:
+Actual sending defaults to:
 
 ```text
-162 / 162 PASS
+CampaignLegalStatus.PENDING_REVIEW
 ```
-
-Strict post-baseline audit validation:
-
-```text
-POST_BASELINE_ISOLATED_CONTRACT_TESTS = 53 / 53 PASS
-CHANGE_IMPACT_REGRESSION = 33 / 33 PASS
-UNIQUE_POST_BASELINE_TESTS_EXERCISED = 86 / 86 PASS
-```
-
-The affected-module E2E replay reproduced the accepted export SHA-256:
-
-```text
-81af24599d7b0bc6ca012a397c243b4049d2e70f0e31a50e0c5eb1d747d0139d
-```
-
-For MVP speed, the dental vertical intentionally uses a focused suite protecting only high-cost mistakes:
-
-```text
-DENTAL_FOCUSED_TESTS = 13
-```
-
-The CI also smoke-runs the active 50-row CFO verification worksheet. Exhaustive edge-case expansion is deferred until real lead flow.
 
 ## Commands
 
-Focused dental MVP:
-
-```bash
-python -m unittest \
-  tests.test_dental_facial_surgery_icp \
-  tests.test_dental_repeatable_discovery \
-  tests.test_dental_outreach -v
-```
-
-General deterministic validation:
+Full regression:
 
 ```bash
 python -m unittest discover -s tests -v
-python scripts/run_end_to_end_acceptance.py
+PYTHONPATH=. python scripts/run_end_to_end_acceptance.py
+PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py \
+  DENTAL-CFO-VERIFICATION-BATCH-50.csv \
+  --output /tmp/dental-batch-evaluated.csv
+PYTHONPATH=. python scripts/run_live_brasilapi_smoke.py
 ```
 
-Literal WU3 live smoke from an environment with outbound DNS/HTTPS:
+External API provider tests are included in normal unittest discovery.
 
-```bash
-python scripts/run_live_brasilapi_smoke.py
-```
+## Key documents
 
-## Core policies
-
-- `Company != Lead`;
-- the dental campaign's commercial target is `Person`;
-- `Found != Valid`;
-- `Name Match != Entity Match`;
-- `Contact Found != Contact Valid`;
-- evidence/provenance is preserved;
-- same-name people do not auto-match;
-- fuzzy company/person identity is not silently merged;
-- public CRO/title claims do not become official facts without CFO/CRO verification;
-- disagreement remains an explicit conflict;
-- contact validation does not claim deliverability;
-- FIT and INTENT remain explainable and separate;
-- missing evidence becomes `UNKNOWN`, not an invented conclusion;
-- professional preparation readiness is separate from campaign send approval;
-- campaign legal/compliance state is separate from individual professional eligibility;
-- gap execution remains bounded and uses known capabilities only.
+- `ICP-DENTAL-FACIAL-SURGERY-V1.md`
+- `EXTERNAL-API-PROVIDERS-V1.md`
+- `MVP-DENTAL-BATCH-50.md`
+- `DENTAL-CFO-VERIFICATION-BATCH-50.csv`
+- `DENTAL-CFO-VERIFICATION-WORKFLOW.md`
+- `FULL-REGRESSION-REPORT-2026-08-22.md`
+- `HANDOFF-AUDIT-CLOSURE.md`
