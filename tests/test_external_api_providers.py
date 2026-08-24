@@ -153,6 +153,23 @@ class ExternalAPIProviderTests(unittest.TestCase):
             )
             self.assertTrue(store.get_evidence(candidate.evidence_ids[0]))
 
+    def test_missing_organic_results_is_valid_empty_page(self):
+        query = WebSearchQuery(query_id="q1", query="dentista CRO Brasil")
+        provider = ApifyGoogleSearchProvider(
+            "token",
+            client=ApifyActorClient(transport=FakeApifyTransport([
+                {"searchQuery": {"term": query.query}},
+            ])),
+        )
+        with SQLiteLeadStore() as store:
+            batch = provider.search(
+                store,
+                (query,),
+                retrieved_at=datetime(2026, 8, 24, tzinfo=timezone.utc),
+            )
+            self.assertEqual(batch.hits, ())
+            self.assertEqual(len(batch.evidence), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
