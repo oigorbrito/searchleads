@@ -12,7 +12,7 @@ on:
 
 jobs:
   full-regression:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,5 +27,10 @@ jobs:
           PYTHONPATH=. python scripts/evaluate_dental_verification_batch.py
           DENTAL-CFO-VERIFICATION-BATCH-50.csv
           --output /tmp/dental-batch-evaluated.csv
+      - name: Smoke external API query plan without credentials
+        run: >-
+          PYTHONPATH=. python scripts/run_apify_dental_discovery.py
+          --dry-run
+          --max-queries 4
       - name: Run live BrasilAPI smoke
         run: PYTHONPATH=. python scripts/run_live_brasilapi_smoke.py
