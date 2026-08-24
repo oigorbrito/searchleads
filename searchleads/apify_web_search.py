@@ -289,7 +289,7 @@ class ApifyGoogleSearchProvider:
             if source_query is None:
                 continue
 
-            organic_results = raw_item.get("organicResults", ())
+            organic_results = raw_item.get("organicResults", [])
             if not isinstance(organic_results, list):
                 raise ApifyPayloadError("organicResults must be an array when present")
             for organic in organic_results:
