@@ -39,6 +39,8 @@ A credential-free local engineering reconstruction exercised the external-provid
 
 ```text
 EXTERNAL_PROVIDER_TESTS = 6/6 PASS
+PYTHON_MODULE_COMPILE = PASS
+APIFY_DENTAL_DRY_RUN = PASS
 ```
 
 Covered behaviors:
@@ -50,7 +52,7 @@ Covered behaviors:
 5. public CRO claims discovered through the provider remain CFO verification `PENDING`;
 6. an Apify dataset page without `organicResults` remains valid empty evidence.
 
-The current module set also passes Python bytecode compilation in the local engineering reconstruction.
+The dry-run generated the deterministic dental query plan without credentials and emitted valid JSON.
 
 ## Inherited current-base regression
 
@@ -68,7 +70,7 @@ See `FULL-REGRESSION-REPORT-2026-08-22.md`.
 
 ## Current-branch full CI status
 
-GitHub Actions pull-request runs for PR #37 have repeatedly terminated before any job step started. The API reports the `full-regression` job with `steps = null`, and no job log blob is available. Re-running the job and changing the runner label did not cause a runner step to start.
+GitHub Actions pull-request runs for PR #37 have repeatedly terminated before any runner step started. The GitHub API reports the `full-regression` job with `steps = null`, and no job log blob is available. The job was retried multiple times, including after an explicit runner-label change and after current Apify-contract corrections; the same pre-step termination persisted.
 
 Therefore this is recorded conservatively as:
 
@@ -76,9 +78,10 @@ Therefore this is recorded conservatively as:
 PR37_FULL_CURRENT_DISCOVER = NOT_EXECUTED_BY_GITHUB_RUNNER
 PR37_CODE_TEST_FAILURE = NOT_OBSERVED
 PR37_EXTERNAL_PROVIDER_CHANGED_LOGIC = 6/6 PASS
+PR37_EXTERNAL_PROVIDER_DRY_RUN = PASS
 ```
 
-The no-step Actions runs are not relabeled as test failures because no checkout, Python setup, unittest, E2E, batch, or live-source command actually executed.
+The no-step Actions runs are not relabeled as test failures because no checkout, Python setup, unittest, E2E, batch, dry-run, or live-source command actually executed.
 
 ## Validation gate
 
@@ -90,6 +93,7 @@ TOKEN_HANDLING = PASS
 CFO_VERIFICATION_BYPASS = NO
 INTENT_INFERENCE_FROM_PROVIDER = NO
 CHANGED_LOGIC_TESTS = PASS
+DRY_RUN = PASS
 INHERITED_BASE_FULL_REGRESSION = PASS
 CURRENT_BRANCH_GITHUB_FULL_REGRESSION = BLOCKED_BEFORE_RUNNER_STEPS
 ```
