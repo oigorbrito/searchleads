@@ -68,6 +68,14 @@ def _normalized_actor_id(actor_id: str) -> str:
     return f"{owner}~{name}"
 
 
+def _apify_interface_language(language_code: str, country_code: str) -> str:
+    language = language_code.strip()
+    country = country_code.strip().lower()
+    if language.lower() == "pt" and country == "br":
+        return "pt-BR"
+    return language
+
+
 def _http_post_json(
     url: str,
     headers: Mapping[str, str],
@@ -158,7 +166,6 @@ class ApifyGoogleSearchConfig:
     max_pages_per_query: int = 1
     max_queries: int = 20
     max_dataset_items: int = 200
-    max_concurrency: int = 5
 
     def __post_init__(self) -> None:
         _normalized_actor_id(self.actor_id)
@@ -166,7 +173,6 @@ class ApifyGoogleSearchConfig:
             (self.max_pages_per_query, "max_pages_per_query"),
             (self.max_queries, "max_queries"),
             (self.max_dataset_items, "max_dataset_items"),
-            (self.max_concurrency, "max_concurrency"),
         ):
             if value < 1:
                 raise ValueError(f"{name} must be >= 1")
@@ -210,20 +216,21 @@ class ApifyGoogleSearchProvider:
             raise ValueError("query IDs must be unique within a provider batch")
 
         country_codes = {query.country_code.strip().lower() for query in query_items}
-        language_codes = {query.language_code.strip().lower() for query in query_items}
+        language_codes = {query.language_code.strip() for query in query_items}
         if len(country_codes) != 1 or len(language_codes) != 1:
             raise ValueError("one Apify Actor batch must use one country and one language")
 
+        country_code = next(iter(country_codes))
+        language_code = next(iter(language_codes))
         run_input = {
             "queries": "\n".join(query.query for query in query_items),
-            "countryCode": next(iter(country_codes)),
-            "languageCode": next(iter(language_codes)),
+            "countryCode": country_code,
+            "languageCode": _apify_interface_language(language_code, country_code),
             "maxPagesPerQuery": self.config.max_pages_per_query,
             "includeUnfilteredResults": False,
             "mobileResults": False,
             "saveHtml": False,
             "saveHtmlToKeyValueStore": False,
-            "maxConcurrency": self.config.max_concurrency,
         }
         raw_items = self._client.run_sync_get_dataset_items(
             self.config.actor_id,
