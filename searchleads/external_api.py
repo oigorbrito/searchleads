@@ -8,7 +8,8 @@ professional credential by itself.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, Iterable
+from datetime import datetime
+from typing import Iterable, Protocol
 
 from .domain import Evidence
 from .persistence import SQLiteLeadStore
@@ -80,6 +81,6 @@ class WebSearchProvider(Protocol):
         store: SQLiteLeadStore,
         queries: Iterable[WebSearchQuery],
         *,
-        retrieved_at=None,
+        retrieved_at: datetime | None = None,
     ) -> WebSearchBatch:
         ...
