@@ -311,8 +311,9 @@ class ApifyGoogleSearchProvider:
                     evidence_id=evidence.evidence_id,
                 ))
 
+        unique_evidence = {item.evidence_id: item for item in persisted}
         return WebSearchBatch(
             provider_id=self.provider_id,
             hits=tuple(hits),
-            evidence=tuple(dict.fromkeys((item.evidence_id, item) for item in persisted).values()),
+            evidence=tuple(unique_evidence.values()),
         )
