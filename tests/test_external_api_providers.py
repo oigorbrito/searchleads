@@ -80,6 +80,10 @@ class ExternalAPIProviderTests(unittest.TestCase):
                 persisted.payload["item"]["organicResults"][0]["url"],
                 "https://example.com/dra-ana",
             )
+            _, _, actor_input, _ = transport.calls[0]
+            self.assertEqual(actor_input["countryCode"], "br")
+            self.assertEqual(actor_input["languageCode"], "pt-BR")
+            self.assertNotIn("maxConcurrency", actor_input)
 
     def test_same_apify_payload_is_idempotent(self):
         query = WebSearchQuery(query_id="q1", query="dentista CRO Brasil")
