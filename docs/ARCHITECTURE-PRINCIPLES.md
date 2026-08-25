@@ -90,3 +90,14 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 43. **Derived canonical provenance is explicit.** Fusion creates a new `Provenance` that unions supporting evidence and lists every parent candidate fact ID in `derived_from_fact_ids`.
 44. **Persistence order preserves referential integrity.** Fusion Provenance is persisted before the `CanonicalFact` that references it; conflicts reference the existing candidates directly.
 45. **No source-authority model is invented.** Correlated sources, freshness, temporal truth decay, learned truth discovery, and source dependence remain future work.
+
+## Company contact discovery — Work Unit 7
+
+46. **Discovery never implies validation.** Every new company contact observation remains `DISCOVERED`; deliverability, reachability, ownership, freshness, and control remain unknown until a later validation unit.
+47. **A known Company owns WU7 contacts.** Contact discovery does not create Person records and does not promote LinkedIn personal profiles; person-associated channels remain a later concern.
+48. **Raw page evidence precedes extraction.** An HTTP response body is persisted before non-200 rejection or contact parsing. Network failure without a response produces no fabricated Evidence.
+49. **Phone extraction is label/link constrained.** Arbitrary digit strings, CNPJ, CEP, and dates do not become phones; V1 accepts explicit `tel:` URIs or phone-labeled visible text.
+50. **Hidden/non-rendered text is excluded.** Script, style, template, and noscript content do not generate contacts.
+51. **Company social discovery is narrow.** LinkedIn requires `/company/<slug>` and Instagram requires a single profile-path segment; content/post/person subroutes are not promoted into company contacts.
+52. **A contact form is represented by the page containing the form.** The form submission endpoint is not treated as a contact channel because it may be internal or third-party infrastructure.
+53. **Contact observations are snapshot-scoped and evidence-linked.** Contact IDs include the Evidence snapshot, allowing changed pages to create new immutable observations without rewriting prior discovery history.

@@ -10,6 +10,7 @@ Current clean work-unit stack:
 - `COMPANY_NORMALIZATION_V1`
 - `COMPANY_ENTITY_RESOLUTION_V1`
 - `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
+- `CONTACT_DISCOVERY_V1`
 
 ## Included
 
@@ -24,6 +25,7 @@ Current clean work-unit stack:
 - Conservative company-field fusion: unanimous effective values may produce a CanonicalFact; disagreement remains an explicit open Conflict.
 - Derived canonical facts receive a new fusion Provenance that unions evidence and records all parent candidate fact IDs.
 - Majority/support ratios are diagnostics only and have no truth-selection authority in V1.
+- Evidence-preserving company contact discovery for e-mail, phone, WhatsApp, contact forms, LinkedIn company profiles, and Instagram profiles; all remain `DISCOVERED`.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -32,7 +34,7 @@ Current clean work-unit stack:
 - broad company discovery;
 - automatic fuzzy company merges or persisted merge execution;
 - source-authority weights or learned truth discovery;
-- contact/person extraction from BrasilAPI;
+- person extraction from BrasilAPI or company pages;
 - contact validation;
 - ICP or qualification policy.
 
