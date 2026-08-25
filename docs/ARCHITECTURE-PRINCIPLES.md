@@ -101,3 +101,14 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 51. **Company social discovery is narrow.** LinkedIn requires `/company/<slug>` and Instagram requires a single profile-path segment; content/post/person subroutes are not promoted into company contacts.
 52. **A contact form is represented by the page containing the form.** The form submission endpoint is not treated as a contact channel because it may be internal or third-party infrastructure.
 53. **Contact observations are snapshot-scoped and evidence-linked.** Contact IDs include the Evidence snapshot, allowing changed pages to create new immutable observations without rewriting prior discovery history.
+
+
+## Person and role discovery — Work Unit 8
+
+54. **A Person observation requires a known Company and explicit relationship Evidence.** WU8 never creates an employer relationship from a name, e-mail domain, social profile, or fuzzy similarity alone.
+55. **Discovery identity is observation-scoped, not name-scoped.** Person IDs include Company + Evidence snapshot + ordinal + normalized name + role so same-name people and changed snapshots remain distinct until Person ER.
+56. **Name and role are evidence-backed facts.** `person_name` and `professional_role_title` are separate `CandidateFact` records with their own Provenance and the page Evidence.
+57. **Name equality never merges people.** Same name + same Company, or same name + different role, does not authorize cross-observation identity reconciliation in WU8.
+58. **Person contacts require local block association and remain discovered.** E-mail/phone/profile contacts are attached only when they occur in the bounded local block for that Person observation and all remain `DISCOVERED`.
+59. **Professional profiles require person-specific evidence.** A direct LinkedIn `/in/<slug>` may be represented as `PROFESSIONAL_PROFILE`; company profiles, subroutes, generic curriculum links, and shared directories are not promoted.
+60. **Person Entity Resolution remains separate.** Cross-source/cross-snapshot reconciliation, title taxonomy, employment freshness, and same-person decisions remain a later measured capability.

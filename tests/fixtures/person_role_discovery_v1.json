@@ -1,0 +1,17 @@
+[
+  {"id":"two-executives","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>Maria da Silva</p><h3>CTO</h3><p>João Pereira</p>","expected":[["Maria da Silva","CEO"],["João Pereira","CTO"]]},
+  {"id":"all-caps","url":"https://example.com/leadership","html":"<h3>Diretor de Infraestrutura</h3><p>JOAO DA SILVA</p>","expected":[["JOAO DA SILVA","Diretor de Infraestrutura"]]},
+  {"id":"diretoria-heading","url":"https://example.com/leadership","html":"<h2>Diretoria Executiva</h2><p>Empresa Pública</p><h3>Diretor de Administração e Finanças</h3><p>Osmar Quirino da Silva</p>","expected":[["Osmar Quirino da Silva","Diretor de Administração e Finanças"]]},
+  {"id":"name-without-role","url":"https://example.com/leadership","html":"<p>Maria da Silva</p>","expected":[]},
+  {"id":"role-without-name","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>Telefone: 11999990000</p><p>Contato Institucional</p>","expected":[]},
+  {"id":"corporate-distractor","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>Serpro Sede</p><p>Empresa Pública</p>","expected":[]},
+  {"id":"hidden-content","url":"https://example.com/leadership","html":"<template><h3>CEO</h3><p>Fake Person</p></template><script>CTO Fake Script</script><h3>CFO</h3><p>Real Person</p>","expected":[["Real Person","CFO"]]},
+  {"id":"same-name-different-role","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>Alex Silva</p><h3>CTO</h3><p>Alex Silva</p>","expected":[["Alex Silva","CEO"],["Alex Silva","CTO"]]},
+  {"id":"href-between","url":"https://example.com/leadership","html":"<h3>CEO</h3><a href=\"/bio\">bio</a><p>Maria da Silva</p>","expected":[["Maria da Silva","CEO"]]},
+  {"id":"new-role-before-name","url":"https://example.com/leadership","html":"<h3>CEO</h3><h3>CTO</h3><p>Maria da Silva</p>","expected":[["Maria da Silva","CTO"]]},
+  {"id":"search-window-limit","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>item 0</p><p>item 1</p><p>item 2</p><p>item 3</p><p>item 4</p><p>Maria da Silva</p>","expected":[]},
+  {"id":"contact-before-name","url":"https://example.com/leadership","html":"<h3>Gerente de Operações</h3><p>Telefone: 6133334444</p><a href=\"/curriculo\">Currículo</a><p>Ana de Souza</p>","expected":[["Ana de Souza","Gerente de Operações"]]},
+  {"id":"head-role","url":"https://example.com/leadership","html":"<h3>Head de Produto Digital</h3><p>Carla dos Santos</p>","expected":[["Carla dos Santos","Head de Produto Digital"]]},
+  {"id":"partner-role","url":"https://example.com/leadership","html":"<h3>Sócia Fundadora</h3><p>Beatriz de Lima</p>","expected":[["Beatriz de Lima","Sócia Fundadora"]]},
+  {"id":"punctuation-fake-name","url":"https://example.com/leadership","html":"<h3>CEO</h3><p>Maria --</p>","expected":[]}
+]
