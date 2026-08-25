@@ -12,6 +12,7 @@ Current clean work-unit stack:
 - `COMPANY_FIELD_FUSION_AND_TRUTH_DISCOVERY_V1`
 - `CONTACT_DISCOVERY_V1`
 - `PERSON_AND_ROLE_DISCOVERY_V1`
+- `CONTACT_VALIDATION_V1`
 
 ## Included
 
@@ -28,6 +29,7 @@ Current clean work-unit stack:
 - Majority/support ratios are diagnostics only and have no truth-selection authority in V1.
 - Evidence-preserving company contact discovery for e-mail, phone, WhatsApp, contact forms, LinkedIn company profiles, and Instagram profiles; all remain `DISCOVERED`.
 - Evidence-backed Person observations linked to a known Company, with name/title CandidateFacts and locally associated professional contacts; same-name observations are never merged at discovery time.
+- Conservative contact validation by independent persisted page-observation corroboration; validated publication association remains distinct from deliverability or reachability.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -37,7 +39,7 @@ Current clean work-unit stack:
 - automatic fuzzy company merges or persisted merge execution;
 - source-authority weights or learned truth discovery;
 - cross-observation Person entity resolution or automatic person merges;
-- contact validation;
+- mailbox deliverability, phone reachability, or social-account-control validation;
 - ICP or qualification policy.
 
 ## Run tests

@@ -112,3 +112,14 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 58. **Person contacts require local block association and remain discovered.** E-mail/phone/profile contacts are attached only when they occur in the bounded local block for that Person observation and all remain `DISCOVERED`.
 59. **Professional profiles require person-specific evidence.** A direct LinkedIn `/in/<slug>` may be represented as `PROFESSIONAL_PROFILE`; company profiles, subroutes, generic curriculum links, and shared directories are not promoted.
 60. **Person Entity Resolution remains separate.** Cross-source/cross-snapshot reconciliation, title taxonomy, employment freshness, and same-person decisions remain a later measured capability.
+
+
+## Contact validation — Work Unit 9
+
+61. **Validation has a narrow declared meaning.** `CONTACT_VALIDATION_V1` validates corroborated publication/association only; it never claims mailbox deliverability, phone reachability, responsiveness, ownership, or social-account control.
+62. **Validation consumes persisted contact observations, not raw similarity alone.** Corroborating records must be `DISCOVERED` contacts with the same owner, same contact kind, and an equivalent structurally valid value.
+63. **Independent evidence is required.** At least two qualifying page Evidence observations must come from distinct locators or from temporally distinct snapshots of the same locator. Duplicate contact IDs or repeated references to the same Evidence cannot inflate validation support.
+64. **Only successful SearchLeads page observations qualify in V1.** Validation Evidence must be textual HTTP 200 observations from `company-web-page` or `company-people-page` source types; arbitrary datasets do not silently promote contact status.
+65. **Discovery history remains immutable.** A successful validation creates a new deterministic `ContactPoint(status=VALIDATED)` snapshot; it preserves the original discovery Evidence and records the corroborating Evidence separately in `validation_evidence_ids`.
+66. **Absence is not staleness.** Failure to corroborate returns insufficient evidence; WU9 does not infer `STALE` or `INVALID` from one missing page, one failed HTTP response, or syntax alone.
+67. **Validation timestamps come from evidence.** `validated_at` is the latest corroborating Evidence capture time, not an arbitrary processing timestamp.

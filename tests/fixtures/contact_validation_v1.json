@@ -1,0 +1,14 @@
+[
+  {"id":"email-distinct-pages","kind":"EMAIL","expected_validated":true,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://example.com/support","value":"sales@example.com"}]},
+  {"id":"email-case","kind":"EMAIL","expected_validated":true,"observations":[{"locator":"https://example.com/contact","value":"Sales@Example.COM"},{"locator":"https://example.com/support","value":"sales@example.com"}]},
+  {"id":"phone-format","kind":"PHONE","expected_validated":true,"observations":[{"locator":"https://example.com/contact","value":"(11) 99999-0000"},{"locator":"https://example.com/support","value":"11 99999 0000"}]},
+  {"id":"whatsapp-format","kind":"WHATSAPP","expected_validated":true,"observations":[{"locator":"https://example.com/contact","value":"+55 11 99999-0000"},{"locator":"https://example.com/support","value":"5511999990000"}]},
+  {"id":"profile-url-normalization","kind":"PROFESSIONAL_PROFILE","expected_validated":true,"observations":[{"locator":"https://example.com/people","value":"HTTPS://LINKEDIN.COM:443/in/Maria/#x"},{"locator":"https://example.com/team","value":"https://linkedin.com/in/Maria"}]},
+  {"id":"later-same-page","kind":"EMAIL","expected_validated":true,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com","minutes":0},{"locator":"https://example.com/contact","value":"sales@example.com","minutes":60}]},
+  {"id":"single-observation","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"}]},
+  {"id":"same-page-same-time","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://example.com/contact","value":"sales@example.com"}]},
+  {"id":"different-owner","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://example.com/support","value":"sales@example.com","owner":"company-2"}]},
+  {"id":"different-value","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://example.com/support","value":"other@example.com"}]},
+  {"id":"different-kind","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://example.com/support","value":"sales@example.com","kind":"OTHER"}]},
+  {"id":"non-page-source","kind":"EMAIL","expected_validated":false,"observations":[{"locator":"https://example.com/contact","value":"sales@example.com"},{"locator":"https://dataset.example/row/1","value":"sales@example.com","source_type":"dataset"}]}
+]
