@@ -48,3 +48,13 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 - Contact validation methodology.
 - Qualification criteria/ICP.
 - Export format and public API.
+
+## First real source — Work Unit 3
+
+18. **One source before many sources.** `LEADS_FIRST_REAL_SOURCE_V1` integrates only BrasilAPI CNPJ v1; it does not create a generic source/plugin framework.
+19. **Point lookup only.** BrasilAPI is used only for a CNPJ already known by the caller. Current service terms explicitly discourage crawling/full scans.
+20. **HTTP evidence precedes payload interpretation.** A response body is persisted before JSON validation, identity checks, or field extraction. Network failures with no response remain acquisition errors rather than invented Evidence.
+21. **Source data remains candidate evidence.** BrasilAPI values become `CandidateFact`, not canonical/verified truth. No source-authority ranking is introduced.
+22. **Current CNPJ transport contract is alphanumeric.** The adapter routing key follows the currently documented 14-character `0-9A-Z` contract and does not preserve the obsolete digits-only assumption from the legacy implementation.
+23. **Anti-abuse behavior is explicit.** The transport sends an identifying User-Agent and represents non-200 response bodies as Evidence before returning an operational error. Retry/backoff policy remains deferred.
+24. **Source extraction is bounded.** Only the explicitly documented company predicates in `docs/FIRST-REAL-SOURCE.md` are mapped. Contact, QSA/Person, canonicalization, normalization, and qualification remain later work units.
