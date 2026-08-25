@@ -16,6 +16,7 @@ Current clean work-unit stack:
 - `REPEATABLE_WEB_DISCOVERY_V1`
 - `SELECTIVE_REVIEW_V1`
 - `LEADS_EXPORT_V1`
+- `GAP_DETECTION_AND_AUTOMATION_V1`
 
 ## Included
 
@@ -36,6 +37,7 @@ Current clean work-unit stack:
 - One versioned known-source web-discovery recipe for the official SERPRO office directory; raw discovery Evidence and discovered CNPJ seeds are preserved for deterministic replay and downstream structured acquisition.
 - Selective review routing for already-explicit ambiguity/conflict states; obvious/terminal cases are excluded, human-readable reasons are required, duplicate review work is consolidated, and no opaque review score is introduced.
 - Deterministic JSON and one-row CSV export of a coherent company/lead audit bundle, with explicit cross-record integrity checks and provenance/evidence preservation.
+- Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities and block missing inputs or unknown sources instead of inventing automation.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
