@@ -13,6 +13,7 @@ import re
 from typing import Iterable
 from urllib.parse import urlsplit, urlunsplit
 
+from searchleads.company_enrichment import OFFICIAL_URL as OFFICIAL_COMPANY_LOCATION_URL
 from searchleads.domain import (
     CandidateFact,
     CanonicalFact,
@@ -35,6 +36,11 @@ BRASILAPI_FIELDS = frozenset({
     "city",
     "state",
 })
+OFFICIAL_COMPANY_LOCATION_FIELDS = frozenset({
+    "street_address",
+    "postal_code",
+    "activity_start_date",
+})
 _CNPJ_FORMATTING = re.compile(r"[.\-/\s]")
 _CNPJ_KEY = re.compile(r"^[0-9A-Z]{14}$")
 
@@ -48,6 +54,7 @@ class GapKind(StrEnum):
 
 class ActionKind(StrEnum):
     BRASILAPI_POINT_LOOKUP = "BRASILAPI_POINT_LOOKUP"
+    OFFICIAL_COMPANY_LOCATION_INGEST = "OFFICIAL_COMPANY_LOCATION_INGEST"
     COMPANY_CONTACT_PAGE_INGEST = "COMPANY_CONTACT_PAGE_INGEST"
     PERSON_ROLE_PAGE_INGEST = "PERSON_ROLE_PAGE_INGEST"
     CONTACT_PUBLICATION_VALIDATION = "CONTACT_PUBLICATION_VALIDATION"
@@ -313,22 +320,34 @@ def _blocked_action(company_id: str, gap: Gap, reason: str) -> AutomationAction:
 
 def _actions_for_gap(company_id: str, gap: Gap, inputs: AutomationInputs) -> tuple[AutomationAction, ...]:
     if gap.kind is GapKind.COMPANY_FIELD:
-        if gap.key not in BRASILAPI_FIELDS:
-            return (_blocked_action(
-                company_id, gap,
-                "no implemented clean-stack source is registered for this required company field",
+        if gap.key in BRASILAPI_FIELDS:
+            if inputs.known_cnpj is None:
+                return (_blocked_action(
+                    company_id, gap,
+                    "BrasilAPI point lookup requires an explicit known CNPJ routing key",
+                ),)
+            cnpj = _normalize_cnpj(inputs.known_cnpj)
+            locator = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
+            return (_ready_action(
+                company_id, gap, ActionKind.BRASILAPI_POINT_LOOKUP, ActionEffect.PREREQUISITE,
+                "existing WU3 point lookup can acquire source evidence/candidate facts for this field; canonicalization remains separate",
+                locator=locator, input_ids=(cnpj,), network=True,
             ),)
-        if inputs.known_cnpj is None:
-            return (_blocked_action(
-                company_id, gap,
-                "BrasilAPI point lookup requires an explicit known CNPJ routing key",
+        if gap.key in OFFICIAL_COMPANY_LOCATION_FIELDS:
+            if inputs.known_cnpj is None:
+                return (_blocked_action(
+                    company_id, gap,
+                    "official company-location enrichment requires an explicit known CNPJ routing key",
+                ),)
+            cnpj = _normalize_cnpj(inputs.known_cnpj)
+            return (_ready_action(
+                company_id, gap, ActionKind.OFFICIAL_COMPANY_LOCATION_INGEST, ActionEffect.PREREQUISITE,
+                "existing WU15 official-location ingestion can acquire source evidence/candidate facts for this field; canonicalization remains separate",
+                locator=OFFICIAL_COMPANY_LOCATION_URL, input_ids=(cnpj,), network=True,
             ),)
-        cnpj = _normalize_cnpj(inputs.known_cnpj)
-        locator = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
-        return (_ready_action(
-            company_id, gap, ActionKind.BRASILAPI_POINT_LOOKUP, ActionEffect.PREREQUISITE,
-            "existing WU3 point lookup can acquire source evidence/candidate facts for this field; canonicalization remains separate",
-            locator=locator, input_ids=(cnpj,), network=True,
+        return (_blocked_action(
+            company_id, gap,
+            "no implemented clean-stack source is registered for this required company field",
         ),)
 
     if gap.kind is GapKind.VALIDATED_COMPANY_CONTACT:
