@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import pytest
 
+from searchleads.company_enrichment import OFFICIAL_URL
 from searchleads.domain import (
     CandidateFact, CanonicalFact, Company, ContactKind, ContactPoint, ContactStatus,
     Lead, LeadStage, Person, QualificationStatus,
@@ -88,6 +89,26 @@ def test_brasilapi_action_is_prerequisite_and_bounded_network_work():
     assert (action.retry_max_attempts,action.min_interval_seconds)==(3,60)
     assert action.cache_key and action.cache_key.startswith('automation-cache:v1:')
 
+def test_official_location_action_is_prerequisite_and_bounded_network_work():
+    action=plan_gap_actions('c1',GapRequirements(('postal_code',)),inputs=AutomationInputs(known_cnpj='33.683.111/0002-80')).ready_actions[0]
+    assert action.action_kind is ActionKind.OFFICIAL_COMPANY_LOCATION_INGEST
+    assert action.effect is ActionEffect.PREREQUISITE
+    assert action.locator==OFFICIAL_URL
+    assert action.input_ids==('33683111000280',)
+    assert (action.retry_max_attempts,action.min_interval_seconds)==(3,60)
+    assert action.cache_key and action.cache_key.startswith('automation-cache:v1:')
+
+def test_all_official_location_fields_route_to_new_capability():
+    plan=plan_gap_actions('c1',GapRequirements(('street_address','postal_code','activity_start_date')),inputs=AutomationInputs(known_cnpj='33683111000280'))
+    assert len(plan.ready_actions)==3
+    assert {a.action_kind for a in plan.ready_actions}=={ActionKind.OFFICIAL_COMPANY_LOCATION_INGEST}
+    assert {a.locator for a in plan.ready_actions}=={OFFICIAL_URL}
+
+def test_official_location_fields_remain_blocked_without_cnpj():
+    for field in ('street_address','postal_code','activity_start_date'):
+        action=plan_gap_actions('c1',GapRequirements((field,))).blocked_actions[0]
+        assert 'requires an explicit known CNPJ' in action.reason
+
 def test_network_page_actions_are_normalized_and_deduplicated():
     inputs=AutomationInputs(company_contact_page_urls=('https://EXAMPLE.test:443/contact#x','https://example.test/contact'))
     plan=plan_gap_actions('c1',GapRequirements(require_validated_company_contact=True),inputs=inputs)
@@ -111,7 +132,7 @@ def test_people_page_action_is_prerequisite_not_identity_claim():
     assert action.locator=='https://example.test/people'
 
 def test_blocked_action_has_no_execution_metadata():
-    action=plan_gap_actions('c1',GapRequirements(('postal_code',))).blocked_actions[0]
+    action=plan_gap_actions('c1',GapRequirements(('employee_count',))).blocked_actions[0]
     assert action.disposition is ActionDisposition.BLOCKED
     assert action.action_kind is None and action.effect is ActionEffect.NONE
     assert action.retry_max_attempts==0 and action.cache_key is None and action.min_interval_seconds==0
@@ -171,7 +192,6 @@ def test_action_constructor_blank_input_id_rejected():
     with pytest.raises(ValueError): AutomationAction('a','g',ActionDisposition.READY,ActionKind.CONTACT_PUBLICATION_VALIDATION,ActionEffect.DIRECT,'x',input_ids=(' ',),retry_max_attempts=1,cache_key='k')
 
 def test_unsupported_internal_gap_kind_guard(monkeypatch):
-    # Exercise the defensive boundary without adding a public fake enum member.
     from searchleads.gap_automation import planning
     class Fake:
         value='FAKE'

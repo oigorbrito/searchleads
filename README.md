@@ -19,6 +19,7 @@ Current clean work-unit stack:
 - `GAP_DETECTION_AND_AUTOMATION_V1`
 - `END_TO_END_ACCEPTANCE_V1`
 - `MULTI_SOURCE_COMPANY_ENRICHMENT_V1`
+- `GAP_CAPABILITY_RECONCILIATION_V1`
 
 ## Included
 
@@ -39,7 +40,7 @@ Current clean work-unit stack:
 - One versioned known-source web-discovery recipe for the official SERPRO office directory; raw discovery Evidence and discovered CNPJ seeds are preserved for deterministic replay and downstream structured acquisition.
 - Selective review routing for already-explicit ambiguity/conflict states; obvious/terminal cases are excluded, human-readable reasons are required, duplicate review work is consolidated, and no opaque review score is introduced.
 - Deterministic JSON and one-row CSV export of a coherent company/lead audit bundle, with explicit cross-record integrity checks and provenance/evidence preservation.
-- Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities and block missing inputs or unknown sources instead of inventing automation.
+- Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities, including WU15 official-location enrichment for address/postal/activity-start gaps when an explicit CNPJ is available; missing inputs or unknown sources remain blocked.
 - Deterministic end-to-end technical acceptance over the published clean-stack APIs, including Evidence replay and byte-identical export reproduction across fresh runs.
 - A second narrow company source for already-identified SERPRO entities: the official transparency address page, preserving raw Evidence and adding address/postal/activity-start observations without source-authority ranking.
 - Executable invariants/tests.
