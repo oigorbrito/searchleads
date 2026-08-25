@@ -13,6 +13,7 @@ Current clean work-unit stack:
 - `CONTACT_DISCOVERY_V1`
 - `PERSON_AND_ROLE_DISCOVERY_V1`
 - `CONTACT_VALIDATION_V1`
+- `REPEATABLE_WEB_DISCOVERY_V1`
 
 ## Included
 
@@ -30,12 +31,13 @@ Current clean work-unit stack:
 - Evidence-preserving company contact discovery for e-mail, phone, WhatsApp, contact forms, LinkedIn company profiles, and Instagram profiles; all remain `DISCOVERED`.
 - Evidence-backed Person observations linked to a known Company, with name/title CandidateFacts and locally associated professional contacts; same-name observations are never merged at discovery time.
 - Conservative contact validation by independent persisted page-observation corroboration; validated publication association remains distinct from deliverability or reachability.
+- One versioned known-source web-discovery recipe for the official SERPRO office directory; raw discovery Evidence and discovered CNPJ seeds are preserved for deterministic replay and downstream structured acquisition.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
 
-- crawling or full scans;
-- broad company discovery;
+- generic crawling or full scans;
+- broad/unbounded company discovery;
 - automatic fuzzy company merges or persisted merge execution;
 - source-authority weights or learned truth discovery;
 - cross-observation Person entity resolution or automatic person merges;
