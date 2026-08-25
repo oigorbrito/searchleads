@@ -8,6 +8,7 @@ Current clean work-unit stack:
 - `LEADS_PERSISTENCE_AND_EVIDENCE_V1`
 - `LEADS_FIRST_REAL_SOURCE_V1`
 - `COMPANY_NORMALIZATION_V1`
+- `COMPANY_ENTITY_RESOLUTION_V1`
 
 ## Included
 
@@ -20,13 +21,15 @@ Current clean work-unit stack:
 - BrasilAPI HTTP bodies are persisted before response interpretation or source-field extraction.
 - Deterministic, non-destructive company-field normalization with explicit versioned rule IDs.
 - Normalization replay from immutable persisted candidate facts without rewriting raw source values.
+- Measured company entity resolution with transparent blocking, pairwise signals, calibration metrics, and conservative triage.
+- Operational ER auto-matches only exact supported namespaced registry IDs; multi-signal similarity routes to review rather than irreversible merge.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
 
 - crawling or full scans;
 - broad company discovery;
-- company entity-resolution algorithms;
+- automatic fuzzy company merges or persisted merge execution;
 - contact/person extraction from BrasilAPI;
 - contact validation;
 - ICP or qualification policy.

@@ -44,7 +44,8 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 - Real source selection.
 - Binary/non-text acquisition artifacts.
 - Production validation/calibration of normalization rules.
-- Company entity-resolution blocking/matching algorithms and weights.
+- Production calibration/generalization of company entity-resolution blocking and review policy.
+- Persisted merge/split mechanics after an ER decision.
 - Contact validation methodology.
 - Qualification criteria/ICP.
 - Export format and public API.
@@ -67,3 +68,14 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 28. **Conservative transformations avoid invented semantics.** V1 preserves legal suffixes/case, does not infer phone country codes or URL schemes, does not collapse root domains, and does not geocode/map industries.
 29. **Host normalization is strict.** DNS labels/IDNA, valid IP literals, explicit HTTP/HTTPS ports, and credential-bearing URLs are validated so malformed network identifiers do not become normalized matching signals.
 30. **Generic registry identifiers remain generic.** WU4 does not hard-code CNPJ normalization into the generic `business_registry_id` predicate. Source-specific CNPJ routing normalization remains in the BrasilAPI adapter until cross-source identifier semantics are designed.
+
+
+## Company entity resolution — Work Unit 5
+
+31. **Entity resolution is measured, not assumed.** `COMPANY_ENTITY_RESOLUTION_V1` separates blocking, pairwise features, experimental strategies, operational triage, and evaluation against an explicit labeled benchmark.
+32. **Registry identity is namespaced.** A registry identifier is a hard signal only when both observations declare a supported compatible namespace. V1 supports `br:cnpj`; generic/unknown registry IDs are not silently treated as equivalent.
+33. **Conflicting supported full registry IDs veto same-registered-entity matching.** This V1 target is the same registered/operational entity, not a corporate group, franchise, brand, or parent/subsidiary relationship. Different CNPJs may still be related organizations but are not auto-merged as one registered entity.
+34. **Blocking must preserve duplicate recall.** Candidate generation uses transparent keys (namespaced registry, WU4 domain/phone, and name-prefix keys) and is evaluated over the full benchmark observation corpus before pair classification.
+35. **Fuzzy/weighted scores are evaluation instruments, not automatic merge authority.** The benchmark shows materially non-zero false-merge rates even at high thresholds, so V1 does not use weighted score for `AUTO_MATCH`.
+36. **Operational triage is asymmetric toward false-merge avoidance.** Exact supported namespaced registry equality may `AUTO_MATCH`; conflicting supported registry IDs are `DISTINCT`; strong multi-signal evidence becomes `REVIEW`; remaining cases are `INSUFFICIENT_EVIDENCE`.
+37. **ER decisions do not mutate persistence in V1.** The unit produces comparison/triage decisions only. Persisted Company merge/split/canonicalization mechanics remain later work.
