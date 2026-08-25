@@ -2,7 +2,7 @@
 
 ## Scope
 
-This work unit implements only the scientific/domain foundation needed before a real source is introduced.
+The scientific/domain foundation is followed by evidence-preserving persistence. Acquisition, source-specific extraction, normalization rules, entity-resolution algorithms, contact-validation methodology, and qualification criteria remain outside these first two work units.
 
 ## Principles
 
@@ -18,21 +18,31 @@ This work unit implements only the scientific/domain foundation needed before a 
 10. **Company is not Lead.** `Lead` wraps a `Company` for commercial pipeline use. Qualification defaults to `UNKNOWN` while ICP is undefined.
 11. **Decision classification is explicit.** Important decisions can be tagged `EVIDENCE_BACKED`, `HYPOTHESIS`, `ENGINEERING_CHOICE`, `LOCALLY_VERIFIED`, or `UNKNOWN`.
 12. **No LLM-per-page default.** Reusable extraction is preferred where a source pattern proves repeatable, but no crawler/extractor is implemented here.
+13. **Raw evidence is persisted independently from interpretation.** Storage of candidate/canonical facts never rewrites the captured raw payload.
+14. **Stable IDs do not silently overwrite history.** Exact repeated writes are idempotent; different content under the same immutable ID is a persistence conflict.
+15. **Persistence checks directional references.** Evidence requires its Source; provenance/facts require their evidence and derivation records; Person/ContactPoint/Lead require their owning records. `Company` aggregate reference snapshots are not rigid foreign keys in v1 because enforcing them would create insertion cycles with immutable child records.
+16. **Reprocessing starts from verified stored evidence.** Evidence can be replayed in deterministic capture order and raw payload integrity is checked before it is returned.
+17. **Storage technology remains replaceable.** SQLite is an `ENGINEERING_CHOICE` for v1 persistence, not a permanent production-database mandate.
 
-## Engineering choices in v1
+## Engineering choices in v1-v2
 
 - Python 3.11+.
 - Standard-library dataclasses and enums for the runtime domain model.
 - Immutable (`frozen`) value objects with validation in `__post_init__`.
 - String IDs so persistence/ID-generation strategy remains decoupled from the domain.
 - Pytest for executable invariants.
+- SQLite via Python stdlib `sqlite3` for the first persistence boundary.
+- Deterministic tagged JSON for domain envelopes and raw textual Evidence in UTF-8 BLOB storage.
+- Internal SHA-256 only for storage-integrity verification; source `content_digest` semantics are preserved as supplied.
 
 These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 
 ## Deferred decisions
 
-- Persistence engine and schema.
+- Production persistence engine and scale strategy.
+- Schema migrations after v1.
 - Real source selection.
+- Binary/non-text acquisition artifacts.
 - Normalization rules.
 - Company entity-resolution blocking/matching algorithms and weights.
 - Contact validation methodology.

@@ -2,7 +2,10 @@
 
 B2B lead discovery and enrichment project.
 
-Current work unit: `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1`.
+Current completed work units:
+
+- `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1`
+- `LEADS_PERSISTENCE_AND_EVIDENCE_V1`
 
 ## Included
 
@@ -10,6 +13,9 @@ Current work unit: `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1`.
 - Company, Person, ContactPoint, and Lead domain entities.
 - Source, Evidence, and fact-level Provenance.
 - CandidateFact, CanonicalFact, and Conflict representation.
+- SQLite persistence with typed lossless round-trip for supported values.
+- Raw textual evidence preservation with storage-integrity checks.
+- Deterministic evidence replay inputs for reprocessing.
 - Executable invariants/tests.
 
 ## Run tests
