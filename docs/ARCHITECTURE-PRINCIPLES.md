@@ -79,3 +79,14 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 35. **Fuzzy/weighted scores are evaluation instruments, not automatic merge authority.** The benchmark shows materially non-zero false-merge rates even at high thresholds, so V1 does not use weighted score for `AUTO_MATCH`.
 36. **Operational triage is asymmetric toward false-merge avoidance.** Exact supported namespaced registry equality may `AUTO_MATCH`; conflicting supported registry IDs are `DISTINCT`; strong multi-signal evidence becomes `REVIEW`; remaining cases are `INSUFFICIENT_EVIDENCE`.
 37. **ER decisions do not mutate persistence in V1.** The unit produces comparison/triage decisions only. Persisted Company merge/split/canonicalization mechanics remain later work.
+
+## Company field fusion — Work Unit 6
+
+38. **Fusion happens only inside one subject + field.** Mixing companies or predicates is rejected.
+39. **Effective value uses normalized representation when available, otherwise raw source value.** Raw candidates remain immutable.
+40. **Unanimity may canonicalize; disagreement remains conflict.** V1 creates a `CanonicalFact` only when every distinct candidate observation has the same effective value.
+41. **Majority is diagnostic, not truth.** Support counts and ratios may be reported, but they do not select a canonical value.
+42. **Duplicate candidate IDs cannot inflate support.** Repeated use of the same fact ID is rejected before support aggregation.
+43. **Derived canonical provenance is explicit.** Fusion creates a new `Provenance` that unions supporting evidence and lists every parent candidate fact ID in `derived_from_fact_ids`.
+44. **Persistence order preserves referential integrity.** Fusion Provenance is persisted before the `CanonicalFact` that references it; conflicts reference the existing candidates directly.
+45. **No source-authority model is invented.** Correlated sources, freshness, temporal truth decay, learned truth discovery, and source dependence remain future work.
