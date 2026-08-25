@@ -18,6 +18,7 @@ Current clean work-unit stack:
 - `LEADS_EXPORT_V1`
 - `GAP_DETECTION_AND_AUTOMATION_V1`
 - `END_TO_END_ACCEPTANCE_V1`
+- `MULTI_SOURCE_COMPANY_ENRICHMENT_V1`
 
 ## Included
 
@@ -40,6 +41,7 @@ Current clean work-unit stack:
 - Deterministic JSON and one-row CSV export of a coherent company/lead audit bundle, with explicit cross-record integrity checks and provenance/evidence preservation.
 - Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities and block missing inputs or unknown sources instead of inventing automation.
 - Deterministic end-to-end technical acceptance over the published clean-stack APIs, including Evidence replay and byte-identical export reproduction across fresh runs.
+- A second narrow company source for already-identified SERPRO entities: the official transparency address page, preserving raw Evidence and adding address/postal/activity-start observations without source-authority ranking.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -50,7 +52,6 @@ Current clean work-unit stack:
 - source-authority weights or learned truth discovery;
 - cross-observation Person entity resolution or automatic person merges;
 - mailbox deliverability, phone reachability, or social-account-control validation;
-- multi-source company enrichment beyond the implemented clean-stack sources;
 - ICP or qualification policy.
 
 ## Run tests
