@@ -43,7 +43,7 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 - Schema migrations after v1.
 - Real source selection.
 - Binary/non-text acquisition artifacts.
-- Normalization rules.
+- Production validation/calibration of normalization rules.
 - Company entity-resolution blocking/matching algorithms and weights.
 - Contact validation methodology.
 - Qualification criteria/ICP.
@@ -58,3 +58,12 @@ These are `ENGINEERING_CHOICE`, not evidence-backed claims.
 22. **Current CNPJ transport contract is alphanumeric.** The adapter routing key follows the currently documented 14-character `0-9A-Z` contract and does not preserve the obsolete digits-only assumption from the legacy implementation.
 23. **Anti-abuse behavior is explicit.** The transport sends an identifying User-Agent and represents non-200 response bodies as Evidence before returning an operational error. Retry/backoff policy remains deferred.
 24. **Source extraction is bounded.** Only the explicitly documented company predicates in `docs/FIRST-REAL-SOURCE.md` are mapped. Contact, QSA/Person, canonicalization, normalization, and qualification remain later work units.
+
+## Company normalization — Work Unit 4
+
+25. **Normalization is non-destructive.** `COMPANY_NORMALIZATION_V1` projects a normalized representation from immutable `CandidateFact.raw_value`; it does not update the persisted source candidate.
+26. **Rule identity is explicit.** Every successful/unchanged supported normalization returns a versioned rule ID in `NormalizationResult`. `UNSUPPORTED` and `INVALID` never silently coerce values.
+27. **Normalization does not equal entity resolution.** Equal normalized representations are inputs to later ER; WU4 never auto-matches, fuses, canonicalizes, or changes company identity.
+28. **Conservative transformations avoid invented semantics.** V1 preserves legal suffixes/case, does not infer phone country codes or URL schemes, does not collapse root domains, and does not geocode/map industries.
+29. **Host normalization is strict.** DNS labels/IDNA, valid IP literals, explicit HTTP/HTTPS ports, and credential-bearing URLs are validated so malformed network identifiers do not become normalized matching signals.
+30. **Generic registry identifiers remain generic.** WU4 does not hard-code CNPJ normalization into the generic `business_registry_id` predicate. Source-specific CNPJ routing normalization remains in the BrasilAPI adapter until cross-source identifier semantics are designed.
