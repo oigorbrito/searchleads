@@ -17,6 +17,7 @@ Current clean work-unit stack:
 - `SELECTIVE_REVIEW_V1`
 - `LEADS_EXPORT_V1`
 - `GAP_DETECTION_AND_AUTOMATION_V1`
+- `END_TO_END_ACCEPTANCE_V1`
 
 ## Included
 
@@ -38,6 +39,7 @@ Current clean work-unit stack:
 - Selective review routing for already-explicit ambiguity/conflict states; obvious/terminal cases are excluded, human-readable reasons are required, duplicate review work is consolidated, and no opaque review score is introduced.
 - Deterministic JSON and one-row CSV export of a coherent company/lead audit bundle, with explicit cross-record integrity checks and provenance/evidence preservation.
 - Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities and block missing inputs or unknown sources instead of inventing automation.
+- Deterministic end-to-end technical acceptance over the published clean-stack APIs, including Evidence replay and byte-identical export reproduction across fresh runs.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -48,6 +50,7 @@ Current clean work-unit stack:
 - source-authority weights or learned truth discovery;
 - cross-observation Person entity resolution or automatic person merges;
 - mailbox deliverability, phone reachability, or social-account-control validation;
+- multi-source company enrichment beyond the implemented clean-stack sources;
 - ICP or qualification policy.
 
 ## Run tests
@@ -56,4 +59,4 @@ Current clean work-unit stack:
 python -m pytest
 ```
 
-B2B remains provisional and no ICP is defined yet.
+B2B remains provisional and no ICP is defined yet. The deterministic technical end-to-end path passes, while live-network certification and commercial qualification remain separate gates.
