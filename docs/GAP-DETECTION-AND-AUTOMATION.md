@@ -2,9 +2,9 @@
 
 ## Work unit
 
-`GAP_DETECTION_AND_AUTOMATION_V1`
+`GAP_DETECTION_AND_AUTOMATION_V1`, reconciled by `GAP_CAPABILITY_RECONCILIATION_V1` after the addition of WU15 multi-source company enrichment.
 
-This unit detects **only caller-requested gaps** and produces a deterministic bounded action plan over capabilities that already exist in the clean SearchLeads stack.
+This planner detects **only caller-requested gaps** and produces a deterministic bounded action plan over capabilities that actually exist in the clean SearchLeads stack.
 
 It does not execute work, run a scheduler, start background jobs, crawl the web, invent a source, infer business requirements, or turn a prerequisite acquisition into a verified fact.
 
@@ -24,105 +24,62 @@ explicit requirement
 
 ## Explicit requirements
 
-`GapRequirements` can request:
+`GapRequirements` can request named canonical Company fields, a validated company-owned contact, an evidence-backed Person role/title observation, or resolved qualification state. Fields/capabilities not requested by the caller are never silently added. Duplicate requested field names are deduplicated deterministically.
 
-- named canonical Company fields;
-- at least one validated **company-owned** contact;
-- at least one evidence-backed Person role/title observation;
-- resolved qualification state.
+A requested company field is present only when a target-company `CanonicalFact` has that `field_name`; a source `CandidateFact` alone does not close the requirement. A validated Person contact does not close a company-contact requirement. A Person role requires both a Person belonging to the Company and a `professional_role_title` CandidateFact for that Person. Qualification is satisfied only by a target-company Lead whose qualification status is not `UNKNOWN`.
 
-Fields/capabilities not requested by the caller are never silently added to the plan.
-
-Duplicate requested field names are deduplicated deterministically.
-
-## Gap semantics
-
-### Company field
-
-A requested company field is present only when a `CanonicalFact` for the target Company has that `field_name`.
-
-A source `CandidateFact` alone does not close a canonical-field requirement.
-
-### Validated company contact
-
-The requirement is satisfied only by `ContactPoint(status=VALIDATED)` whose `owner_id` is the Company itself.
-
-A validated Person contact does not silently satisfy a company-contact requirement.
-
-### Person role
-
-The requirement is satisfied only when:
-
-- an exported/observed `Person` belongs to the Company; and
-- a `CandidateFact(field_name=professional_role_title)` exists for that Person.
-
-A Person name without a role fact, or a role fact for an unrelated Person, does not close the gap.
-
-### Qualification
-
-The requirement is satisfied only when a `Lead` for the Company exists with qualification status different from `UNKNOWN`.
-
-The clean stack still has no qualification engine/ICP policy, so an unresolved qualification gap is detected but cannot be automatically planned into a qualification evaluation.
-
-## Implemented action mappings
+## Implemented company-field action mappings
 
 ### BrasilAPI point lookup
 
-Current WU3 supports these company predicates:
+WU3 supports:
 
-- `business_registry_id`;
-- `legal_name`;
-- `trade_name`;
-- `registration_status`;
-- `primary_cnae_code`;
-- `primary_cnae_description`;
-- `city`;
-- `state`.
+- `business_registry_id`
+- `legal_name`
+- `trade_name`
+- `registration_status`
+- `primary_cnae_code`
+- `primary_cnae_description`
+- `city`
+- `state`
 
-A missing requested field in that set can map to `BRASILAPI_POINT_LOOKUP` **only when the caller supplies an explicit known CNPJ**.
+A missing requested field in that set maps to `BRASILAPI_POINT_LOOKUP` **only when an explicit known CNPJ is supplied**. It is `PREREQUISITE`: acquisition creates source Evidence/CandidateFacts; normalization/fusion/canonicalization remain separate.
 
-The input uses the current WU3 14-character `0-9A-Z` routing contract.
+### Official company-location ingestion
 
-This action is `PREREQUISITE`, not direct gap closure: WU3 produces Evidence/CandidateFacts; normalization/fusion/canonicalization remain separate.
+WU15 adds a second narrow company source: the exact official SERPRO transparency address page. It covers:
 
-### Company contact page ingestion
+- `street_address`
+- `postal_code`
+- `activity_start_date`
 
-A validated-company-contact gap can map to one or more `COMPANY_CONTACT_PAGE_INGEST` actions only when explicit company contact-page URLs are supplied.
+A missing requested field in that set maps to `OFFICIAL_COMPANY_LOCATION_INGEST` **only when the caller supplies an explicit known CNPJ**. The action uses the fixed WU15 locator:
 
-Each page ingest is a `PREREQUISITE`: WU7 can produce discovery Evidence/ContactPoints, but WU9 still requires independent publication corroboration before `VALIDATED`.
+`https://www.transparencia.serpro.gov.br/acesso-a-informacao/institucional/enderecos`
 
-### Contact publication validation
+The CNPJ is included as an explicit action input ID after the same 14-character `0-9A-Z` routing-key normalization used by WU3/WU15. The action is network `PREREQUISITE` work with bounded retries; WU15 still decides whether the page contains exactly one safe matching block, and canonicalization remains separate.
 
-When the caller already supplies at least two persisted contact observation IDs, the planner can emit `CONTACT_PUBLICATION_VALIDATION` using the existing WU9 method.
+The planner deliberately continues to map `city` and `state` to the existing BrasilAPI point lookup rather than automatically launching both company sources. Multi-source fan-out is a separate policy decision and has not been justified by a measured acquisition-cost/benefit policy.
 
-This is a local `DIRECT` action candidate: WU9 itself decides whether the evidence actually satisfies its validation rules.
+## Contact and Person mappings
 
-### Person/role page ingestion
+A validated-company-contact gap can map to explicit `COMPANY_CONTACT_PAGE_INGEST` prerequisites when company contact-page URLs are supplied. When at least two persisted contact observation IDs are already supplied, it can map to local `CONTACT_PUBLICATION_VALIDATION`; WU9 itself decides whether independent corroboration is sufficient.
 
-A missing Person-role requirement maps to `PERSON_ROLE_PAGE_INGEST` only when the caller supplies an explicit people/leadership page URL.
-
-It is `PREREQUISITE`: WU8 may create evidence-backed Person/role observations; it does not prove cross-snapshot Person identity or current employment indefinitely.
+A missing Person-role requirement maps to `PERSON_ROLE_PAGE_INGEST` only when an explicit people/leadership URL is supplied. It remains a prerequisite observation, not a cross-snapshot identity claim.
 
 ## Deliberately blocked mappings
 
-The planner does **not** claim capabilities that are absent from the clean stack.
+The planner does not claim capabilities that remain absent. Examples:
 
-Examples currently blocked:
+- `employee_count`
+- any other unknown company predicate
+- qualification evaluation while no clean qualification engine/ICP exists
 
-- `employee_count`;
-- `postal_code`;
-- `street_address`;
-- `activity_start_date`;
-- any other unknown company predicate;
-- qualification evaluation while no clean qualification engine/ICP exists.
-
-This differs deliberately from the legacy stack, which had an official-location enrichment source and qualification engine that have not been introduced into the clean stack.
+For WU15-supported location fields, absence of `known_cnpj` is also explicitly `BLOCKED`; the planner does not attempt to infer a CNPJ from a company name.
 
 ## Execution metadata
 
-Every `READY` action is finite and content-addressed.
-
-Network actions:
+Every `READY` network action has:
 
 ```text
 retry_max_attempts = 3
@@ -130,54 +87,32 @@ min_interval_seconds = 60
 cache_key = deterministic
 ```
 
-Local contact-validation action:
+The local contact-validation action has one attempt, zero network interval, and a deterministic cache key. Every `BLOCKED` action has zero retries, null cache key and zero interval, preventing blind retry loops.
 
-```text
-retry_max_attempts = 1
-min_interval_seconds = 0
-cache_key = deterministic
-```
+URL inputs are validated as absolute HTTP(S), credentials are rejected, host/scheme/default port are normalized, fragments are removed, and duplicate normalized page URLs collapse into one action where the action type accepts caller-supplied URLs.
 
-Every `BLOCKED` action has:
+## Reconciled curated benchmark
 
-```text
-retry_max_attempts = 0
-cache_key = null
-min_interval_seconds = 0
-```
+The WU16 benchmark contains **21 scenarios**, retaining the previous planning contract and adding explicit location-capability cases:
 
-Blocked work therefore cannot accidentally become a blind retry loop.
-
-URL inputs are validated as absolute HTTP(S), credentials are rejected, host/scheme/default port are normalized, fragments are removed, and duplicate normalized page URLs collapse into one planned action.
-
-## Curated benchmark
-
-The deterministic benchmark contains 18 scenarios covering:
-
-- already-present canonical fields;
-- supported BrasilAPI fields with/without explicit CNPJ;
-- alphanumeric CNPJ routing;
-- unsupported fields;
-- validated company contact present/missing;
-- explicit validation-observation IDs;
-- explicit contact page URLs;
-- Person role present/missing;
-- explicit people page URL;
-- qualified/unknown/missing Lead;
-- mixed requirements;
-- duplicate requirements.
+- `postal_code` without CNPJ → BLOCKED
+- `postal_code` with CNPJ → READY official-location ingestion
+- `street_address` with CNPJ → READY official-location ingestion
+- `activity_start_date` with CNPJ → READY official-location ingestion
+- `employee_count` remains BLOCKED
+- qualification remains BLOCKED
 
 Measured contract:
 
 ```text
-SCENARIOS = 18
-GAP_TRUE_POSITIVE = 18
+SCENARIOS = 21
+GAP_TRUE_POSITIVE = 21
 GAP_FALSE_POSITIVE = 0
 GAP_FALSE_NEGATIVE = 0
 GAP_PRECISION = 100.0%
 GAP_RECALL = 100.0%
-READY_ACTION_ROUTING_EXACT = 18/18
-BLOCKED_ACTION_ROUTING_EXACT = 18/18
+READY_ACTION_ROUTING_EXACT = 21/21
+BLOCKED_ACTION_ROUTING_EXACT = 21/21
 ```
 
 These are deterministic regression metrics for the curated contract, not production gap prevalence, source success rate, or business coverage.
@@ -185,10 +120,11 @@ These are deterministic regression metrics for the curated contract, not product
 ## Verification
 
 ```text
-WU13_FOCUSED_TESTS = 37/37 PASS
-WU13_MODULE_LINE_COVERAGE = 100%
-WU13_MEASURED_STATEMENTS = 207
-WU13_BRANCHES = 82
+WU16_GAP_TESTS = 43/43 PASS
+GAP_MODULE_LINE_COVERAGE = 100%
+GAP_MEASURED_STATEMENTS = 217
+GAP_BRANCHES = 86
+WU14_WU15_WU16_INTEGRATION = 86/86 PASS
 GAP_AUTOMATION_BENCHMARK = PASS
 PYTHON_MODULE_COMPILE = PASS
 ```
@@ -198,14 +134,11 @@ PYTHON_MODULE_COMPILE = PASS
 ```text
 GAP_DETECTION = PASS
 EXPLICIT_REQUIREMENTS_ONLY = YES
-CANONICAL_FIELD_REQUIREMENT = YES
 KNOWN_SOURCE_SELECTION = PASS
-MISSING_ACTION_INPUTS = BLOCKED
-UNKNOWN_SOURCE_NOT_INVENTED = PASS
 BRASILAPI_REQUIRES_KNOWN_CNPJ = YES
-CURRENT_ALPHANUMERIC_CNPJ_ROUTING = PASS
-CONTACT_DISCOVERY_REQUIRES_EXPLICIT_URL = YES
-PERSON_DISCOVERY_REQUIRES_EXPLICIT_URL = YES
+OFFICIAL_LOCATION_REQUIRES_KNOWN_CNPJ = YES
+OFFICIAL_LOCATION_FIELDS_READY_WITH_CNPJ = PASS
+EMPLOYEE_COUNT = BLOCKED_NO_SOURCE
 QUALIFICATION_WITHOUT_ENGINE_ICP = BLOCKED
 NETWORK_RETRY_FINITE = YES
 NETWORK_MIN_INTERVAL_REPRESENTED = YES
@@ -215,12 +148,6 @@ BACKGROUND_EXECUTION = NO
 GENERIC_SCHEDULER = NO
 GENERIC_CRAWLER = NO
 UNIVERSAL_ENRICHMENT_FRAMEWORK = NO
-FOCUSED_TESTS = 37/37 PASS
-LINE_COVERAGE_NEW_MODULE = 100%
 ICP_DEFINED = NO
 B2B_ASSUMPTION = PROVISIONAL
 ```
-
-## Next work unit
-
-Per the original handoff: `END_TO_END_ACCEPTANCE_V1`.
