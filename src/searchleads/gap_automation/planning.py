@@ -23,24 +23,14 @@ from searchleads.domain import (
     Person,
     QualificationStatus,
 )
-
+from searchleads.qualification_policy import APPROVED_DENTAL_ICP_POLICY_V1
 
 ROLE_FIELD = "professional_role_title"
 BRASILAPI_FIELDS = frozenset({
-    "business_registry_id",
-    "legal_name",
-    "trade_name",
-    "registration_status",
-    "primary_cnae_code",
-    "primary_cnae_description",
-    "city",
-    "state",
+    "business_registry_id", "legal_name", "trade_name", "registration_status",
+    "primary_cnae_code", "primary_cnae_description", "city", "state",
 })
-OFFICIAL_COMPANY_LOCATION_FIELDS = frozenset({
-    "street_address",
-    "postal_code",
-    "activity_start_date",
-})
+OFFICIAL_COMPANY_LOCATION_FIELDS = frozenset({"street_address", "postal_code", "activity_start_date"})
 _CNPJ_FORMATTING = re.compile(r"[.\-/\s]")
 _CNPJ_KEY = re.compile(r"^[0-9A-Z]{14}$")
 
@@ -58,6 +48,7 @@ class ActionKind(StrEnum):
     COMPANY_CONTACT_PAGE_INGEST = "COMPANY_CONTACT_PAGE_INGEST"
     PERSON_ROLE_PAGE_INGEST = "PERSON_ROLE_PAGE_INGEST"
     CONTACT_PUBLICATION_VALIDATION = "CONTACT_PUBLICATION_VALIDATION"
+    DENTAL_QUALIFICATION_EVALUATION = "DENTAL_QUALIFICATION_EVALUATION"
 
 
 class ActionDisposition(StrEnum):
@@ -89,6 +80,8 @@ class AutomationInputs:
     company_contact_page_urls: tuple[str, ...] = ()
     people_page_url: str | None = None
     validation_contact_ids: tuple[str, ...] = ()
+    qualification_person_id: str | None = None
+    qualification_policy_id: str | None = None
 
     def __post_init__(self) -> None:
         if self.known_cnpj is not None:
@@ -101,6 +94,10 @@ class AutomationInputs:
             _normalize_http_url(self.people_page_url)
         if any(not value.strip() for value in self.validation_contact_ids):
             raise ValueError("validation_contact_ids must not contain blanks")
+        if self.qualification_person_id is not None and not self.qualification_person_id.strip():
+            raise ValueError("qualification_person_id must be non-blank when supplied")
+        if self.qualification_policy_id is not None and not self.qualification_policy_id.strip():
+            raise ValueError("qualification_policy_id must be non-blank when supplied")
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,170 +219,83 @@ def detect_gaps(
     candidate_facts: Iterable[CandidateFact] = (),
     lead: Lead | None = None,
 ) -> tuple[Gap, ...]:
-    """Detect only gaps explicitly requested by the caller."""
     if not company_id.strip():
         raise ValueError("company_id must not be blank")
-
     facts = tuple(canonical_facts)
-    present_fields = {
-        fact.field_name
-        for fact in facts
-        if fact.subject_id == company_id
-    }
+    present_fields = {fact.field_name for fact in facts if fact.subject_id == company_id}
     requested_fields = tuple(sorted(set(field.strip() for field in requirements.company_fields)))
     gaps: list[Gap] = []
     for field_name in requested_fields:
         if field_name not in present_fields:
-            gaps.append(_gap(
-                company_id, GapKind.COMPANY_FIELD, field_name,
-                f"missing required canonical company field: {field_name}",
-            ))
-
+            gaps.append(_gap(company_id, GapKind.COMPANY_FIELD, field_name, f"missing required canonical company field: {field_name}"))
     contact_records = tuple(contacts)
     if requirements.require_validated_company_contact:
-        validated = any(
-            contact.owner_id == company_id and contact.status is ContactStatus.VALIDATED
-            for contact in contact_records
-        )
+        validated = any(contact.owner_id == company_id and contact.status is ContactStatus.VALIDATED for contact in contact_records)
         if not validated:
-            gaps.append(_gap(
-                company_id, GapKind.VALIDATED_COMPANY_CONTACT, "validated_company_contact",
-                "no validated company-owned contact is present",
-            ))
-
+            gaps.append(_gap(company_id, GapKind.VALIDATED_COMPANY_CONTACT, "validated_company_contact", "no validated company-owned contact is present"))
     people_records = tuple(person for person in people if person.company_id == company_id)
     if requirements.require_person_role:
         person_ids = {person.person_id for person in people_records}
-        has_role = any(
-            fact.subject_id in person_ids and fact.field_name == ROLE_FIELD
-            for fact in candidate_facts
-        )
+        has_role = any(fact.subject_id in person_ids and fact.field_name == ROLE_FIELD for fact in candidate_facts)
         if not has_role:
-            gaps.append(_gap(
-                company_id, GapKind.PERSON_ROLE, "person_role",
-                "no evidence-backed person role fact is present for this company",
-            ))
-
+            gaps.append(_gap(company_id, GapKind.PERSON_ROLE, "person_role", "no evidence-backed person role fact is present for this company"))
     if requirements.require_qualification:
         qualified = lead is not None and lead.company_id == company_id and lead.qualification_status is not QualificationStatus.UNKNOWN
         if not qualified:
-            gaps.append(_gap(
-                company_id, GapKind.QUALIFICATION, "qualification",
-                "qualification remains absent or UNKNOWN",
-            ))
-
+            gaps.append(_gap(company_id, GapKind.QUALIFICATION, "qualification", "qualification remains absent or UNKNOWN"))
     return tuple(sorted(gaps, key=lambda item: (item.kind.value, item.key, item.gap_id)))
 
 
-def _ready_action(
-    company_id: str,
-    gap: Gap,
-    kind: ActionKind,
-    effect: ActionEffect,
-    reason: str,
-    *,
-    locator: str | None = None,
-    input_ids: tuple[str, ...] = (),
-    network: bool,
-) -> AutomationAction:
+def _ready_action(company_id: str, gap: Gap, kind: ActionKind, effect: ActionEffect, reason: str, *, locator: str | None = None, input_ids: tuple[str, ...] = (), network: bool) -> AutomationAction:
     normalized_locator = _normalize_http_url(locator) if locator is not None else None
     ids = tuple(sorted(set(input_ids)))
     material = _digest(company_id, gap.gap_id, kind.value, normalized_locator or "", *ids)
-    return AutomationAction(
-        action_id=f"automation:v1:{material}",
-        gap_id=gap.gap_id,
-        disposition=ActionDisposition.READY,
-        action_kind=kind,
-        effect=effect,
-        reason=" ".join(reason.split()),
-        locator=normalized_locator,
-        input_ids=ids,
-        retry_max_attempts=3 if network else 1,
-        cache_key=f"automation-cache:v1:{material}",
-        min_interval_seconds=60 if network else 0,
-    )
+    return AutomationAction(f"automation:v1:{material}", gap.gap_id, ActionDisposition.READY, kind, effect, " ".join(reason.split()), normalized_locator, ids, 3 if network else 1, f"automation-cache:v1:{material}", 60 if network else 0)
 
 
 def _blocked_action(company_id: str, gap: Gap, reason: str) -> AutomationAction:
     material = _digest(company_id, gap.gap_id, "BLOCKED")
-    return AutomationAction(
-        action_id=f"automation:v1:{material}",
-        gap_id=gap.gap_id,
-        disposition=ActionDisposition.BLOCKED,
-        action_kind=None,
-        effect=ActionEffect.NONE,
-        reason=" ".join(reason.split()),
-    )
+    return AutomationAction(f"automation:v1:{material}", gap.gap_id, ActionDisposition.BLOCKED, None, ActionEffect.NONE, " ".join(reason.split()))
 
 
 def _actions_for_gap(company_id: str, gap: Gap, inputs: AutomationInputs) -> tuple[AutomationAction, ...]:
     if gap.kind is GapKind.COMPANY_FIELD:
         if gap.key in BRASILAPI_FIELDS:
             if inputs.known_cnpj is None:
-                return (_blocked_action(
-                    company_id, gap,
-                    "BrasilAPI point lookup requires an explicit known CNPJ routing key",
-                ),)
+                return (_blocked_action(company_id, gap, "BrasilAPI point lookup requires an explicit known CNPJ routing key"),)
             cnpj = _normalize_cnpj(inputs.known_cnpj)
             locator = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
-            return (_ready_action(
-                company_id, gap, ActionKind.BRASILAPI_POINT_LOOKUP, ActionEffect.PREREQUISITE,
-                "existing WU3 point lookup can acquire source evidence/candidate facts for this field; canonicalization remains separate",
-                locator=locator, input_ids=(cnpj,), network=True,
-            ),)
+            return (_ready_action(company_id, gap, ActionKind.BRASILAPI_POINT_LOOKUP, ActionEffect.PREREQUISITE, "existing WU3 point lookup can acquire source evidence/candidate facts for this field; canonicalization remains separate", locator=locator, input_ids=(cnpj,), network=True),)
         if gap.key in OFFICIAL_COMPANY_LOCATION_FIELDS:
             if inputs.known_cnpj is None:
-                return (_blocked_action(
-                    company_id, gap,
-                    "official company-location enrichment requires an explicit known CNPJ routing key",
-                ),)
+                return (_blocked_action(company_id, gap, "official company-location enrichment requires an explicit known CNPJ routing key"),)
             cnpj = _normalize_cnpj(inputs.known_cnpj)
-            return (_ready_action(
-                company_id, gap, ActionKind.OFFICIAL_COMPANY_LOCATION_INGEST, ActionEffect.PREREQUISITE,
-                "existing WU15 official-location ingestion can acquire source evidence/candidate facts for this field; canonicalization remains separate",
-                locator=OFFICIAL_COMPANY_LOCATION_URL, input_ids=(cnpj,), network=True,
-            ),)
-        return (_blocked_action(
-            company_id, gap,
-            "no implemented clean-stack source is registered for this required company field",
-        ),)
+            return (_ready_action(company_id, gap, ActionKind.OFFICIAL_COMPANY_LOCATION_INGEST, ActionEffect.PREREQUISITE, "existing WU15 official-location ingestion can acquire source evidence/candidate facts for this field; canonicalization remains separate", locator=OFFICIAL_COMPANY_LOCATION_URL, input_ids=(cnpj,), network=True),)
+        return (_blocked_action(company_id, gap, "no implemented clean-stack source is registered for this required company field"),)
 
     if gap.kind is GapKind.VALIDATED_COMPANY_CONTACT:
         validation_ids = tuple(sorted(set(inputs.validation_contact_ids)))
         if len(validation_ids) >= 2:
-            return (_ready_action(
-                company_id, gap, ActionKind.CONTACT_PUBLICATION_VALIDATION, ActionEffect.DIRECT,
-                "existing WU9 publication-corroboration method can evaluate the explicitly supplied contact observations",
-                input_ids=validation_ids, network=False,
-            ),)
+            return (_ready_action(company_id, gap, ActionKind.CONTACT_PUBLICATION_VALIDATION, ActionEffect.DIRECT, "existing WU9 publication-corroboration method can evaluate the explicitly supplied contact observations", input_ids=validation_ids, network=False),)
         urls = tuple(sorted({_normalize_http_url(url) for url in inputs.company_contact_page_urls}))
         if urls:
-            return tuple(_ready_action(
-                company_id, gap, ActionKind.COMPANY_CONTACT_PAGE_INGEST, ActionEffect.PREREQUISITE,
-                "existing WU7 page ingestion can create discovery evidence/contact observations; validation still requires independent corroboration",
-                locator=url, network=True,
-            ) for url in urls)
-        return (_blocked_action(
-            company_id, gap,
-            "validated-contact gap needs either at least two explicit contact observation IDs or explicit company contact-page URLs",
-        ),)
+            return tuple(_ready_action(company_id, gap, ActionKind.COMPANY_CONTACT_PAGE_INGEST, ActionEffect.PREREQUISITE, "existing WU7 page ingestion can create discovery evidence/contact observations; validation still requires independent corroboration", locator=url, network=True) for url in urls)
+        return (_blocked_action(company_id, gap, "validated-contact gap needs either at least two explicit contact observation IDs or explicit company contact-page URLs"),)
 
     if gap.kind is GapKind.PERSON_ROLE:
         if inputs.people_page_url is None:
-            return (_blocked_action(
-                company_id, gap,
-                "person/role discovery requires an explicit people/leadership page URL",
-            ),)
-        return (_ready_action(
-            company_id, gap, ActionKind.PERSON_ROLE_PAGE_INGEST, ActionEffect.PREREQUISITE,
-            "existing WU8 people-page ingestion can create evidence-backed Person and role candidate facts",
-            locator=inputs.people_page_url, network=True,
-        ),)
+            return (_blocked_action(company_id, gap, "person/role discovery requires an explicit people/leadership page URL"),)
+        return (_ready_action(company_id, gap, ActionKind.PERSON_ROLE_PAGE_INGEST, ActionEffect.PREREQUISITE, "existing WU8 people-page ingestion can create evidence-backed Person and role candidate facts", locator=inputs.people_page_url, network=True),)
 
     if gap.kind is GapKind.QUALIFICATION:
-        return (_blocked_action(
-            company_id, gap,
-            "no qualification engine/ICP capability exists in the clean stack; planning cannot invent one",
+        if inputs.qualification_person_id is None:
+            return (_blocked_action(company_id, gap, "qualification requires an explicit target Person ID"),)
+        if inputs.qualification_policy_id != APPROVED_DENTAL_ICP_POLICY_V1.policy_id:
+            return (_blocked_action(company_id, gap, "qualification requires the explicit approved dental policy ID"),)
+        return (_ready_action(
+            company_id, gap, ActionKind.DENTAL_QUALIFICATION_EVALUATION, ActionEffect.DIRECT,
+            "existing WU20 qualification can evaluate evidence under the explicit approved dental policy; execution must validate Person/company ownership and evidence",
+            input_ids=(inputs.qualification_person_id, inputs.qualification_policy_id), network=False,
         ),)
 
     raise ValueError(f"unsupported gap kind: {gap.kind}")
@@ -402,24 +312,7 @@ def plan_gap_actions(
     candidate_facts: Iterable[CandidateFact] = (),
     lead: Lead | None = None,
 ) -> AutomationPlan:
-    gaps = detect_gaps(
-        company_id, requirements,
-        canonical_facts=canonical_facts,
-        contacts=contacts,
-        people=people,
-        candidate_facts=candidate_facts,
-        lead=lead,
-    )
-    actions = tuple(
-        action
-        for gap in gaps
-        for action in _actions_for_gap(company_id, gap, inputs)
-    )
-    actions = tuple(sorted(actions, key=lambda item: (
-        item.gap_id,
-        item.disposition.value,
-        item.action_kind.value if item.action_kind else "",
-        item.locator or "",
-        item.action_id,
-    )))
+    gaps = detect_gaps(company_id, requirements, canonical_facts=canonical_facts, contacts=contacts, people=people, candidate_facts=candidate_facts, lead=lead)
+    actions = tuple(action for gap in gaps for action in _actions_for_gap(company_id, gap, inputs))
+    actions = tuple(sorted(actions, key=lambda item: (item.gap_id, item.disposition.value, item.action_kind.value if item.action_kind else "", item.locator or "", item.action_id)))
     return AutomationPlan(company_id, requirements, gaps, actions)

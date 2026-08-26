@@ -2,7 +2,7 @@
 
 ## Work unit
 
-`GAP_DETECTION_AND_AUTOMATION_V1`, reconciled by `GAP_CAPABILITY_RECONCILIATION_V1` after the addition of WU15 multi-source company enrichment.
+`GAP_DETECTION_AND_AUTOMATION_V1`, reconciled by `GAP_CAPABILITY_RECONCILIATION_V1` after WU15 multi-source company enrichment and by `DENTAL_COMMERCIAL_QUALIFICATION_V1` after the first approved qualification engine.
 
 This planner detects **only caller-requested gaps** and produces a deterministic bounded action plan over capabilities that actually exist in the clean SearchLeads stack.
 
@@ -67,13 +67,17 @@ A validated-company-contact gap can map to explicit `COMPANY_CONTACT_PAGE_INGEST
 
 A missing Person-role requirement maps to `PERSON_ROLE_PAGE_INGEST` only when an explicit people/leadership URL is supplied. It remains a prerequisite observation, not a cross-snapshot identity claim.
 
+## Qualification mapping
+
+After WU19/WU20, a qualification gap may map to local `DENTAL_QUALIFICATION_EVALUATION` only when the caller supplies an explicit target Person ID and exactly the approved `dental-facial-surgery-education-br-v1` policy ID. The action is `DIRECT`, has one local attempt and no network interval. Missing Person ID, missing policy ID, or any other policy ID remains `BLOCKED`. Planning does not execute qualification or infer Person/company ownership.
+
 ## Deliberately blocked mappings
 
 The planner does not claim capabilities that remain absent. Examples:
 
 - `employee_count`
 - any other unknown company predicate
-- qualification evaluation while no clean qualification engine/ICP exists
+- qualification evaluation without an explicit target Person ID and the exact approved dental policy ID
 
 For WU15-supported location fields, absence of `known_cnpj` is also explicitly `BLOCKED`; the planner does not attempt to infer a CNPJ from a company name.
 
@@ -87,32 +91,34 @@ min_interval_seconds = 60
 cache_key = deterministic
 ```
 
-The local contact-validation action has one attempt, zero network interval, and a deterministic cache key. Every `BLOCKED` action has zero retries, null cache key and zero interval, preventing blind retry loops.
+Local direct actions (contact validation and dental qualification) have one attempt, zero network interval, and deterministic cache keys. Every `BLOCKED` action has zero retries, null cache key and zero interval, preventing blind retry loops.
 
 URL inputs are validated as absolute HTTP(S), credentials are rejected, host/scheme/default port are normalized, fragments are removed, and duplicate normalized page URLs collapse into one action where the action type accepts caller-supplied URLs.
 
 ## Reconciled curated benchmark
 
-The WU16 benchmark contains **21 scenarios**, retaining the previous planning contract and adding explicit location-capability cases:
+The reconciled benchmark contains **23 scenarios**, retaining the WU16 planning contract and adding explicit qualification-capability cases:
 
 - `postal_code` without CNPJ → BLOCKED
 - `postal_code` with CNPJ → READY official-location ingestion
 - `street_address` with CNPJ → READY official-location ingestion
 - `activity_start_date` with CNPJ → READY official-location ingestion
 - `employee_count` remains BLOCKED
-- qualification remains BLOCKED
+- qualification without explicit Person/policy inputs remains BLOCKED
+- qualification with explicit Person + approved policy becomes READY local evaluation
+- qualification with an unapproved policy remains BLOCKED
 
 Measured contract:
 
 ```text
-SCENARIOS = 21
-GAP_TRUE_POSITIVE = 21
+SCENARIOS = 23
+GAP_TRUE_POSITIVE = 23
 GAP_FALSE_POSITIVE = 0
 GAP_FALSE_NEGATIVE = 0
 GAP_PRECISION = 100.0%
 GAP_RECALL = 100.0%
-READY_ACTION_ROUTING_EXACT = 21/21
-BLOCKED_ACTION_ROUTING_EXACT = 21/21
+READY_ACTION_ROUTING_EXACT = 23/23
+BLOCKED_ACTION_ROUTING_EXACT = 23/23
 ```
 
 These are deterministic regression metrics for the curated contract, not production gap prevalence, source success rate, or business coverage.
@@ -120,11 +126,10 @@ These are deterministic regression metrics for the curated contract, not product
 ## Verification
 
 ```text
-WU16_GAP_TESTS = 43/43 PASS
+RECONCILED_GAP_TESTS = 36/36 PASS
 GAP_MODULE_LINE_COVERAGE = 100%
-GAP_MEASURED_STATEMENTS = 217
-GAP_BRANCHES = 86
-WU14_WU15_WU16_INTEGRATION = 86/86 PASS
+GAP_MEASURED_STATEMENTS = 227
+GAP_BRANCHES = 94
 GAP_AUTOMATION_BENCHMARK = PASS
 PYTHON_MODULE_COMPILE = PASS
 ```
@@ -139,7 +144,8 @@ BRASILAPI_REQUIRES_KNOWN_CNPJ = YES
 OFFICIAL_LOCATION_REQUIRES_KNOWN_CNPJ = YES
 OFFICIAL_LOCATION_FIELDS_READY_WITH_CNPJ = PASS
 EMPLOYEE_COUNT = BLOCKED_NO_SOURCE
-QUALIFICATION_WITHOUT_ENGINE_ICP = BLOCKED
+QUALIFICATION_EXPLICIT_APPROVED_POLICY_AND_PERSON = READY
+QUALIFICATION_MISSING_OR_WRONG_POLICY_INPUT = BLOCKED
 NETWORK_RETRY_FINITE = YES
 NETWORK_MIN_INTERVAL_REPRESENTED = YES
 DETERMINISTIC_CACHE_KEY = YES
@@ -148,6 +154,6 @@ BACKGROUND_EXECUTION = NO
 GENERIC_SCHEDULER = NO
 GENERIC_CRAWLER = NO
 UNIVERSAL_ENRICHMENT_FRAMEWORK = NO
-ICP_DEFINED = NO
-B2B_ASSUMPTION = PROVISIONAL
+APPROVED_VERTICAL_ICP = dental-facial-surgery-education-br-v1
+GENERIC_CORE_B2B_ASSUMPTION = PROVISIONAL
 ```

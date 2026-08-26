@@ -23,6 +23,7 @@ Current clean work-unit stack:
 - `DISCOVERY_COVERAGE_MEASUREMENT_V1`
 - `PERSON_ENTITY_RESOLUTION_V1`
 - `DENTAL_ICP_POLICY_CONTRACT_V1`
+- `DENTAL_COMMERCIAL_QUALIFICATION_V1`
 
 ## Included
 
@@ -49,6 +50,7 @@ Current clean work-unit stack:
 - Deterministic end-to-end technical acceptance over the published clean-stack APIs, including Evidence replay and byte-identical export reproduction across fresh runs.
 - A second narrow company source for already-identified SERPRO entities: the official transparency address page, preserving raw Evidence and adding address/postal/activity-start observations without source-authority ranking.
 - A versioned first vertical ICP policy contract for the already-documented Brazil dental facial-surgery education target; the commercial target is `Person`, company size is not an applicable criterion, and missing/conflicting required evidence remains `UNKNOWN/REVIEW`.
+- Evidence-backed Person-centered dental commercial qualification that consumes exactly the approved policy contract, keeps FIT and INTENT separate, preserves `UNKNOWN` under missing/conflicting required evidence, materializes deterministic company-linked Lead wrappers, and keeps CFO/compliance/live-network gates separate.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -61,7 +63,6 @@ Current clean work-unit stack:
 - automatic persisted Person merges/splits;
 - mailbox deliverability, phone reachability, or social-account-control validation;
 - a universal project-wide ICP applicable to every vertical;
-- the clean-stack qualification engine that consumes the approved dental ICP contract.
 
 ## Run tests
 
@@ -69,4 +70,4 @@ Current clean work-unit stack:
 python -m pytest
 ```
 
-The generic core B2B assumption remains provisional. The first approved vertical ICP is the documented Brazil dental facial-surgery education policy and is now represented as a clean-stack contract; commercial qualification remains `UNKNOWN` until the qualification engine consumes that contract. Live-network certification remains a separate gate.
+The generic core B2B assumption remains provisional. The first approved vertical ICP is the documented Brazil dental facial-surgery education policy; the clean-stack engine now evaluates that policy with evidence-linked Person-centered decisions. Qualification does not certify current CFO registration, campaign legal/compliance status, contact reachability, or live-network acquisition; those remain separate gates.
