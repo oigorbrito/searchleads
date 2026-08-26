@@ -22,6 +22,7 @@ Current clean work-unit stack:
 - `GAP_CAPABILITY_RECONCILIATION_V1`
 - `DISCOVERY_COVERAGE_MEASUREMENT_V1`
 - `PERSON_ENTITY_RESOLUTION_V1`
+- `DENTAL_ICP_POLICY_CONTRACT_V1`
 
 ## Included
 
@@ -47,6 +48,7 @@ Current clean work-unit stack:
 - Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities, including WU15 official-location enrichment for address/postal/activity-start gaps when an explicit CNPJ is available; missing inputs or unknown sources remain blocked.
 - Deterministic end-to-end technical acceptance over the published clean-stack APIs, including Evidence replay and byte-identical export reproduction across fresh runs.
 - A second narrow company source for already-identified SERPRO entities: the official transparency address page, preserving raw Evidence and adding address/postal/activity-start observations without source-authority ranking.
+- A versioned first vertical ICP policy contract for the already-documented Brazil dental facial-surgery education target; the commercial target is `Person`, company size is not an applicable criterion, and missing/conflicting required evidence remains `UNKNOWN/REVIEW`.
 - Executable invariants/tests.
 
 ## Deliberately not included yet
@@ -58,7 +60,8 @@ Current clean work-unit stack:
 - source-authority weights or learned truth discovery;
 - automatic persisted Person merges/splits;
 - mailbox deliverability, phone reachability, or social-account-control validation;
-- ICP or qualification policy.
+- a universal project-wide ICP applicable to every vertical;
+- the clean-stack qualification engine that consumes the approved dental ICP contract.
 
 ## Run tests
 
@@ -66,4 +69,4 @@ Current clean work-unit stack:
 python -m pytest
 ```
 
-B2B remains provisional and no ICP is defined yet. The deterministic technical end-to-end path passes, bounded source-page discovery coverage is measured separately, and live-network certification/commercial qualification remain separate gates.
+The generic core B2B assumption remains provisional. The first approved vertical ICP is the documented Brazil dental facial-surgery education policy and is now represented as a clean-stack contract; commercial qualification remains `UNKNOWN` until the qualification engine consumes that contract. Live-network certification remains a separate gate.
