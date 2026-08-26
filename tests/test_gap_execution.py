@@ -47,7 +47,7 @@ def test_blocked_plan_action_remains_blocked():
 
 
 def test_defensively_blocks_malformed_ready_metadata():
-    malformed = ready(cache=None, attempts=0)
+    malformed = ready()
     object.__setattr__(malformed, "cache_key", None)
     object.__setattr__(malformed, "retry_max_attempts", 0)
     record = execute_gap_plan(plan((malformed,)), {}, now=NOW, runtime=GapRuntimeState())[0]
