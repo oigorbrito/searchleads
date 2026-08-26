@@ -21,6 +21,7 @@ Current clean work-unit stack:
 - `MULTI_SOURCE_COMPANY_ENRICHMENT_V1`
 - `GAP_CAPABILITY_RECONCILIATION_V1`
 - `DISCOVERY_COVERAGE_MEASUREMENT_V1`
+- `PERSON_ENTITY_RESOLUTION_V1`
 
 ## Included
 
@@ -40,6 +41,7 @@ Current clean work-unit stack:
 - Conservative contact validation by independent persisted page-observation corroboration; validated publication association remains distinct from deliverability or reachability.
 - One versioned known-source web-discovery recipe for the official SERPRO office directory; raw discovery Evidence and discovered CNPJ seeds are preserved for deterministic replay and downstream structured acquisition.
 - Bounded source-page discovery coverage measurement against an explicit 12-block CNPJ-labelled SERPRO reference population; missed, unexpected, and duplicate seed behavior is reported separately and no market-wide recall is claimed.
+- Measured cross-observation Person ER triage over explicit evidence-linked name, role and person-contact signals; a profile+name auto-match candidate is diagnostic only because the adversarial benchmark shows non-zero false-merge risk.
 - Selective review routing for already-explicit ambiguity/conflict states; obvious/terminal cases are excluded, human-readable reasons are required, duplicate review work is consolidated, and no opaque review score is introduced.
 - Deterministic JSON and one-row CSV export of a coherent company/lead audit bundle, with explicit cross-record integrity checks and provenance/evidence preservation.
 - Explicit-requirement gap detection with bounded plans that select only implemented clean-stack capabilities, including WU15 official-location enrichment for address/postal/activity-start gaps when an explicit CNPJ is available; missing inputs or unknown sources remain blocked.
@@ -54,7 +56,7 @@ Current clean work-unit stack:
 - market-wide or web-wide discovery coverage claims;
 - automatic fuzzy company merges or persisted merge execution;
 - source-authority weights or learned truth discovery;
-- cross-observation Person entity resolution or automatic person merges;
+- automatic persisted Person merges/splits;
 - mailbox deliverability, phone reachability, or social-account-control validation;
 - ICP or qualification policy.
 
