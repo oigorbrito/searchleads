@@ -1,0 +1,32 @@
+name: live-network-smoke
+
+on:
+  push:
+    branches:
+      - probe/live-network-certification
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-network-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run live source smoke
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: python scripts/run_live_network_smoke.py
