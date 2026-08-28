@@ -22,9 +22,11 @@ class AcceptanceMetrics:
     export_roundtrip_verified: bool
     reproducible_replay_verified: bool
     dedup_labeled_pairs: int
+    dedup_corpus_sufficient: bool
     dedup_false_merge_measured: bool
     dedup_false_split_measured: bool
     icp_defined: bool
+    qualification_verified: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,15 +77,24 @@ def evaluate_acceptance(metrics: AcceptanceMetrics) -> AcceptanceReport:
             GateStatus.PASS if metrics.reproducible_replay_verified else GateStatus.NOT_RUN
         ),
         deduplication=_dedup_gate(metrics),
-        qualification=(GateStatus.PASS if metrics.icp_defined else GateStatus.BLOCKED),
+        qualification=_qualification_gate(metrics),
     )
 
 
 def _dedup_gate(metrics: AcceptanceMetrics) -> GateStatus:
     if (
         metrics.dedup_labeled_pairs > 0
+        and metrics.dedup_corpus_sufficient
         and metrics.dedup_false_merge_measured
         and metrics.dedup_false_split_measured
     ):
         return GateStatus.PASS
     return GateStatus.PARTIAL
+
+
+def _qualification_gate(metrics: AcceptanceMetrics) -> GateStatus:
+    if not metrics.icp_defined:
+        return GateStatus.BLOCKED
+    if metrics.qualification_verified:
+        return GateStatus.PASS
+    return GateStatus.NOT_RUN
