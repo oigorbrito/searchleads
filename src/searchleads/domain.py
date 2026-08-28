@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -49,7 +50,11 @@ class Evidence:
         _require_text(self.source_id, "Evidence.source_id")
         if not isinstance(self.raw_content, bytes):
             raise DomainInvariantError("Evidence.raw_content must be bytes")
-        _require_text(self.sha256, "Evidence.sha256")
+        if not _is_sha256(self.sha256):
+            raise DomainInvariantError("Evidence.sha256 must be a lowercase SHA-256 hex digest")
+        observed = hashlib.sha256(self.raw_content).hexdigest()
+        if observed != self.sha256:
+            raise DomainInvariantError("Evidence.sha256 must match Evidence.raw_content")
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,3 +200,11 @@ class ReviewCase:
 def _require_text(value: str, field_name: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise DomainInvariantError(f"{field_name} must be non-empty text")
+
+
+def _is_sha256(value: str) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
