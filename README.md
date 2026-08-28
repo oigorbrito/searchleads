@@ -19,8 +19,13 @@ Cross-cutting concerns: PROVENANCE / VALIDATION / CONFIDENCE / REVIEW.
 - Provenance is fact-level.
 - ICP, score, geography, company size, job titles and qualification criteria must not be invented.
 
+## Persistence boundary
+
+SQLite is the local/reference persistence boundary. Schema evolution uses `PRAGMA user_version` plus additive `PRAGMA table_info` repair for historical databases whose version does not fully describe their shape. Raw evidence is stored as immutable BLOB content and must survive migration byte-for-byte.
+
 ## Work units
 
-Current branch establishes `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1` with immutable domain values and unit tests for the core invariants.
+- `LEADS_SCIENTIFIC_FOUNDATION_AND_DOMAIN_V1`: immutable domain values and core scientific invariants.
+- `LEADS_PERSISTENCE_AND_EVIDENCE_V1`: versioned SQLite schema, additive migrations, legacy repair and immutable evidence storage.
 
 Qualification remains blocked while ICP is undefined.
