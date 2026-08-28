@@ -34,6 +34,8 @@ class CandidateFact:
             raise ValueError("candidate fact requires evidence")
         if any(not item.strip() for item in self.evidence_ids):
             raise ValueError("evidence_ids must not contain blanks")
+        if len(set(self.evidence_ids)) != len(self.evidence_ids):
+            raise ValueError("evidence_ids must not contain duplicates")
         if not self.provenance_id.strip():
             raise ValueError("provenance_id must not be blank")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
@@ -66,6 +68,8 @@ class CanonicalFact:
             raise ValueError("canonical fact requires candidate facts")
         if any(not item.strip() for item in self.candidate_fact_ids):
             raise ValueError("candidate_fact_ids must not contain blanks")
+        if len(set(self.candidate_fact_ids)) != len(self.candidate_fact_ids):
+            raise ValueError("candidate_fact_ids must not contain duplicates")
         if not self.provenance_id.strip():
             raise ValueError("provenance_id must not be blank")
         if not self.resolution_method.strip():
@@ -91,8 +95,12 @@ class Conflict:
             raise ValueError("subject_id must not be blank")
         if not self.field_name.strip():
             raise ValueError("field_name must not be blank")
+        if any(not item.strip() for item in self.candidate_fact_ids):
+            raise ValueError("candidate_fact_ids must not contain blanks")
         if len(set(self.candidate_fact_ids)) < 2:
             raise ValueError("conflict requires at least two distinct candidate facts")
+        if len(set(self.candidate_fact_ids)) != len(self.candidate_fact_ids):
+            raise ValueError("candidate_fact_ids must not contain duplicates")
         if self.status is ConflictStatus.RESOLVED and not self.selected_fact_id:
             raise ValueError("resolved conflict requires selected_fact_id")
         if self.selected_fact_id and self.selected_fact_id not in self.candidate_fact_ids:
