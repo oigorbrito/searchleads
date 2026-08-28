@@ -74,6 +74,12 @@ class Provenance:
             raise ValueError("provenance requires at least one evidence_id")
         if any(not item.strip() for item in self.evidence_ids):
             raise ValueError("evidence_ids must not contain blanks")
+        if len(set(self.evidence_ids)) != len(self.evidence_ids):
+            raise ValueError("evidence_ids must not contain duplicates")
+        if any(not item.strip() for item in self.derived_from_fact_ids):
+            raise ValueError("derived_from_fact_ids must not contain blanks")
+        if len(set(self.derived_from_fact_ids)) != len(self.derived_from_fact_ids):
+            raise ValueError("derived_from_fact_ids must not contain duplicates")
         if not self.activity.strip():
             raise ValueError("activity must not be blank")
         if self.generated_at.tzinfo is None:
