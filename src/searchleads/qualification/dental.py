@@ -83,6 +83,14 @@ class DentalQualificationDecision:
     candidate_fact_ids:tuple[str,...]; canonical_fact_ids:tuple[str,...]; conflict_ids:tuple[str,...]; contact_ids:tuple[str,...]
     def __post_init__(self)->None:
         if any(not x.strip() for x in (self.decision_id,self.person_id,self.company_id,self.policy_id)): raise ValueError('decision identity must be non-blank')
+        if self.policy_id != APPROVED_DENTAL_ICP_POLICY_V1.policy_id: raise ValueError('qualification decision policy is not the approved dental ICP policy')
+        if not isinstance(self.offer_track,DentalOfferTrack): raise ValueError('qualification decision offer_track must be a DentalOfferTrack')
+        if not isinstance(self.qualification_status,QualificationStatus): raise ValueError('qualification decision status must be a QualificationStatus')
+        if not isinstance(self.fit,DentalFit) or not isinstance(self.intent,DentalIntent) or not isinstance(self.priority,DentalPriority): raise ValueError('qualification decision fit, intent and priority must use dental enums')
+        if self.qualification_status is QualificationStatus.UNKNOWN and self.fit is not DentalFit.UNKNOWN: raise ValueError('UNKNOWN qualification requires UNKNOWN fit')
+        if self.qualification_status is QualificationStatus.NOT_QUALIFIED and self.fit is not DentalFit.LOW: raise ValueError('NOT_QUALIFIED qualification requires LOW fit')
+        if self.qualification_status is QualificationStatus.QUALIFIED and self.fit not in {DentalFit.HIGH,DentalFit.MEDIUM}: raise ValueError('QUALIFIED qualification requires HIGH or MEDIUM fit')
+        if self.priority is not _priority(self.fit,self.intent): raise ValueError('qualification priority is inconsistent with fit and intent')
         if not self.evidence_ids: raise ValueError('qualification decision requires evidence')
         for values in (self.evidence_ids,self.candidate_fact_ids,self.canonical_fact_ids,self.conflict_ids,self.contact_ids):
             if tuple(sorted(set(values)))!=values: raise ValueError('decision reference IDs must be sorted and unique')
