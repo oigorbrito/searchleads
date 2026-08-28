@@ -3,7 +3,7 @@ import sqlite3
 
 import pytest
 
-from searchleads.domain import DomainInvariantError, Evidence
+from searchleads.domain import DomainInvariantError, Evidence, Source
 from searchleads.persistence import CURRENT_SCHEMA_VERSION, SQLiteStore
 
 
@@ -198,7 +198,7 @@ def test_evidence_corruption_is_detected_on_read(tmp_path) -> None:
 
     with SQLiteStore(path) as store:
         store.put_source(
-            __import__("searchleads.domain", fromlist=["Source"]).Source(
+            Source(
                 id="source-1",
                 name="Source",
                 kind="fixture",
