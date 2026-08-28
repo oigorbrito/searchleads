@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
+import pytest
+
 from searchleads.domain import CandidateFact, Company, Evidence, Source
 from searchleads.export import ExportBundle, decode_exported_evidence, export_lossless_json, export_normalized_csv
 from searchleads.qualification import qualification_without_icp
@@ -49,6 +51,15 @@ def test_lossless_json_preserves_raw_evidence_byte_for_byte() -> None:
 
     assert restored == bundle.evidence[0].raw_content
     assert hashlib.sha256(restored).hexdigest() == exported_evidence["sha256"]
+
+
+def test_lossless_decode_rejects_tampered_evidence() -> None:
+    payload = json.loads(export_lossless_json(_bundle()))
+    exported_evidence = payload["evidence"][0]
+    exported_evidence["sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="does not match"):
+        decode_exported_evidence(exported_evidence)
 
 
 def test_json_preserves_fact_level_provenance() -> None:
