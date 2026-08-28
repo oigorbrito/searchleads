@@ -80,6 +80,10 @@ class ContactPoint:
             raise ValueError("assessed contact status requires validation evidence")
         if assessed and self.validated_at is None:
             raise ValueError("assessed contact status requires validated_at")
+        if self.status is ContactStatus.DISCOVERED and (
+            self.validation_evidence_ids or self.validated_at is not None
+        ):
+            raise ValueError("DISCOVERED contact cannot carry validation metadata")
         if self.validated_at is not None and self.validated_at.tzinfo is None:
             raise ValueError("validated_at must be timezone-aware")
 
@@ -102,7 +106,13 @@ class Lead:
             raise ValueError("company_id must not be blank")
         if self.created_at.tzinfo is None:
             raise ValueError("created_at must be timezone-aware")
-        if self.stage is LeadStage.QUALIFIED and self.qualification_status is not QualificationStatus.QUALIFIED:
-            raise ValueError("QUALIFIED stage requires QUALIFIED qualification_status")
-        if self.stage is LeadStage.DISQUALIFIED and self.qualification_status is not QualificationStatus.NOT_QUALIFIED:
-            raise ValueError("DISQUALIFIED stage requires NOT_QUALIFIED qualification_status")
+        expected_status = {
+            LeadStage.CANDIDATE: QualificationStatus.UNKNOWN,
+            LeadStage.REVIEW: QualificationStatus.UNKNOWN,
+            LeadStage.QUALIFIED: QualificationStatus.QUALIFIED,
+            LeadStage.DISQUALIFIED: QualificationStatus.NOT_QUALIFIED,
+        }[self.stage]
+        if self.qualification_status is not expected_status:
+            raise ValueError(
+                f"{self.stage.value} stage requires {expected_status.value} qualification_status"
+            )
