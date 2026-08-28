@@ -1,4 +1,5 @@
-from .semantic import SQLiteRepository, SemanticReferenceError
+from .ledger import SQLiteRepository
+from .semantic import SemanticReferenceError
 from .sqlite import (
     SCHEMA_VERSION,
     DomainRecordIntegrityError,
