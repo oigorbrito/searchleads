@@ -1,3 +1,4 @@
+from .semantic import SQLiteRepository, SemanticReferenceError
 from .sqlite import (
     SCHEMA_VERSION,
     DomainRecordIntegrityError,
@@ -6,7 +7,6 @@ from .sqlite import (
     PersistenceEncodingError,
     PersistenceError,
     MissingReferenceError,
-    SQLiteRepository,
     SchemaVersionError,
     decode_record,
     encode_record,
@@ -23,6 +23,7 @@ __all__ = [
     "MissingReferenceError",
     "SQLiteRepository",
     "SchemaVersionError",
+    "SemanticReferenceError",
     "decode_record",
     "encode_record",
     "raw_payload_sha256",
