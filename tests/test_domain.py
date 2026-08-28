@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 
 from searchleads.domain import (
@@ -86,11 +88,12 @@ def test_review_case_requires_explicit_review_reason() -> None:
 
 
 def test_evidence_raw_content_is_immutable_bytes() -> None:
+    raw = b"raw payload"
     evidence = Evidence(
         id="evidence-1",
         source_id="source-1",
-        raw_content=b"raw payload",
-        sha256="a" * 64,
+        raw_content=raw,
+        sha256=hashlib.sha256(raw).hexdigest(),
     )
     with pytest.raises(Exception):
         evidence.raw_content = b"changed"  # type: ignore[misc]
@@ -102,6 +105,16 @@ def test_evidence_rejects_mutable_text_payload() -> None:
             id="evidence-1",
             source_id="source-1",
             raw_content="raw payload",  # type: ignore[arg-type]
+            sha256="a" * 64,
+        )
+
+
+def test_evidence_rejects_sha256_that_does_not_match_raw_content() -> None:
+    with pytest.raises(DomainInvariantError, match="must match"):
+        Evidence(
+            id="evidence-1",
+            source_id="source-1",
+            raw_content=b"raw payload",
             sha256="a" * 64,
         )
 
