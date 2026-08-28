@@ -178,8 +178,10 @@ class Lead:
         _require_text(self.company_id, "Lead.company_id")
         _require_text(self.qualification_state, "Lead.qualification_state")
         if self.qualification_state == "ICP_UNDEFINED":
+            raise DomainInvariantError("Lead cannot be created while ICP is undefined")
+        if self.qualification_state != "QUALIFIED":
             raise DomainInvariantError(
-                "Lead cannot be created while ICP is undefined"
+                "Lead requires an explicit evaluated QUALIFIED state"
             )
 
 
