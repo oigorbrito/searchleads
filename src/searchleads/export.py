@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import csv
+import hashlib
 import io
 import json
 from dataclasses import asdict, dataclass
@@ -87,9 +88,15 @@ def export_normalized_csv(bundle: ExportBundle) -> dict[str, str]:
 def decode_exported_evidence(item: dict[str, Any]) -> bytes:
     encoding = item.get("raw_content_encoding")
     value = item.get("raw_content_base64")
+    expected_sha256 = item.get("sha256")
     if encoding != "base64" or not isinstance(value, str):
         raise ValueError("exported evidence does not contain Base64 raw content")
-    return base64.b64decode(value.encode("ascii"), validate=True)
+    if not isinstance(expected_sha256, str):
+        raise ValueError("exported evidence does not contain SHA-256")
+    raw = base64.b64decode(value.encode("ascii"), validate=True)
+    if hashlib.sha256(raw).hexdigest() != expected_sha256:
+        raise ValueError("exported evidence SHA-256 does not match raw content")
+    return raw
 
 
 def _evidence_plain(evidence: Evidence) -> dict[str, Any]:
