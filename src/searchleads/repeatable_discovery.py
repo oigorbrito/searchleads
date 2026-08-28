@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -49,18 +48,12 @@ class EvidenceCache:
             raise TypeError("raw_content must be bytes")
         digest = hashlib.sha256(raw_content).hexdigest()
         target = self.root / digest
-        if target.exists():
+        try:
+            with target.open("xb") as stream:
+                stream.write(raw_content)
+        except FileExistsError:
             if target.read_bytes() != raw_content:
                 raise ReplayIntegrityError("content-addressed cache collision or mutation detected")
-            return digest
-
-        temporary = self.root / f".{digest}.{os.getpid()}.tmp"
-        temporary.write_bytes(raw_content)
-        try:
-            temporary.replace(target)
-        finally:
-            if temporary.exists():
-                temporary.unlink()
         return digest
 
     def get(self, digest: str) -> bytes:
