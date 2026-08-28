@@ -29,7 +29,7 @@ from searchleads.domain import (
     Source,
 )
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 _CODEC_VERSION = 1
 _TAG = "__searchleads_type__"
 
@@ -54,8 +54,12 @@ class EvidenceIntegrityError(PersistenceError):
     """Raised when stored raw evidence no longer matches its storage digest."""
 
 
+class DomainRecordIntegrityError(PersistenceError):
+    """Raised when a stored domain-record JSON payload no longer matches its digest."""
+
+
 class SchemaVersionError(PersistenceError):
-    """Raised when the database schema version is unsupported."""
+    """Raised when the database schema version is unsupported or inconsistent."""
 
 
 Record = Source | Evidence | Provenance | CandidateFact | CanonicalFact | Conflict | Company | Person | ContactPoint | Lead
@@ -185,12 +189,20 @@ def raw_payload_sha256(raw_payload: str) -> str:
     return hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
 
 
+def _domain_payload_sha256(payload_json: str) -> str:
+    return hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+
+
 class SQLiteRepository:
     """Append-only SQLite persistence for SearchLeads domain records.
 
     Evidence payloads are stored as UTF-8 BLOBs outside the JSON envelope and
     protected by an internal SHA-256 digest. Domain ``content_digest`` remains
     untouched because its semantics belong to the acquisition layer.
+
+    Schema evolution is monotonic and additive. ``schema_meta`` remains for
+    compatibility with v1 databases while ``PRAGMA user_version`` is kept in
+    sync as the SQLite-native version marker from v2 onward.
     """
 
     def __init__(self, path: str | Path = ":memory:") -> None:
@@ -210,6 +222,8 @@ class SQLiteRepository:
         self._connection.close()
 
     def _initialize_schema(self) -> None:
+        # V1 base shape is intentionally created first so historical databases
+        # and brand-new databases follow the same tested migration path.
         self._connection.executescript(
             """
             CREATE TABLE IF NOT EXISTS schema_meta (
@@ -237,20 +251,103 @@ class SQLiteRepository:
                 ON evidence_records (source_id, captured_at, evidence_id);
             """
         )
+
         row = self._connection.execute(
             "SELECT schema_version FROM schema_meta WHERE singleton = 1"
         ).fetchone()
+        meta_version = int(row["schema_version"]) if row is not None else 1
+        pragma_version = int(self._connection.execute("PRAGMA user_version").fetchone()[0])
+
+        if meta_version > SCHEMA_VERSION or pragma_version > SCHEMA_VERSION:
+            self._connection.close()
+            raise SchemaVersionError(
+                "database schema version is newer than supported "
+                f"(schema_meta={meta_version}, user_version={pragma_version}, supported={SCHEMA_VERSION})"
+            )
+        if pragma_version not in (0, meta_version):
+            self._connection.close()
+            raise SchemaVersionError(
+                "database schema version markers disagree "
+                f"(schema_meta={meta_version}, user_version={pragma_version})"
+            )
+
         if row is None:
             self._connection.execute(
                 "INSERT INTO schema_meta(singleton, schema_version) VALUES (1, ?)",
-                (SCHEMA_VERSION,),
+                (meta_version,),
             )
-            self._connection.commit()
-        elif row["schema_version"] != SCHEMA_VERSION:
-            self._connection.close()
-            raise SchemaVersionError(
-                f"database schema version {row['schema_version']} is not supported; expected {SCHEMA_VERSION}"
+
+        self._migrate(meta_version)
+        self._repair_current_schema()
+        self._set_schema_version(SCHEMA_VERSION)
+        self._connection.commit()
+
+    def _migrate(self, version: int) -> None:
+        current = version
+        while current < SCHEMA_VERSION:
+            if current == 1:
+                self._migrate_v1_to_v2()
+                current = 2
+                continue
+            raise SchemaVersionError(f"no migration path from schema version {current}")
+
+    def _migrate_v1_to_v2(self) -> None:
+        self._ensure_v2_shape()
+        self._backfill_domain_payload_digests()
+        self._connection.execute(
+            "INSERT OR IGNORE INTO schema_migrations(version) VALUES (2)"
+        )
+        self._set_schema_version(2)
+
+    def _repair_current_schema(self) -> None:
+        # Repair is additive and idempotent. It exists for historical databases
+        # whose version marker may be correct but whose shape is incomplete.
+        self._ensure_v2_shape()
+        self._backfill_domain_payload_digests()
+
+    def _ensure_v2_shape(self) -> None:
+        if "payload_sha256" not in self._columns("domain_records"):
+            self._connection.execute(
+                "ALTER TABLE domain_records ADD COLUMN payload_sha256 TEXT"
             )
+        self._connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version INTEGER PRIMARY KEY,
+                applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+    def _backfill_domain_payload_digests(self) -> None:
+        rows = self._connection.execute(
+            "SELECT record_type, record_id, payload_json FROM domain_records WHERE payload_sha256 IS NULL"
+        ).fetchall()
+        for row in rows:
+            self._connection.execute(
+                """UPDATE domain_records SET payload_sha256 = ?
+                   WHERE record_type = ? AND record_id = ?""",
+                (
+                    _domain_payload_sha256(row["payload_json"]),
+                    row["record_type"],
+                    row["record_id"],
+                ),
+            )
+
+    def _set_schema_version(self, version: int) -> None:
+        self._connection.execute(
+            "UPDATE schema_meta SET schema_version = ? WHERE singleton = 1",
+            (version,),
+        )
+        self._connection.execute(f"PRAGMA user_version = {version}")
+
+    def _columns(self, table: str) -> set[str]:
+        if table not in {"schema_meta", "domain_records", "evidence_records", "schema_migrations"}:
+            raise ValueError(f"unsupported schema table: {table!r}")
+        return {
+            str(row[1])
+            for row in self._connection.execute(f'PRAGMA table_info("{table}")')
+        }
 
     @staticmethod
     def _record_id(record: Record) -> str:
@@ -271,19 +368,23 @@ class SQLiteRepository:
             return self._save_evidence(record)
         record_id = self._record_id(record)
         payload = encode_record(record)
+        digest = _domain_payload_sha256(payload)
         row = self._connection.execute(
-            "SELECT payload_json FROM domain_records WHERE record_type = ? AND record_id = ?",
+            """SELECT payload_json, payload_sha256 FROM domain_records
+               WHERE record_type = ? AND record_id = ?""",
             (type(record).__name__, record_id),
         ).fetchone()
         if row is not None:
+            self._verify_domain_payload(row["payload_json"], row["payload_sha256"])
             if row["payload_json"] == payload:
                 return False
             raise PersistenceConflictError(
                 f"{type(record).__name__} id {record_id!r} already exists with different content"
             )
         self._connection.execute(
-            "INSERT INTO domain_records(record_type, record_id, payload_json) VALUES (?, ?, ?)",
-            (type(record).__name__, record_id, payload),
+            """INSERT INTO domain_records(record_type, record_id, payload_json, payload_sha256)
+               VALUES (?, ?, ?, ?)""",
+            (type(record).__name__, record_id, payload, digest),
         )
         self._connection.commit()
         return True
@@ -401,15 +502,22 @@ class SQLiteRepository:
         if record_type is Evidence:
             return self.load_evidence(record_id)  # type: ignore[return-value]
         row = self._connection.execute(
-            "SELECT payload_json FROM domain_records WHERE record_type = ? AND record_id = ?",
+            """SELECT payload_json, payload_sha256 FROM domain_records
+               WHERE record_type = ? AND record_id = ?""",
             (record_type.__name__, record_id),
         ).fetchone()
         if row is None:
             return None
+        self._verify_domain_payload(row["payload_json"], row["payload_sha256"])
         record = decode_record(row["payload_json"])
         if type(record) is not record_type:
             raise PersistenceEncodingError("stored record type does not match requested type")
         return record  # type: ignore[return-value]
+
+    @staticmethod
+    def _verify_domain_payload(payload_json: str, digest: str | None) -> None:
+        if digest is None or _domain_payload_sha256(payload_json) != digest:
+            raise DomainRecordIntegrityError("domain record storage digest mismatch")
 
     def load_evidence(self, evidence_id: str) -> Evidence | None:
         row = self._connection.execute(
