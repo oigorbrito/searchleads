@@ -3,7 +3,7 @@ import sqlite3
 
 import pytest
 
-from searchleads.domain import Evidence
+from searchleads.domain import DomainInvariantError, Evidence
 from searchleads.persistence import CURRENT_SCHEMA_VERSION, SQLiteStore
 
 
@@ -140,18 +140,12 @@ def test_reopen_is_idempotent_and_raw_evidence_unchanged(tmp_path) -> None:
     raw, digest = _create_legacy_wu2_database(path)
 
     with SQLiteStore(path) as first:
-        first_schema = {
-            table: first.columns(table)
-            for table in REQUIRED_TABLES
-        }
+        first_schema = {table: first.columns(table) for table in REQUIRED_TABLES}
         first_evidence = first.get_evidence("evidence-legacy")
         assert first_evidence is not None
 
     with SQLiteStore(path) as second:
-        second_schema = {
-            table: second.columns(table)
-            for table in REQUIRED_TABLES
-        }
+        second_schema = {table: second.columns(table) for table in REQUIRED_TABLES}
         second_evidence = second.get_evidence("evidence-legacy")
         assert second_evidence is not None
         assert second.schema_version == CURRENT_SCHEMA_VERSION
@@ -195,6 +189,38 @@ def test_existing_evidence_cannot_be_replaced(tmp_path) -> None:
         assert stored is not None
         assert stored.raw_content == raw
         assert stored.sha256 == digest
+
+
+def test_evidence_corruption_is_detected_on_read(tmp_path) -> None:
+    path = tmp_path / "store.sqlite3"
+    raw = b"original"
+    digest = hashlib.sha256(raw).hexdigest()
+
+    with SQLiteStore(path) as store:
+        store.put_source(
+            __import__("searchleads.domain", fromlist=["Source"]).Source(
+                id="source-1",
+                name="Source",
+                kind="fixture",
+                locator="fixture://source",
+            )
+        )
+        store.put_evidence(
+            Evidence(
+                id="evidence-1",
+                source_id="source-1",
+                raw_content=raw,
+                sha256=digest,
+            )
+        )
+        store.connection.execute(
+            "UPDATE evidence SET raw_content = ? WHERE id = ?",
+            (b"tampered", "evidence-1"),
+        )
+        store.connection.commit()
+
+        with pytest.raises(DomainInvariantError, match="must match"):
+            store.get_evidence("evidence-1")
 
 
 def test_current_version_repairs_historically_incomplete_schema(tmp_path) -> None:
