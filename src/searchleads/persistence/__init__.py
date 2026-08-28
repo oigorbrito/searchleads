@@ -1,5 +1,6 @@
 from .sqlite import (
     SCHEMA_VERSION,
+    DomainRecordIntegrityError,
     EvidenceIntegrityError,
     PersistenceConflictError,
     PersistenceEncodingError,
@@ -14,6 +15,7 @@ from .sqlite import (
 
 __all__ = [
     "SCHEMA_VERSION",
+    "DomainRecordIntegrityError",
     "EvidenceIntegrityError",
     "PersistenceConflictError",
     "PersistenceEncodingError",
