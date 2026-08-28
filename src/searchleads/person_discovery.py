@@ -13,7 +13,7 @@ JENSEN_ROLE_ID = "role:nvidia:jensen-huang:founder-ceo"
 PERSON_ROLE_DISCOVERY_RULE_V1 = "NVIDIA_OFFICIAL_EXECUTIVE_BIO_V1"
 
 _NAME = re.compile(rb"\bJensen Huang\b", re.IGNORECASE)
-_ROLE = re.compile(rb"\bFounder\s*&\s*CEO\b", re.IGNORECASE)
+_ROLE = re.compile(rb"\bFounder\s*(?:&|&amp;)\s*CEO\b", re.IGNORECASE)
 
 
 class PersonDiscoveryContractError(ValueError):
