@@ -2,18 +2,18 @@
 
 ## Scope
 
-This work unit adds an explicit, monotonic migration path to the clean-stack SQLite persistence boundary.
+This work unit defines the explicit, monotonic migration path for the clean-stack SQLite persistence boundary.
 
-The clean stack stores domain entities in generic immutable record tables rather than one table per domain entity. Migration design therefore follows the real repository schema and does not introduce legacy laboratory tables such as `people`, `contacts`, or `canonical_facts`.
+The clean stack stores domain entities in generic immutable record tables rather than one table per domain entity. Migration design follows the real repository schema and does not introduce legacy laboratory tables such as `people`, `contacts`, or `canonical_facts`.
 
 ## Version markers
 
-Schema version 2 keeps two markers in sync:
+The current schema is version 3. Two markers are kept in sync:
 
 - `schema_meta.schema_version`, retained for compatibility with schema v1 databases;
 - SQLite `PRAGMA user_version`, used as the SQLite-native version marker from v2 onward.
 
-A zero `user_version` is accepted for v1 compatibility. Conflicting non-zero markers fail closed. A version newer than the code supports also fails closed.
+A zero `user_version` is accepted for historical compatibility. Conflicting non-zero markers fail closed. A version newer than the code supports also fails closed.
 
 ## V1 to V2
 
@@ -25,49 +25,61 @@ The v1-to-v2 migration is additive and idempotent:
 4. Record migration version 2.
 5. Synchronize `schema_meta` and `PRAGMA user_version` to version 2.
 
-No existing domain JSON is rewritten during migration.
+No existing domain JSON is rewritten during migration. `evidence_records` is not rebuilt or rewritten, and raw Evidence BLOB bytes remain unchanged.
 
-`evidence_records` is not rebuilt or rewritten. Raw Evidence BLOB bytes and their existing storage digest remain unchanged byte-for-byte.
+## V2 to V3
+
+The v2-to-v3 migration closes the remaining Evidence-envelope storage-integrity gap without changing the domain codec:
+
+1. Repair any incomplete additive v2 shape before applying v3.
+2. Add nullable `evidence_records.envelope_sha256` when missing.
+3. Backfill SHA-256 from the exact persisted UTF-8 `envelope_json` bytes.
+4. Record migration version 3.
+5. Synchronize both schema version markers to version 3.
+
+The migration does not rewrite `envelope_json`, raw Evidence BLOB bytes, `raw_payload_sha256`, or upstream `Evidence.content_digest` values.
+
+V3 verifies `envelope_sha256` before decoding/returning Evidence and before an idempotent save of an existing Evidence record. A digest mismatch raises `EvidenceEnvelopeIntegrityError` rather than silently trusting or repairing the record.
+
+This SHA-256 is an internal storage-integrity checksum. It detects accidental or unilateral persisted-envelope modification; it is not an authenticity guarantee against an actor that can rewrite both the payload and its digest.
 
 ## Defensive repair
 
-After version migration, the repository introspects the current shape with `PRAGMA table_info`. Missing additive v2 structures are repaired idempotently. This handles historical databases whose version marker says v2 but whose additive migration was incomplete.
+After version migration, the repository introspects the current shape with `PRAGMA table_info`. Missing additive structures are repaired idempotently. This handles historical databases whose version marker advertises the current version while an additive migration was incomplete.
 
-The repair path never drops or rebuilds tables.
+Repair never drops or rebuilds tables. The migration ledger is also repaired idempotently, preserving the historical chain `[2, 3]` for a database that has traversed both implemented migrations.
 
-The public repository also repairs the migration ledger itself: after current-version schema repair, it performs an idempotent `INSERT OR IGNORE` for `SCHEMA_VERSION` in `schema_migrations`. This covers databases that already advertise schema v2 but are missing the corresponding ledger row, and remains stable across repeated reopen operations.
+## Storage integrity
 
-## Domain-record integrity
+V2 verifies `domain_records.payload_sha256` whenever a generic domain record is loaded or compared during an idempotent save.
 
-V2 verifies `payload_sha256` whenever a generic domain record is loaded or compared during an idempotent save. A modified `payload_json` with the old digest raises `DomainRecordIntegrityError` rather than being decoded as trusted state.
+Raw Evidence bytes continue to use `raw_payload_sha256` and UTF-8 validation.
 
-This complements, rather than replaces, the existing Evidence raw-payload integrity check.
+V3 adds independent integrity verification for the complete serialized Evidence envelope, covering envelope-only fields such as locator, metadata, and upstream content digest in addition to the redundant-column consistency checks introduced before v3.
 
 ## Public repository layering
 
-Runtime consumers import `SQLiteRepository` from `searchleads.persistence`.
+Runtime consumers import `SQLiteRepository` and `SCHEMA_VERSION` from `searchleads.persistence`.
 
-That public class layers current-version migration-ledger repair on top of semantic-reference validation, which itself layers on the SQLite storage implementation. Runtime consumers should not instantiate the internal repository classes from `persistence.sqlite`, `persistence.semantic`, or `persistence.ledger` directly.
+The public class now layers schema-v3 envelope integrity over migration-ledger repair, semantic-reference validation, and the base SQLite storage implementation. Runtime consumers must not instantiate `persistence.v3`, `persistence.ledger`, `persistence.semantic`, or `persistence.sqlite` directly.
 
-An executable import-boundary test scans production package code outside the persistence implementation and repository scripts to prevent those internal imports from becoming an accidental bypass.
+The executable import-boundary test scans production package code outside the persistence implementation and repository scripts to prevent implementation-module imports from becoming an accidental bypass.
 
 ## Acceptance tests
 
 Migration and persistence-boundary tests cover:
 
-- automatic v1-to-v2 migration;
-- existing Source and Evidence records remain loadable;
-- source JSON remains byte-for-byte identical;
-- raw Evidence BLOB remains byte-for-byte identical;
-- Evidence envelope and storage SHA remain unchanged;
-- domain payload hashes are backfilled correctly;
-- both schema version markers become v2;
-- reopening is idempotent;
-- incomplete additive v2 shape is repaired;
-- a v2 database missing the current-version migration ledger row is repaired idempotently;
-- the public repository composes semantic validation and ledger repair;
-- runtime code cannot bypass that composition through internal persistence imports;
-- future versions and conflicting non-zero version markers fail closed;
-- post-migration domain JSON tampering is detected.
+- automatic v1-to-v2-to-v3 migration;
+- direct v2-to-v3 migration;
+- exact preservation of existing Evidence envelope JSON and raw Evidence bytes during v3 backfill;
+- SHA-256 backfill for existing Evidence envelopes;
+- both schema version markers becoming v3;
+- migration ledger history `[2, 3]` and idempotent reopen behavior;
+- incomplete additive v2 and v3 shapes being repaired;
+- domain payload, raw Evidence, and full Evidence-envelope tampering failing closed;
+- envelope-only tampering in locator, metadata, and upstream content digest being detected;
+- idempotent save refusing to silently repair an invalid envelope digest;
+- public repository layering and runtime import-boundary enforcement;
+- future versions and conflicting non-zero version markers failing closed.
 
 GitHub Actions is currently failing before runner steps execute, so the presence of these tests is not reported as a current CI PASS until workflow execution is restored.
