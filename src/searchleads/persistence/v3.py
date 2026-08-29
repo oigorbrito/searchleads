@@ -22,8 +22,6 @@ class SQLiteRepository(_LedgerSQLiteRepository):
     """Public persistence repository with schema-v3 Evidence envelope integrity."""
 
     def _initialize_schema(self) -> None:
-        # Preserve the historical v1 bootstrap shape so fresh and legacy databases
-        # traverse the same monotonic migration chain.
         self._connection.executescript(
             """
             CREATE TABLE IF NOT EXISTS schema_meta (
@@ -78,8 +76,6 @@ class SQLiteRepository(_LedgerSQLiteRepository):
             )
 
         if meta_version < 2:
-            # The inherited v1->v2 migration remains the single implementation
-            # of that historical transition.
             super()._migrate(meta_version)
             meta_version = 2
 
@@ -96,6 +92,9 @@ class SQLiteRepository(_LedgerSQLiteRepository):
         self._connection.commit()
 
     def _migrate_v2_to_v3(self) -> None:
+        # A historical database can claim v2 while missing additive v2 shape.
+        # Repair the lower layer first, then add the v3 column and digest backfill.
+        super()._repair_current_schema()
         self._ensure_v3_shape()
         self._backfill_evidence_envelope_digests()
         self._connection.execute(
@@ -143,7 +142,17 @@ class SQLiteRepository(_LedgerSQLiteRepository):
             )
 
     def _save_evidence(self, evidence: Evidence) -> bool:
+        existing = self._connection.execute(
+            "SELECT 1 FROM evidence_records WHERE evidence_id = ?",
+            (evidence.evidence_id,),
+        ).fetchone()
+        if existing is not None:
+            self._verify_evidence_envelope(evidence.evidence_id)
+
         inserted = super()._save_evidence(evidence)
+        if not inserted:
+            return False
+
         row = self._connection.execute(
             "SELECT envelope_json FROM evidence_records WHERE evidence_id = ?",
             (evidence.evidence_id,),
@@ -152,13 +161,12 @@ class SQLiteRepository(_LedgerSQLiteRepository):
             raise EvidenceEnvelopeIntegrityError(
                 f"Evidence {evidence.evidence_id!r} disappeared during envelope hashing"
             )
-        expected = _envelope_sha256(row["envelope_json"])
         self._connection.execute(
             "UPDATE evidence_records SET envelope_sha256 = ? WHERE evidence_id = ?",
-            (expected, evidence.evidence_id),
+            (_envelope_sha256(row["envelope_json"]), evidence.evidence_id),
         )
         self._connection.commit()
-        return inserted
+        return True
 
     def load_evidence(self, evidence_id: str) -> Evidence | None:
         self._verify_evidence_envelope(evidence_id)
