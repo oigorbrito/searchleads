@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from searchleads.domain import Evidence
+
 from .semantic import SQLiteRepository as _SemanticSQLiteRepository
-from .sqlite import SCHEMA_VERSION, Evidence, PersistenceError
+from .sqlite import SCHEMA_VERSION, PersistenceError
 
 
 class EvidenceEnvelopeConsistencyError(PersistenceError):
