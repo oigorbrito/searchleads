@@ -1,9 +1,11 @@
 from searchleads.persistence import SQLiteRepository, SemanticReferenceError
 from searchleads.persistence.ledger import SQLiteRepository as LedgerSQLiteRepository
 from searchleads.persistence.semantic import SQLiteRepository as SemanticSQLiteRepository
+from searchleads.persistence.v3 import SQLiteRepository as V3SQLiteRepository
 
 
-def test_public_sqlite_repository_layers_semantic_and_ledger_checks() -> None:
-    assert SQLiteRepository is LedgerSQLiteRepository
-    assert issubclass(SQLiteRepository, SemanticSQLiteRepository)
+def test_public_sqlite_repository_layers_schema_v3_ledger_and_semantic_checks() -> None:
+    assert SQLiteRepository is V3SQLiteRepository
+    assert issubclass(SQLiteRepository, LedgerSQLiteRepository)
+    assert issubclass(LedgerSQLiteRepository, SemanticSQLiteRepository)
     assert issubclass(SemanticReferenceError, RuntimeError)
