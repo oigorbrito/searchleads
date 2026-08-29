@@ -25,6 +25,20 @@ Current clean work-unit stack:
 - `DENTAL_ICP_POLICY_CONTRACT_V1`
 - `DENTAL_COMMERCIAL_QUALIFICATION_V1`
 
+Current persistence/domain hardening stack (draft, stacked after the clean work units above):
+
+- `UNIFIED_MEASUREMENT_AND_TELEMETRY_V1`
+- `SQLITE_SCHEMA_MIGRATIONS_V2`
+- `QUALIFICATION_DECISION_INVARIANTS_V1`
+- `FACT_PROVENANCE_REFERENCE_INVARIANTS_V1`
+- `CONTACT_LEAD_STATE_INVARIANTS_V1`
+- `PERSISTENCE_SEMANTIC_REFERENCE_INVARIANTS_V1`
+- `MIGRATION_LEDGER_REPAIR_V2`
+- `PERSISTENCE_IMPORT_BOUNDARY_V1`
+- `PERSISTENCE_CONTRACT_DOCS_V2`
+
+`docs/ARCHITECTURE-PRINCIPLES.md` records the architecture incrementally as work units were introduced. Its early `Deferred decisions` section is historical: later clean work units have already implemented schema migration, contact validation, export, and the first approved vertical ICP/qualification contract. Current capability status is defined by the complete stack and the most recent capability-specific documents, not by those historical deferrals in isolation.
+
 ## Included
 
 - Scientific foundation and bounded architecture principles.
@@ -32,6 +46,9 @@ Current clean work-unit stack:
 - Source, Evidence, fact-level Provenance, CandidateFact, CanonicalFact, and Conflict.
 - SQLite persistence with typed lossless round-trip for supported values.
 - Raw textual evidence preservation with storage-integrity checks and deterministic replay.
+- Explicit SQLite schema v1-to-v2 migration, additive repair, migration ledger, and domain-record integrity hashing.
+- Public persistence layering that combines base SQLite storage, semantic fact-reference validation, and current-version migration-ledger repair.
+- A guarded runtime import boundary requiring persistence consumers to use `searchleads.persistence` rather than implementation modules directly.
 - One narrow real-source adapter: BrasilAPI CNPJ v1 point lookup for a known CNPJ.
 - Deterministic, non-destructive company-field normalization.
 - Measured company entity resolution with conservative operational triage.
@@ -69,5 +86,7 @@ Current clean work-unit stack:
 ```bash
 python -m pytest
 ```
+
+GitHub Actions is configured for Python 3.11, 3.12, and 3.13 with `compileall` and pytest. At the current repository/account state, Actions jobs are terminating before any workflow step is provisioned, so no current CI PASS is claimed until steps execute.
 
 The generic core B2B assumption remains provisional. The first approved vertical ICP is the documented Brazil dental facial-surgery education policy; the clean-stack engine now evaluates that policy with evidence-linked Person-centered decisions. Qualification does not certify current CFO registration, campaign legal/compliance status, contact reachability, or live-network acquisition; those remain separate gates.
