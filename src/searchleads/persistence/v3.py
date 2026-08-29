@@ -105,18 +105,28 @@ class SQLiteRepository(_LedgerSQLiteRepository):
 
     def _repair_current_schema(self) -> None:
         super()._repair_current_schema()
-        self._ensure_v3_shape()
-        self._backfill_evidence_envelope_digests()
+        added_envelope_digest_column = self._ensure_v3_shape()
+        if added_envelope_digest_column:
+            # A database already marked v3 may come from an interrupted additive
+            # migration that never created the v3 column. In that specific repair
+            # case the existing envelopes are the only available backfill source.
+            self._backfill_evidence_envelope_digests()
+        else:
+            # Once the v3 column exists, a missing digest is persisted integrity
+            # state, not shape repair. Do not silently synthesize trust on reopen.
+            self._assert_no_missing_evidence_envelope_digests()
         self._connection.execute(
             "INSERT OR IGNORE INTO schema_migrations(version) VALUES (?)",
             (SCHEMA_VERSION,),
         )
 
-    def _ensure_v3_shape(self) -> None:
-        if "envelope_sha256" not in self._columns("evidence_records"):
-            self._connection.execute(
-                "ALTER TABLE evidence_records ADD COLUMN envelope_sha256 TEXT"
-            )
+    def _ensure_v3_shape(self) -> bool:
+        if "envelope_sha256" in self._columns("evidence_records"):
+            return False
+        self._connection.execute(
+            "ALTER TABLE evidence_records ADD COLUMN envelope_sha256 TEXT"
+        )
+        return True
 
     def _backfill_evidence_envelope_digests(self) -> None:
         rows = self._connection.execute(
@@ -126,6 +136,15 @@ class SQLiteRepository(_LedgerSQLiteRepository):
             self._connection.execute(
                 "UPDATE evidence_records SET envelope_sha256 = ? WHERE evidence_id = ?",
                 (_envelope_sha256(row["envelope_json"]), row["evidence_id"]),
+            )
+
+    def _assert_no_missing_evidence_envelope_digests(self) -> None:
+        row = self._connection.execute(
+            "SELECT evidence_id FROM evidence_records WHERE envelope_sha256 IS NULL LIMIT 1"
+        ).fetchone()
+        if row is not None:
+            raise EvidenceEnvelopeIntegrityError(
+                f"Evidence {row['evidence_id']!r} envelope storage digest is missing"
             )
 
     def _verify_evidence_envelope(self, evidence_id: str) -> None:
