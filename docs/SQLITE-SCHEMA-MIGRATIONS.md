@@ -35,15 +35,25 @@ After version migration, the repository introspects the current shape with `PRAG
 
 The repair path never drops or rebuilds tables.
 
+The public repository also repairs the migration ledger itself: after current-version schema repair, it performs an idempotent `INSERT OR IGNORE` for `SCHEMA_VERSION` in `schema_migrations`. This covers databases that already advertise schema v2 but are missing the corresponding ledger row, and remains stable across repeated reopen operations.
+
 ## Domain-record integrity
 
 V2 verifies `payload_sha256` whenever a generic domain record is loaded or compared during an idempotent save. A modified `payload_json` with the old digest raises `DomainRecordIntegrityError` rather than being decoded as trusted state.
 
 This complements, rather than replaces, the existing Evidence raw-payload integrity check.
 
+## Public repository layering
+
+Runtime consumers import `SQLiteRepository` from `searchleads.persistence`.
+
+That public class layers current-version migration-ledger repair on top of semantic-reference validation, which itself layers on the SQLite storage implementation. Runtime consumers should not instantiate the internal repository classes from `persistence.sqlite`, `persistence.semantic`, or `persistence.ledger` directly.
+
+An executable import-boundary test scans production package code outside the persistence implementation and repository scripts to prevent those internal imports from becoming an accidental bypass.
+
 ## Acceptance tests
 
-Migration tests create an actual v1 database shape and verify:
+Migration and persistence-boundary tests cover:
 
 - automatic v1-to-v2 migration;
 - existing Source and Evidence records remain loadable;
@@ -54,5 +64,10 @@ Migration tests create an actual v1 database shape and verify:
 - both schema version markers become v2;
 - reopening is idempotent;
 - incomplete additive v2 shape is repaired;
+- a v2 database missing the current-version migration ledger row is repaired idempotently;
+- the public repository composes semantic validation and ledger repair;
+- runtime code cannot bypass that composition through internal persistence imports;
 - future versions and conflicting non-zero version markers fail closed;
 - post-migration domain JSON tampering is detected.
+
+GitHub Actions is currently failing before runner steps execute, so the presence of these tests is not reported as a current CI PASS until workflow execution is restored.
