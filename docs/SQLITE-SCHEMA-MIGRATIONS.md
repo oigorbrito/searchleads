@@ -49,6 +49,8 @@ After version migration, the repository introspects the current shape with `PRAG
 
 Repair never drops or rebuilds tables. The migration ledger is also repaired idempotently, preserving the historical chain `[2, 3]` for a database that has traversed both implemented migrations.
 
+For v3 specifically, backfill during defensive repair is permitted only when the `envelope_sha256` column itself is absent and must be added. Once that v3 column already exists, a persisted Evidence row with `envelope_sha256 IS NULL` is treated as invalid integrity state and opening the repository fails closed; the digest is not silently reconstructed on reopen.
+
 ## Storage integrity
 
 V2 verifies `domain_records.payload_sha256` whenever a generic domain record is loaded or compared during an idempotent save.
@@ -76,6 +78,7 @@ Migration and persistence-boundary tests cover:
 - both schema version markers becoming v3;
 - migration ledger history `[2, 3]` and idempotent reopen behavior;
 - incomplete additive v2 and v3 shapes being repaired;
+- an existing v3 digest column with a missing per-row digest failing closed instead of being silently backfilled;
 - domain payload, raw Evidence, and full Evidence-envelope tampering failing closed;
 - envelope-only tampering in locator, metadata, and upstream content digest being detected;
 - idempotent save refusing to silently repair an invalid envelope digest;
