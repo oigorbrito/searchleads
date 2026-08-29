@@ -1,4 +1,4 @@
-from .ledger import SQLiteRepository
+from .ledger import EvidenceEnvelopeConsistencyError, SQLiteRepository
 from .semantic import SemanticReferenceError
 from .sqlite import (
     SCHEMA_VERSION,
@@ -17,6 +17,7 @@ from .sqlite import (
 __all__ = [
     "SCHEMA_VERSION",
     "DomainRecordIntegrityError",
+    "EvidenceEnvelopeConsistencyError",
     "EvidenceIntegrityError",
     "PersistenceConflictError",
     "PersistenceEncodingError",
