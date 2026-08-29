@@ -43,6 +43,32 @@ def ledger_versions(path: str) -> list[int]:
     return [int(row[0]) for row in rows]
 
 
+def schema_versions(path: str) -> tuple[int, int]:
+    connection = sqlite3.connect(path)
+    meta_version = connection.execute(
+        "SELECT schema_version FROM schema_meta WHERE singleton = 1"
+    ).fetchone()[0]
+    pragma_version = connection.execute("PRAGMA user_version").fetchone()[0]
+    connection.close()
+    return int(meta_version), int(pragma_version)
+
+
+def test_fresh_public_repository_records_current_migration_version(tmp_path) -> None:
+    path = str(tmp_path / "fresh-v2.sqlite3")
+
+    with SQLiteRepository(path):
+        pass
+
+    assert schema_versions(path) == (SCHEMA_VERSION, SCHEMA_VERSION)
+    assert ledger_versions(path) == [SCHEMA_VERSION]
+
+    with SQLiteRepository(path):
+        pass
+
+    assert schema_versions(path) == (SCHEMA_VERSION, SCHEMA_VERSION)
+    assert ledger_versions(path) == [SCHEMA_VERSION]
+
+
 def test_repair_of_v2_database_records_current_migration_version(tmp_path) -> None:
     path = str(tmp_path / "incomplete-v2.sqlite3")
     create_incomplete_v2(path)
