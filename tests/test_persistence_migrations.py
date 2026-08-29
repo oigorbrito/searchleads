@@ -139,7 +139,7 @@ def test_v1_database_auto_migrates_without_changing_legacy_rows_or_raw_evidence(
     assert source_digest == hashlib.sha256(source_payload_before.encode("utf-8")).hexdigest()
     assert bytes(evidence_row_after[1]) == raw_before
     assert evidence_row_after == evidence_row_before
-    assert migrations == [(2,)]
+    assert migrations == [(2,), (3,)]
 
 
 def test_reopening_migrated_database_is_idempotent(tmp_path) -> None:
