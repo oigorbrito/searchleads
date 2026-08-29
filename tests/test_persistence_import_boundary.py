@@ -8,8 +8,9 @@ _FORBIDDEN_MODULES = {
     "searchleads.persistence.ledger",
     "searchleads.persistence.semantic",
     "searchleads.persistence.sqlite",
+    "searchleads.persistence.v3",
 }
-_FORBIDDEN_PUBLIC_NAMES = {"ledger", "semantic", "sqlite"}
+_FORBIDDEN_PUBLIC_NAMES = {"ledger", "semantic", "sqlite", "v3"}
 
 
 def _runtime_python_files() -> list[Path]:
@@ -66,6 +67,6 @@ def test_runtime_code_uses_public_persistence_facade() -> None:
 
     assert not violations, (
         "Runtime code must import persistence services from searchleads.persistence; "
-        "internal ledger/semantic/sqlite modules are implementation details:\n"
+        "internal persistence modules are implementation details:\n"
         + "\n".join(violations)
     )
