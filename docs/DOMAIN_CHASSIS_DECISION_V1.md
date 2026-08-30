@@ -120,6 +120,10 @@ High confidence on the structural rejection of `Person.company_id` and mandatory
 
 Medium confidence on the exact FTM schema mapping and persistence implementation because the external-library and persistence integration probes have not executed under a working runner in PR #113.
 
+## Consolidated scorecard
+
+See [`SEARCHLEADS_CHASSIS_SCORECARD_V1`](./SEARCHLEADS_CHASSIS_SCORECARD_V1.md) for the current cross-cutting decision table across domain, lineage, normalization, runtime, application chassis and persistence.
+
 ## Gate to implementation
 
 This document does not trigger implementation in the product stack. Product implementation waits for the final chassis scorecard. The candidate domain model should be used as the domain challenger in the remaining ER, runtime, application-chassis, and migration-cost comparisons.
