@@ -3,13 +3,16 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timedelta, timezone
 import inspect
+from pathlib import Path
 
 import pytest
 
 pytest.importorskip("crawlee")
 
+from crawlee import Request
+from crawlee.configuration import Configuration
 from crawlee.crawlers import BasicCrawler
-from crawlee.storage_clients import MemoryStorageClient
+from crawlee.storage_clients import FileSystemStorageClient, MemoryStorageClient
 from crawlee.storages import RequestQueue
 
 from searchleads.gap_automation.execution import (
@@ -161,6 +164,51 @@ def test_crawlee_request_queue_has_dedupe_reclaim_and_handled_lifecycle() -> Non
     print("storage_backend_for_probe=MemoryStorageClient (durability not claimed)")
 
 
+async def _crawlee_filesystem_persistence_probe(storage_dir: str) -> tuple[int, int, str]:
+    configuration = Configuration(storage_dir=storage_dir, purge_on_start=False)
+    first_storage = FileSystemStorageClient()
+    first_client = await first_storage.create_rq_client(
+        name="runtime-persistence-bakeoff",
+        configuration=configuration,
+    )
+    request = Request.from_url("https://example.invalid/persisted-company/1")
+    response = await first_client.add_batch_of_requests([request])
+    assert len(response.processed_requests) == 1
+
+    # Re-instantiate the filesystem storage client against the same directory.
+    # This is an executable restart-like boundary without relying on a shared
+    # Python object or the RequestQueue in-process instance cache.
+    second_storage = FileSystemStorageClient()
+    second_client = await second_storage.create_rq_client(
+        name="runtime-persistence-bakeoff",
+        configuration=configuration,
+    )
+    try:
+        fetched = await second_client.fetch_next_request()
+        assert fetched is not None
+        await second_client.mark_request_as_handled(fetched)
+        metadata = await second_client.get_metadata()
+        return metadata.total_request_count, metadata.handled_request_count, fetched.unique_key
+    finally:
+        await second_client.drop()
+
+
+def test_crawlee_filesystem_request_state_survives_storage_client_reinstantiation(tmp_path: Path) -> None:
+    total, handled, unique_key = asyncio.run(
+        _crawlee_filesystem_persistence_probe(str(tmp_path / "crawlee-storage"))
+    )
+
+    assert total == 1
+    assert handled == 1
+    assert unique_key
+
+    print("CRAWLEE_FILESYSTEM_PERSISTENCE_PROBE_V1")
+    print("storage_client_reinstantiation_preserves_pending_request=YES")
+    print("request_can_be_handled_after_reinstantiation=YES")
+    print(f"total_requests={total} handled_requests={handled}")
+    print("scope=single-process filesystem backend; multi-process safety not claimed")
+
+
 async def _crawlee_retry_probe() -> int:
     crawler = BasicCrawler(
         max_request_retries=2,
@@ -218,6 +266,7 @@ def test_runtime_chassis_capability_scorecard_does_not_encode_a_winner() -> None
         "request_unique_key_dedupe": ("ABSENT", "CRAWLEE_NATIVE"),
         "failed_request_reclaim": ("ABSENT", "CRAWLEE_NATIVE"),
         "request_handled_state": ("ABSENT", "CRAWLEE_NATIVE"),
+        "durable_local_request_queue": ("ABSENT", "CRAWLEE_NATIVE_FILESYSTEM"),
         "session_rotation": ("ABSENT", "CRAWLEE_NATIVE"),
         "adaptive_concurrency": ("ABSENT", "CRAWLEE_NATIVE"),
         "crawler_statistics": ("ABSENT", "CRAWLEE_NATIVE"),
@@ -231,4 +280,4 @@ def test_runtime_chassis_capability_scorecard_does_not_encode_a_winner() -> None
         print(f"{capability} searchleads={searchleads} crawlee={crawlee}")
     print("winner=UNDECIDED pending executed durability/load/operational-cost evidence")
 
-    assert len(capabilities) == 13
+    assert len(capabilities) == 14
