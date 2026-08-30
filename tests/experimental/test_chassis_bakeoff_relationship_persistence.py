@@ -180,7 +180,7 @@ class RelationshipCandidateStore:
             """INSERT INTO professional_registration(
                    registration_id, person_id, authority, number, jurisdiction, status, evidence_ids_json
                ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            expected[:1] + expected[1:],
+            (row.registration_id, *expected),
         )
         self.db.commit()
         return True
