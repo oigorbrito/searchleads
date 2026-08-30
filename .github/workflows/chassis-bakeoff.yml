@@ -9,13 +9,14 @@ on:
       - 'tests/experimental/**'
       - 'tests/fixtures/company_er_v1.json'
       - 'src/searchleads/entity_resolution/**'
+      - 'src/searchleads/gap_automation/**'
       - '.github/workflows/chassis-bakeoff.yml'
 
 permissions:
   contents: read
 
 jobs:
-  ftm-nomenklatura:
+  chassis-bakeoff:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -42,6 +43,7 @@ jobs:
         run: >-
           python -m pip install --upgrade pip pytest
           followthemoney==4.10.2 nomenklatura==4.14.0
+          crawlee==1.9.3
       - name: Compile SearchLeads
         run: python -m compileall -q src
       - name: Run SearchLeads regression suite
