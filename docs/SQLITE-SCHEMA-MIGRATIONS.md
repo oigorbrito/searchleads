@@ -41,6 +41,8 @@ The migration does not rewrite `envelope_json`, raw Evidence BLOB bytes, `raw_pa
 
 V3 verifies `envelope_sha256` before decoding/returning Evidence and before an idempotent save of an existing Evidence record. A digest mismatch raises `EvidenceEnvelopeIntegrityError` rather than silently trusting or repairing the record.
 
+For newly saved Evidence, v3 writes `envelope_json`, `raw_payload`, `raw_payload_sha256`, and `envelope_sha256` in the same `INSERT` and SQLite transaction. There is no committed v3 state in which a successfully inserted new Evidence row exists without its envelope digest.
+
 This SHA-256 is an internal storage-integrity checksum. It detects accidental or unilateral persisted-envelope modification; it is not an authenticity guarantee against an actor that can rewrite both the payload and its digest.
 
 ## Defensive repair
@@ -79,6 +81,7 @@ Migration and persistence-boundary tests cover:
 - migration ledger history `[2, 3]` and idempotent reopen behavior;
 - incomplete additive v2 and v3 shapes being repaired;
 - an existing v3 digest column with a missing per-row digest failing closed instead of being silently backfilled;
+- new Evidence being inserted with its envelope digest present in the initial insert rather than a later committed update;
 - domain payload, raw Evidence, and full Evidence-envelope tampering failing closed;
 - envelope-only tampering in locator, metadata, and upstream content digest being detected;
 - idempotent save refusing to silently repair an invalid envelope digest;
