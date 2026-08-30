@@ -18,7 +18,7 @@ The decision separates semantic truth representation from raw-observation preser
 | statement↔Evidence association | explicit many-to-many bridge | `COMPOSE` |
 | `CandidateFact` | transitional compatibility/input projection; do not assume permanent core primitive | `DEFER` |
 | `CanonicalFact` | candidate projection/aggregation over statements; permanence not yet justified | `DEFER` |
-| persisted `Conflict` | prefer derivation from competing supported statements unless benchmarks show persistence is operationally superior | `DEFER` |
+| persisted `Conflict` | derive by default; persist only adjudication or irreducible cache state | `COMPOSE` |
 | SearchLeads `Provenance` | retain only responsibilities not represented by FTM statement metadata + explicit Evidence links | `COMPOSE` |
 
 ## Identity rule
@@ -100,7 +100,11 @@ Persist a dedicated Conflict record only if experiments demonstrate a concrete a
 - preservation of historical adjudication state that cannot be reconstructed from statements/judgements;
 - materially simpler audit semantics.
 
-Conflict persistence is therefore `DEFER`.
+Conflict handling is therefore no longer a structural blocker. The best architecture is:
+
+- derive conflict state from statements and Evidence by default;
+- persist only the irreducible human adjudication event or a provable cache;
+- never let a persisted Conflict record become the only source of truth for reconstructable lineage.
 
 ## Provenance composition
 
@@ -159,14 +163,16 @@ No winner on those quantitative dimensions is claimed while the runner is blocke
 FollowTheMoney semantic statements
         ↕ explicit many-to-many links
 SearchLeads raw Evidence + integrity
+        ↕ derived conflict state / adjudication events
 ```
 
 This is stronger than either extreme currently supported by evidence:
 
 - FTM lineage alone does not replace raw Evidence/replay guarantees;
-- retaining the entire SearchLeads fact/provenance stack unchanged would duplicate mature semantic statement machinery without proof that the duplication is valuable.
+- retaining the entire SearchLeads fact/provenance stack unchanged would duplicate mature semantic statement machinery without proof that the duplication is valuable;
+- persisting Conflict as a primary truth store is unnecessary unless repeated-read cost or audit semantics prove it is needed.
 
-The exact fate of `CandidateFact`, `CanonicalFact`, `Conflict`, and the residual `Provenance` schema remains intentionally deferred until executable complexity and reconstruction benchmarks run.
+The exact fate of `CandidateFact`, `CanonicalFact`, and the residual `Provenance` schema remains intentionally deferred until executable complexity and reconstruction benchmarks run.
 
 ## Consolidated scorecard
 
