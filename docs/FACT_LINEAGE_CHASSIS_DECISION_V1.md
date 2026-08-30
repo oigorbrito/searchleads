@@ -1,6 +1,6 @@
 # FACT_LINEAGE_CHASSIS_DECISION_V1
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; external execution remains `INFRASTRUCTURE_BLOCKED` while Actions jobs terminate before steps begin.
+Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; external execution remains `INFRASTRUCTURE_BLOCKED` while Actions jobs terminate without usable step logs.
 
 ## Question
 
@@ -132,7 +132,7 @@ The combined fact-lineage bake-off must demonstrate:
 9. no silent collapse of two origins solely because normalized semantic values match;
 10. explicit handling of adjudication/judgements separate from observation identity.
 
-Existing PR #113 probes cover several of these individually; `test_chassis_bakeoff_domain_chassis_integrated.py` now adds cross-cutting cardinality and scoping gates.
+Existing PR #113 probes cover several of these individually; `test_chassis_bakeoff_domain_chassis_integrated.py` adds cross-cutting cardinality and scoping gates.
 
 ## Complexity benchmark to collect when runners work
 
@@ -167,3 +167,7 @@ This is stronger than either extreme currently supported by evidence:
 - retaining the entire SearchLeads fact/provenance stack unchanged would duplicate mature semantic statement machinery without proof that the duplication is valuable.
 
 The exact fate of `CandidateFact`, `CanonicalFact`, `Conflict`, and the residual `Provenance` schema remains intentionally deferred until executable complexity and reconstruction benchmarks run.
+
+## Consolidated scorecard
+
+See [`SEARCHLEADS_CHASSIS_SCORECARD_V1`](./SEARCHLEADS_CHASSIS_SCORECARD_V1.md) for the current cross-cutting decision table across domain, lineage, normalization, runtime, application chassis and persistence.
