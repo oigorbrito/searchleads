@@ -1,0 +1,41 @@
+name: Chassis Bake-Off
+
+on:
+  push:
+    branches:
+      - 'work/chassis-bakeoff-v1'
+  pull_request:
+    paths:
+      - 'tests/experimental/**'
+      - '.github/workflows/chassis-bakeoff.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ftm-nomenklatura:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install bake-off dependencies
+        run: >-
+          python -m pip install --upgrade pip pytest
+          followthemoney==4.10.2 nomenklatura==4.14.0
+      - name: Compile SearchLeads
+        run: python -m compileall -q src
+      - name: Run SearchLeads regression suite
+        run: python -m pytest -q -W error::ResourceWarning
+      - name: Run chassis probes with scorecard output
+        run: >-
+          python -m pytest -q -s
+          tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py
+          -W error::ResourceWarning
