@@ -5,12 +5,13 @@ from pathlib import Path
 
 
 _FORBIDDEN_MODULES = {
+    "searchleads.persistence.identity",
     "searchleads.persistence.ledger",
     "searchleads.persistence.semantic",
     "searchleads.persistence.sqlite",
     "searchleads.persistence.v3",
 }
-_FORBIDDEN_PUBLIC_NAMES = {"ledger", "semantic", "sqlite", "v3"}
+_FORBIDDEN_PUBLIC_NAMES = {"identity", "ledger", "semantic", "sqlite", "v3"}
 
 
 def _runtime_python_files() -> list[Path]:
