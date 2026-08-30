@@ -157,9 +157,9 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
 
     strategies: dict[str, NameKey | None] = {
         "searchleads_embedded_fold_v1": None,
-        "rigour_normalize_name_1_4_0": _rigour_default,
-        "rigour_nfkd_casefold_name_1_4_0": _rigour_folded,
-        "rigour_nfkd_casefold_name_strip_org_type_1_4_0": _rigour_strip_org,
+        "rigour_normalize_name_2_3_1": _rigour_default,
+        "rigour_nfkd_casefold_name_2_3_1": _rigour_folded,
+        "rigour_nfkd_casefold_name_strip_org_type_2_3_1": _rigour_strip_org,
     }
 
     print("NORMALIZATION_ER_ABLATION_V1")
