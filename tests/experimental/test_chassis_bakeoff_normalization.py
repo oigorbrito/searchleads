@@ -126,9 +126,9 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
 
     strategies: dict[str, NameKey] = {
         "searchleads_nfkc_whitespace_v1": _searchleads_key,
-        "rigour_normalize_name_1_4_0": _rigour_default_key,
-        "rigour_nfkd_casefold_name_1_4_0": _rigour_folded_key,
-        "rigour_nfkd_casefold_name_strip_org_type_1_4_0": _rigour_folded_without_org_type_key,
+        "rigour_normalize_name_2_3_1": _rigour_default_key,
+        "rigour_nfkd_casefold_name_2_3_1": _rigour_folded_key,
+        "rigour_nfkd_casefold_name_strip_org_type_2_3_1": _rigour_folded_without_org_type_key,
     }
 
     print("COMPANY_NAME_NORMALIZATION_BAKEOFF_V1")
