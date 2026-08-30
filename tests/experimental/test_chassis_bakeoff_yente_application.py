@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, requires, version
 
 import pytest
 
@@ -20,6 +20,11 @@ YENTE_STABLE_DEPENDENCIES = {
     "nomenklatura": "4.10.0",
     "rigour": "2.1.2",
 }
+CURRENT_CORE_BAKEOFF = {
+    "followthemoney": "4.10.2",
+    "nomenklatura": "4.14.0",
+    "rigour": "2.3.1",
+}
 
 
 def _paths() -> set[str]:
@@ -36,6 +41,24 @@ def test_yente_stable_application_dependency_generation_is_explicit() -> None:
         print(f"{package}={installed_version}")
     print("latest_core_bakeoff_stack_is_intentionally_separate=YES")
     print("reason=yente_5_5_0_pins_older_ftm_nomenklatura_rigour")
+
+
+def test_yente_exact_pins_prevent_silent_upgrade_to_current_core_bakeoff() -> None:
+    declared = {requirement.replace(" ", "") for requirement in (requires("yente") or [])}
+    for package, pinned_version in YENTE_STABLE_DEPENDENCIES.items():
+        if package == "yente":
+            continue
+        assert f"{package}=={pinned_version}" in declared
+        assert CURRENT_CORE_BAKEOFF[package] != pinned_version
+
+    print("YENTE_CORE_DIVERGENCE_V1")
+    for package, current_version in CURRENT_CORE_BAKEOFF.items():
+        print(
+            f"package={package} yente_stable={YENTE_STABLE_DEPENDENCIES[package]} "
+            f"core_bakeoff={current_version} exact_pin_conflict=YES"
+        )
+    print("using_current_core_inside_yente_5_5_0_requires_dependency_contract_change=YES")
+    print("silent_pip_upgrade_without_yente_change=NO")
 
 
 def test_yente_exposes_a_real_application_chassis_without_starting_external_services() -> None:
