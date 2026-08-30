@@ -8,7 +8,14 @@ pytest.importorskip("rigour")
 
 from rigour.ids import CNPJ
 
-from searchleads.gap_automation.planning import _normalize_cnpj as searchleads_normalize_cnpj
+from searchleads.gap_automation.planning import (
+    ActionDisposition,
+    ActionKind,
+    AutomationInputs,
+    GapRequirements,
+    _normalize_cnpj as searchleads_normalize_cnpj,
+    plan_gap_actions,
+)
 
 
 _COMPACT = re.compile(r"[.\-/\s]")
@@ -119,3 +126,30 @@ def test_cnpj_challengers_are_compared_against_current_official_format() -> None
 def test_searchleads_compaction_preserves_official_alphanumeric_identifier() -> None:
     assert searchleads_normalize_cnpj("00.000.000/E08G-12") == "00000000E08G12"
     assert searchleads_normalize_cnpj("12.ABC.345/01DE-35") == "12ABC34501DE35"
+
+
+def test_current_planner_can_schedule_network_acquisition_for_checksum_invalid_cnpj() -> None:
+    invalid = "00.000.000/0001-92"
+    assert _official_cnpj_is_valid(invalid) is False
+
+    # Current AutomationInputs validates only the canonical 14-character shape,
+    # so this invalid-DV value is accepted as a routing key.
+    inputs = AutomationInputs(known_cnpj=invalid)
+    plan = plan_gap_actions(
+        "company:invalid-cnpj-routing-probe",
+        GapRequirements(company_fields=("legal_name",)),
+        inputs=inputs,
+    )
+
+    assert len(plan.actions) == 1
+    action = plan.actions[0]
+    assert action.disposition is ActionDisposition.READY
+    assert action.action_kind is ActionKind.BRASILAPI_POINT_LOOKUP
+    assert action.locator == "https://brasilapi.com.br/api/cnpj/v1/00000000000192"
+
+    print("CNPJ_ACQUISITION_GUARD_BAKEOFF_V1")
+    print("official_checksum_valid=NO")
+    print("current_searchleads_routing_accepts=YES")
+    print("current_searchleads_network_action_ready=YES")
+    print("candidate_improvement=validate_identifier_before_network_dispatch")
+    print("raw_evidence_and_normalization_must_remain_separate=YES")
