@@ -21,7 +21,9 @@ The executable probes in `tests/experimental/test_chassis_bakeoff_runtime*.py` t
 7. Crawlee filesystem request persistence across storage-client re-instantiation;
 8. Crawlee request retry/recovery without network navigation;
 9. synthetic scheduling concurrency under identical 20 ms per-item work;
-10. presence of session rotation, blocking retry, proxy, statistics, timeout, robots policy and concurrency controls.
+10. request-level observability: completion counts, retry histogram and durations;
+11. separation of ordinary request retry from blocked/session rotation;
+12. presence of session rotation, blocking retry, proxy, statistics, timeout, robots policy and concurrency controls.
 
 ## Current static findings
 
@@ -32,7 +34,9 @@ The executable probes in `tests/experimental/test_chassis_bakeoff_runtime*.py` t
 - explicit minimum interval from the business planner;
 - explicit `resolve -> validate -> reassess` hooks;
 - bounded run-until-stable semantics;
-- evidence/truth boundaries remain separate from acquisition success.
+- evidence/truth boundaries remain separate from acquisition success;
+- action records retain business action identity, disposition, attempts and reason;
+- unified measurement already expresses aggregate cost/time per lead when telemetry is supplied.
 
 These are product/domain semantics, not reasons to retain the current runtime implementation.
 
@@ -43,11 +47,19 @@ These are product/domain semantics, not reasons to retain the current runtime im
 - `successful_cache_keys`;
 - `last_attempt_at`.
 
-Both are in-memory Python collections. A fresh runtime therefore loses the successful-action cache and the previous attempt timestamp. There is no native request queue, reclaim state, session rotation, adaptive concurrency, crawler statistics, proxy runtime or durable local request lifecycle in this executor.
+Both are in-memory Python collections. A fresh runtime therefore loses the successful-action cache and the previous attempt timestamp.
+
+The executor also has one generic exception retry budget. It does not distinguish ordinary handler failure from proxy/session/blocking failure. There is no native request queue, reclaim state, session rotation, adaptive concurrency, request-duration telemetry, retry histogram, status-code statistics, crawler error tracker, proxy runtime or durable local request lifecycle.
 
 ### Crawlee capabilities under test
 
-Crawlee 1.9.3 provides a request queue with unique-key deduplication, explicit pending/in-progress/handled lifecycle and reclaim; `BasicCrawler` provides retries, session management/rotation, concurrency controls, statistics, proxy configuration, handler timeouts and blocked-request policy. Its filesystem storage client explicitly persists local storage between program runs, while warning that the filesystem backend is not multi-process safe.
+Crawlee 1.9.3 provides a request queue with unique-key deduplication, explicit pending/in-progress/handled lifecycle and reclaim; `BasicCrawler` provides retries, session management/rotation, concurrency controls, statistics, proxy configuration, handler timeouts and blocked-request policy.
+
+Its statistics model natively records finished/failed request counts, retry histogram, request durations, crawler runtime and status-code counts; the statistics subsystem can optionally persist state through a key-value store.
+
+Its filesystem storage client explicitly persists local storage between program runs, while warning that the filesystem backend is not multi-process safe.
+
+Crawlee also separates ordinary request retry from session rotation. The experiment injects `SessionError` with `max_request_retries=0`; a successful recovery within the session-rotation budget would demonstrate that blocked/proxy/session recovery can stay below the SearchLeads business-action retry boundary.
 
 ## Decision boundary
 
@@ -68,6 +80,17 @@ Crawlee request queue / retry / recovery / sessions / concurrency / stats
 SearchLeads raw Evidence -> normalize -> resolve -> validate -> reassess
 ```
 
+The telemetry boundary would follow the same layering:
+
+```text
+Crawlee request telemetry
+  -> request attempts / duration / retry / status / session runtime
+SearchLeads business telemetry
+  -> action / source / gap / evidence / lead / cost / outcome
+```
+
+The adapter must correlate these layers without allowing runtime success to become domain truth.
+
 This is only a candidate until tests execute.
 
 ## Required evidence before adoption
@@ -78,6 +101,8 @@ Do not adopt Crawlee as a production dependency until all of the following have 
 - runtime fault-injection probes;
 - request persistence probe;
 - concurrency probe;
+- observability probe;
+- session/blocking separation probe;
 - existing entity-resolution and statement/evidence chassis probes;
 - at least one bounded live-source experiment after issue #60 is ready for live HTTP certification.
 
