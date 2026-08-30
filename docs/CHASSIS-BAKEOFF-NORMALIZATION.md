@@ -2,14 +2,14 @@
 
 ## Decision rule
 
-SearchLeads normalization is a baseline, not a protected design. Rigour 1.4.0 is a challenger, not an assumed winner.
+SearchLeads normalization is a baseline, not a protected design. Rigour 2.3.1 is a challenger, not an assumed winner.
 
 Normalization is evaluated as feature engineering. A normalized string is never entity identity and cannot, by itself, authorize a merge, canonical fact, qualified Lead, or contact validation state.
 
 ## Evidence classes
 
 - `OFFICIAL_SPEC`: Receita Federal / Serpro current CNPJ alphanumeric specification and published examples.
-- `ENGINEERING_EVIDENCE`: Rigour 1.4.0 public normalization APIs, organization-type reference database, tests and implementation.
+- `ENGINEERING_EVIDENCE`: Rigour 2.3.1 public normalization APIs, organization-type reference database, tests and implementation; python-stdnum 2.2 current CNPJ implementation.
 - `LOCAL_EXPERIMENT`: frozen SearchLeads adversarial name corpus, downstream ER ablation, and CNPJ challenger probes in this PR.
 - `HYPOTHESIS`: any proposed production replacement before the GitHub runner actually executes the benchmark.
 
@@ -34,13 +34,13 @@ The key-level benchmark compares four deterministic strategies over the same 44-
    - current SearchLeads company-name projection;
    - Unicode NFKC + whitespace collapse;
    - preserves case and accents.
-2. `rigour_normalize_name_1_4_0`
+2. `rigour_normalize_name_2_3_1`
    - Rigour public `normalize_name` convenience key;
    - Unicode casefold + name tokenization.
-3. `rigour_nfkd_casefold_name_1_4_0`
+3. `rigour_nfkd_casefold_name_2_3_1`
    - explicit `NFKD | CASEFOLD | NAME` pipeline;
    - tests whether compatibility decomposition and casefold improve representation invariance.
-4. `rigour_nfkd_casefold_name_strip_org_type_1_4_0`
+4. `rigour_nfkd_casefold_name_strip_org_type_2_3_1`
    - same folded key plus Rigour organization-type removal;
    - tests the recall/collision trade-off of dropping legal-form tokens.
 
@@ -101,17 +101,32 @@ The frozen CNPJ probe compares:
 
 1. the official reference algorithm implemented directly from the Receita/Serpro specification;
 2. current SearchLeads CNPJ canonicalization from the gap planner;
-3. Rigour 1.4.0 `rigour.ids.CNPJ`, which delegates to `python-stdnum` validation.
+3. Rigour 2.3.1 `rigour.ids.CNPJ`, with the experiment pinning `python-stdnum==2.2`.
 
 The official implementation is the acceptance oracle for the six frozen valid/invalid cases. SearchLeads and Rigour are measured against it.
+
+### Dependency verification
+
+Nomenklatura 4.14.0 requires `rigour >= 2.2.3, < 3.0.0`, so Rigour 2.3.1 is within its supported dependency range.
+
+python-stdnum 2.2 explicitly added support for the new Brazilian CNPJ format. Its `stdnum.br.cnpj` implementation:
+
+- accepts 14 alphanumeric characters;
+- uppercases and compacts valid separators;
+- maps each of the first 12 characters with `ord(character) - 48`;
+- applies the official modulo-11 weight sequences;
+- requires the last two characters to match the computed numeric check digits;
+- includes `12.ABC.345/01DE-35` as a documented valid example.
+
+Thus support for alphanumeric CNPJ is no longer a hypothesis for the pinned external dependency. The remaining empirical question is whether the complete Rigour wrapper, SearchLeads handling, and official oracle agree across the frozen cases and future adversarial cases.
 
 ### Important semantic distinction
 
 Current SearchLeads `_normalize_cnpj` checks compact shape (`14` alphanumeric characters) and canonicalizes formatting/case. It is not a checksum validator. Accepting a syntactically shaped identifier must not be described as validating the CNPJ.
 
-Rigour exposes a validation-oriented API. Whether its pinned dependency version accepts the new alphanumeric format is an empirical question for this benchmark, not an assumption.
+Rigour exposes a validation-oriented API via python-stdnum. Even if it wins the validation benchmark, canonicalization and validation should remain distinguishable operations: a source value may be preserved and normalized while failing validation, and a validation result must not erase raw Evidence.
 
-If neither challenger covers the official current format correctly, the winning production idea may be neither existing implementation: use the official algorithm as a dedicated SearchLeads identifier validator while keeping normalization and identity resolution separate.
+If the external validator and official oracle disagree on any current official case, the official specification wins for the Brazilian identifier contract; the external library remains replaceable.
 
 ## Adoption gate
 
