@@ -8,11 +8,11 @@ from math import sqrt
 from pathlib import Path
 from time import perf_counter
 
-import numpy as np
 import pytest
 
 pytest.importorskip("followthemoney")
 pytest.importorskip("nomenklatura")
+np = pytest.importorskip("numpy")
 
 from followthemoney import EntityProxy
 from nomenklatura.matching import EntityResolveRegression, RegressionV1
