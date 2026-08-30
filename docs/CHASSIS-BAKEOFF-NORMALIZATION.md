@@ -10,14 +10,25 @@ Normalization is evaluated as feature engineering. A normalized string is never 
 
 - `OFFICIAL_SPEC`: Receita Federal / Serpro current CNPJ alphanumeric specification and published examples.
 - `ENGINEERING_EVIDENCE`: Rigour 1.4.0 public normalization APIs, organization-type reference database, tests and implementation.
-- `LOCAL_EXPERIMENT`: frozen SearchLeads adversarial name corpus and CNPJ challenger probes in this PR.
+- `LOCAL_EXPERIMENT`: frozen SearchLeads adversarial name corpus, downstream ER ablation, and CNPJ challenger probes in this PR.
 - `HYPOTHESIS`: any proposed production replacement before the GitHub runner actually executes the benchmark.
 
 No scientific-performance claim is made from the curated fixture alone.
 
+## Current SearchLeads architectural duplication
+
+The current company-name field normalizer and current company ER do not share one normalization implementation:
+
+- `searchleads.normalization._normalize_company_name` performs NFKC + whitespace normalization and preserves case/accents;
+- `searchleads.entity_resolution.company._fold` independently performs NFKC + whitespace normalization, casefold, NFKD decomposition, and combining-mark removal.
+
+Therefore replacing only the field normalizer can produce a cleaner stored projection without changing company ER at all. The bake-off treats this duplication as an engineering problem to measure, not as a reason to preserve either implementation.
+
+A production change should prefer one explicit, testable name-feature contract if the benchmark shows that doing so preserves or improves ER behavior.
+
 ## Company-name challengers
 
-The benchmark compares four deterministic strategies over the same 44-pair frozen corpus:
+The key-level benchmark compares four deterministic strategies over the same 44-pair frozen corpus:
 
 1. `searchleads_nfkc_whitespace_v1`
    - current SearchLeads company-name projection;
@@ -35,7 +46,7 @@ The benchmark compares four deterministic strategies over the same 44-pair froze
 
 The corpus has 20 representation-equivalent pairs and 24 distinct controls. It includes case, accent, punctuation, whitespace, Unicode compatibility/composition, invisible format characters, legal forms, near spellings, geography, numeric tokens, extra tokens, and four explicit legal-form collision guards.
 
-### Metrics
+### Key-level metrics
 
 For equality of normalized keys as a *feature*:
 
@@ -49,7 +60,30 @@ For equality of normalized keys as a *feature*:
 
 There is deliberately no assertion that Rigour or SearchLeads must win.
 
-The curated fixture is an adversarial engineering corpus, not a market-representative sample and not independent evidence of entity-resolution precision. A production choice must also be checked downstream against the independent ER benchmark.
+The curated fixture is an adversarial engineering corpus, not a market-representative sample and not independent evidence of entity-resolution precision.
+
+## Downstream ER ablation
+
+`test_chassis_bakeoff_normalization_er_impact.py` applies the name strategies inside the existing company ER benchmark while holding the other components fixed:
+
+- registry conflict/exact rules unchanged;
+- domain feature unchanged;
+- phone feature unchanged;
+- address feature unchanged;
+- location feature unchanged;
+- CNAE feature unchanged;
+- weighted feature weights unchanged.
+
+Only `name_similarity` changes.
+
+The experiment reports both:
+
+- the existing fixed `0.78` weighted threshold, to show the direct effect of changing only the name representation;
+- a threshold selected from the 18-pair calibration partition and evaluated on the 36-pair holdout, to avoid rejecting a challenger merely because its score scale shifted.
+
+Registry conflict remains a hard negative and cannot be overridden by aggressive name normalization.
+
+This corpus predates the experiment, so independence of the SearchLeads baseline is not certified. The result is regression/comparative evidence, not a final unbiased market-quality estimate.
 
 ## CNPJ challengers
 
@@ -86,7 +120,8 @@ No normalization implementation is replaced until:
 - the complete SearchLeads regression suite executes;
 - all normalization probes execute on Python 3.11 and 3.12;
 - false collisions are reviewed, not only positive invariance;
-- the chosen name normalization is tested as an ER feature on the independent linkage benchmark;
+- the chosen name representation does not create a prohibited false-merge regression in downstream ER;
+- the chosen approach resolves or explicitly justifies the duplicate normalization logic currently split between field normalization and ER;
 - the CNPJ behavior matches current Receita official examples, including alphanumeric identifiers;
 - raw source values and Evidence remain unchanged and auditable.
 
