@@ -40,7 +40,7 @@ def _captured_evidence() -> tuple[Source, Evidence]:
         source_id=source.source_id,
         locator="https://clinic-a.example.org/team",
         captured_at=datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc),
-        raw_payload="<html><p>Ana Silva — CFO</p></html>",
+        raw_payload="<html><p>Ana Silva — Finance Director</p></html>",
         content_digest="sha256:fixture",
         metadata={"http_status": 200},
     )
@@ -71,7 +71,7 @@ def test_one_raw_evidence_can_support_multiple_distinct_ftm_statements() -> None
     role = _statement(
         entity_id="directorship:ana:clinic-a",
         prop="role",
-        value="CFO",
+        value="Finance Director",
         source=source,
         evidence=evidence,
     )
@@ -96,7 +96,7 @@ def test_one_raw_evidence_can_support_multiple_distinct_ftm_statements() -> None
     assert {evidence_id for link in links for evidence_id in link.evidence_ids} == {
         evidence.evidence_id
     }
-    assert evidence.raw_payload == "<html><p>Ana Silva — CFO</p></html>"
+    assert evidence.raw_payload == "<html><p>Ana Silva — Finance Director</p></html>"
 
     print("FTM_SEARCHLEADS_EVIDENCE_BRIDGE_ONE_TO_MANY_V1")
     print("raw_evidence_records=1")
@@ -112,7 +112,7 @@ def test_ftm_statement_id_must_not_be_overloaded_with_searchleads_evidence_id() 
         entity_id="directorship:ana:clinic-a",
         schema="Directorship",
         prop="role",
-        value="CFO",
+        value="Finance Director",
         dataset=source.source_id,
         origin=evidence.locator,
     )
@@ -146,13 +146,13 @@ def test_one_ftm_statement_can_reference_multiple_searchleads_evidence_records()
         source_id=source.source_id,
         locator="https://registry.example.org/ana",
         captured_at=datetime(2026, 8, 30, 13, 0, tzinfo=timezone.utc),
-        raw_payload="Ana Silva | CFO | Clinic A",
+        raw_payload="Ana Silva | Finance Director | Clinic A",
         content_digest="sha256:fixture-2",
     )
     role = _statement(
         entity_id="directorship:ana:clinic-a",
         prop="role",
-        value="CFO",
+        value="Finance Director",
         source=source,
         evidence=first,
     )
@@ -177,7 +177,7 @@ def test_bridge_keeps_ftm_lineage_and_searchleads_raw_reprocessing_roles_separat
     role = _statement(
         entity_id="directorship:ana:clinic-a",
         prop="role",
-        value="CFO",
+        value="Finance Director",
         source=source,
         evidence=evidence,
     )
