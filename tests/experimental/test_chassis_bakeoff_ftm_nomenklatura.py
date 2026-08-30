@@ -172,14 +172,14 @@ def test_searchleads_contact_lifecycle_is_stricter_than_ftm_contact_property() -
 def test_nomenklatura_resolver_natively_preserves_identity_judgements(resolver) -> None:
     canonical = resolver.decide("company:a", "company:a-alias", Judgement.POSITIVE)
     assert canonical.canonical
-    assert resolver.get_judgement("company:a", "company:a-alias") is Judgement.POSITIVE
+    assert resolver.get_judgement("company:a", "company:a-alias") == Judgement.POSITIVE
     assert resolver.get_canonical("company:a") == resolver.get_canonical("company:a-alias")
 
     resolver.decide("company:a", "company:b", Judgement.NEGATIVE)
-    assert resolver.get_judgement("company:a", "company:b") is Judgement.NEGATIVE
+    assert resolver.get_judgement("company:a", "company:b") == Judgement.NEGATIVE
 
     resolver.decide("person:a", "person:b", Judgement.UNSURE)
-    assert resolver.get_judgement("person:a", "person:b") is Judgement.UNSURE
+    assert resolver.get_judgement("person:a", "person:b") == Judgement.UNSURE
 
 
 def test_chassis_bakeoff_capability_scorecard() -> None:
