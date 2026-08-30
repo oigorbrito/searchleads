@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - 'tests/experimental/**'
+      - 'tests/fixtures/company_er_v1.json'
+      - 'src/searchleads/entity_resolution/**'
       - '.github/workflows/chassis-bakeoff.yml'
 
 permissions:
@@ -34,8 +36,7 @@ jobs:
         run: python -m compileall -q src
       - name: Run SearchLeads regression suite
         run: python -m pytest -q -W error::ResourceWarning
-      - name: Run chassis probes with scorecard output
+      - name: Run all chassis probes and comparative scorecards
         run: >-
-          python -m pytest -q -s
-          tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py
+          python -m pytest -q -s tests/experimental
           -W error::ResourceWarning
