@@ -22,8 +22,18 @@ jobs:
       matrix:
         python-version: ['3.11', '3.12']
     steps:
-      - name: Checkout
+      - name: Checkout SearchLeads
         uses: actions/checkout@v4
+      - name: Checkout pinned external canonical linkage dataset
+        uses: actions/checkout@v4
+        with:
+          repository: dedupeio/dedupe
+          ref: 3f61e79102910bd355e920a2df7e44c14c9cb247
+          path: .external/dedupe
+          sparse-checkout: |
+            benchmarks/benchmarks/datasets/restaurant-1.csv
+            benchmarks/benchmarks/datasets/restaurant-2.csv
+          sparse-checkout-cone-mode: false
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
