@@ -44,7 +44,7 @@ jobs:
         run: >-
           python -m pip install --upgrade pip pytest
           followthemoney==4.10.2 nomenklatura==4.14.0
-          crawlee==1.9.3 rigour==1.4.0
+          crawlee==1.9.3 rigour==2.3.1 python-stdnum==2.2
       - name: Compile SearchLeads
         run: python -m compileall -q src
       - name: Run SearchLeads regression suite
