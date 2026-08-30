@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 
 from searchleads.domain import Evidence
 
 from .ledger import SQLiteRepository as _LedgerSQLiteRepository
-from .sqlite import PersistenceError, SchemaVersionError
+from .sqlite import (
+    PersistenceConflictError,
+    PersistenceError,
+    SchemaVersionError,
+    encode_record,
+    raw_payload_sha256,
+)
 
 SCHEMA_VERSION = 3
 
@@ -161,28 +168,48 @@ class SQLiteRepository(_LedgerSQLiteRepository):
             )
 
     def _save_evidence(self, evidence: Evidence) -> bool:
-        existing = self._connection.execute(
-            "SELECT 1 FROM evidence_records WHERE evidence_id = ?",
-            (evidence.evidence_id,),
-        ).fetchone()
-        if existing is not None:
-            self._verify_evidence_envelope(evidence.evidence_id)
-
-        inserted = super()._save_evidence(evidence)
-        if not inserted:
-            return False
+        envelope = replace(evidence, raw_payload=None)
+        envelope_json = encode_record(envelope)
+        envelope_digest = _envelope_sha256(envelope_json)
+        raw_bytes = evidence.raw_payload.encode("utf-8") if evidence.raw_payload is not None else None
+        raw_digest = raw_payload_sha256(evidence.raw_payload) if evidence.raw_payload is not None else None
 
         row = self._connection.execute(
-            "SELECT envelope_json FROM evidence_records WHERE evidence_id = ?",
+            """SELECT envelope_json, raw_payload, raw_payload_sha256, envelope_sha256
+               FROM evidence_records WHERE evidence_id = ?""",
             (evidence.evidence_id,),
         ).fetchone()
-        if row is None:  # pragma: no cover - impossible without concurrent deletion
-            raise EvidenceEnvelopeIntegrityError(
-                f"Evidence {evidence.evidence_id!r} disappeared during envelope hashing"
+        if row is not None:
+            self._verify_evidence_envelope(evidence.evidence_id)
+            stored_raw = bytes(row["raw_payload"]) if row["raw_payload"] is not None else None
+            if (
+                row["envelope_json"] == envelope_json
+                and stored_raw == raw_bytes
+                and row["raw_payload_sha256"] == raw_digest
+                and row["envelope_sha256"] == envelope_digest
+            ):
+                return False
+            raise PersistenceConflictError(
+                f"Evidence id {evidence.evidence_id!r} already exists with different content"
             )
+
+        # V3 writes the envelope and both storage digests in the same INSERT and
+        # transaction. There is no committed state in which a newly saved Evidence
+        # row exists without its envelope digest.
         self._connection.execute(
-            "UPDATE evidence_records SET envelope_sha256 = ? WHERE evidence_id = ?",
-            (_envelope_sha256(row["envelope_json"]), evidence.evidence_id),
+            """INSERT INTO evidence_records(
+                   evidence_id, source_id, captured_at, envelope_json,
+                   raw_payload, raw_payload_sha256, envelope_sha256
+               ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                evidence.evidence_id,
+                evidence.source_id,
+                evidence.captured_at.isoformat(),
+                envelope_json,
+                raw_bytes,
+                raw_digest,
+                envelope_digest,
+            ),
         )
         self._connection.commit()
         return True
