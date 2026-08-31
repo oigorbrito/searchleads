@@ -150,6 +150,9 @@ CAP-02 Company ER
 - canonical documentation baseline created
 - project authority consolidated
 - ER blockers remain benchmark dependent
+- `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
+- `INTERNAL_REGRESSION_SUITE = PASS` (`864 passed`, `24 skipped`, `1 xfailed`)
+- skips and xfail are classified rather than hidden
 
 ## New Decisions
 
@@ -171,8 +174,39 @@ CAP-02 Company ER
 | experimental chassis bake-off tests | FR-003, FR-004, QR-002 | EXPERIMENTAL_ONLY | keep as evidence only, not implementation gate | CAP-02, CAP-03 | low | evidence only |
 | missing external benchmark runtime | FR-003, FR-004 | INFRASTRUCTURE_FAILURE | obtain runnable benchmark path or alternate sanctioned runtime | CAP-02, CAP-03 | high | open |
 
+## Skip and Xfail Inventory
+
+| Test | Classification | Reason | Requirement / capability | Status |
+|---|---|---|---|---|
+| `tests/experimental/test_chassis_bakeoff_adversarial.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02/CAP-03 benchmark harness | open |
+| `tests/experimental/test_chassis_bakeoff_cnpj.py` | EXTERNAL_DEPENDENCY | missing `rigour` | FR-002 / normalization contract probe | open |
+| `tests/experimental/test_chassis_bakeoff_dependency_contract.py` | EXTERNAL_DEPENDENCY | dependencies installed only in bake-off workflow | CAP-02/CAP-03 benchmark harness | open |
+| `tests/experimental/test_chassis_bakeoff_external_canonical.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02 external canonical corpus | open |
+| `tests/experimental/test_chassis_bakeoff_external_regression.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02 external regression corpus | open |
+| `tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | evidence bridge benchmark | open |
+| `tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+| `tests/experimental/test_chassis_bakeoff_matching.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+| `tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+| `tests/experimental/test_chassis_bakeoff_normalization.py` | EXTERNAL_DEPENDENCY | missing `rigour` | normalization ablation | open |
+| `tests/experimental/test_chassis_bakeoff_normalization_er_impact.py` | EXTERNAL_DEPENDENCY | missing `rigour` | normalization ablation / ER impact | open |
+| `tests/experimental/test_chassis_bakeoff_person_relationship_lineage.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship lineage probe | open |
+| `tests/experimental/test_chassis_bakeoff_person_relationship_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship model probe | open |
+| `tests/experimental/test_chassis_bakeoff_professional_registration_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship / registration probe | open |
+| `tests/experimental/test_chassis_bakeoff_provenance.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | provenance bridge probe | open |
+| `tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | relationship aggregate model probe | open |
+| `tests/experimental/test_chassis_bakeoff_runtime.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime probes | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_adapter.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime adapter | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_adapter_persistence.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime adapter persistence | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_concurrency.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime concurrency | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_observability.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime observability | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_sessions.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime sessions | open |
+| `tests/experimental/test_chassis_bakeoff_runtime_throttling.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime throttling | open |
+| `tests/experimental/test_chassis_bakeoff_yente_application.py` | EXTERNAL_DEPENDENCY | Yente installed only in isolated bake-off job | separate-service challenger probe | open |
+| `tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing` | INTENTIONAL_OPTIONAL | `TEST_OBSOLETE` superseded by aggregate qualification analysis | legacy benchmark regression | closed |
+
 ## Blocker Register
 
 | ID | Capability | Blocker type | Description | Internal/external | Can work continue elsewhere? | Required evidence/action | Owner/tool | Status |
 |---|---|---|---|---|---|---|---|---|
 | BR-001 | CAP-07 Acquisition Runtime | INFRASTRUCTURE | external runtime execution environment remains unavailable in the current checkout context | external | yes | obtain valid runtime path or sanctioned benchmark environment | CI/runtime | open |
+| BR-002 | CAP-02 Company ER / CAP-03 Person ER | EXTERNAL_DEPENDENCY | benchmark challengers require `followthemoney`, `rigour`, or `crawlee` in the bake-off environment | external | yes | run challenger suite in sanctioned bake-off runtime | benchmark harness | open |

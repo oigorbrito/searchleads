@@ -45,6 +45,9 @@ Status: CANONICAL
 - environment: controlled fixture set
 - evidence generated: metric table and winner/deferral state
 - semantics: no PASS without executable results
+- current internal state: local regression suite passed (`864 passed`, `24 skipped`, `1 xfailed`)
+- skip semantics: external-dependency skips are classified, not treated as hidden failures
+- xfail semantics: retained only when marked `TEST_OBSOLETE` or another explicit intentional category
 
 ### Fault Injection
 
@@ -79,4 +82,3 @@ Status: CANONICAL
 `INFRASTRUCTURE_BLOCKED` != `TEST_FAILED`
 
 If the runner, dependency, or external service is unavailable, report blocked evidence rather than a failing product assertion.
-

@@ -109,6 +109,13 @@ What is missing is execution. Therefore:
 - `Company ER` = `DEFER`
 - `Person ER` = `DEFER`
 
+## Current verification note
+
+- local regression suite is green
+- `tests/test_selective_review.py`, `tests/test_dental_commercial_acceptance.py`, `tests/test_evidence_envelope_consistency.py`, and `tests/test_person_entity_resolution.py` remain PASS
+- the remaining ER decision gap is benchmark execution, not contract reconciliation
+- external challengers still require a sanctioned bake-off runtime with `followthemoney`, `rigour`, and `crawlee` as applicable
+
 ## Implication for implementation
 
 Do not start a new clean implementation line yet.

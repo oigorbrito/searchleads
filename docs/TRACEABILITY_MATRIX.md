@@ -24,3 +24,11 @@ Status: CANONICAL
 | CR-001 | Qualification | `src/searchleads/qualification_policy/dental_v1.py`, `src/searchleads/qualification/dental.py` | `tests/test_dental_qualification.py`, `tests/test_dental_commercial_acceptance.py` | policy and acceptance tests | CANONICAL | No |
 | DR-001 | Persistence envelope integrity | `src/searchleads/persistence/v3.py`, `src/searchleads/persistence/ledger.py` | `tests/test_evidence_envelope_consistency.py` | digest mismatch and consistency rejection | CANONICAL | No |
 | OR-001 | Acquisition runtime composition | `src/searchleads/gap_automation/execution.py`, `docs/ACQUISITION_RUNTIME_DECISION_V1.md` | experimental runtime probes | static decision evidence | CANONICAL | No |
+
+## Current Verification Note
+
+- `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
+- `INTERNAL_REGRESSION_SUITE = PASS`
+- full-suite result: `864 passed`, `24 skipped`, `1 xfailed`
+- skips are external-dependency probes for bake-off capabilities, not hidden product failures
+- the single xfail is `TEST_OBSOLETE` and intentionally retained as legacy benchmark evidence

@@ -1,0 +1,191 @@
+{
+  "closure_wave": "02",
+  "repository": "https://github.com/tihotm/searchleads",
+  "commit_sha": "db5c5548a999426d9977f404396a64a3a0f77bf1",
+  "timestamp": "2026-08-31T00:00:00-03:00",
+  "runtime_environment": "local_windows_python_3_12",
+  "python_version": "3.12.10",
+  "test_command": "python -m pytest",
+  "execution_status": "PASS",
+  "summary": {
+    "passed": 864,
+    "skipped": 24,
+    "xfail": 1
+  },
+  "internal_regression_suite": "PASS",
+  "legacy_contract_reconciliation": "COMPLETE",
+  "person_er_contract": "PASS",
+  "selective_review": "NOT_A_BLOCKER",
+  "commercial_acceptance": "NOT_A_BLOCKER",
+  "evidence_envelope_consistency": "NOT_A_BLOCKER",
+  "skip_inventory": [
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_adversarial.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "CAP-02/CAP-03 benchmark harness"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_cnpj.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing rigour",
+      "capability": "FR-002 / normalization contract probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_dependency_contract.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "dependencies installed only in bake-off workflow",
+      "capability": "CAP-02/CAP-03 benchmark harness"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_external_canonical.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "CAP-02 external canonical corpus"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_external_regression.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "CAP-02 external regression corpus"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "evidence bridge benchmark"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "ER challenger harness"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_matching.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "ER challenger harness"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "ER challenger harness"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_normalization.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing rigour",
+      "capability": "normalization ablation"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_normalization_er_impact.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing rigour",
+      "capability": "normalization ablation / ER impact"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_person_relationship_lineage.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "person relationship lineage probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_person_relationship_model.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "person relationship model probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_professional_registration_model.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "person relationship / registration probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_provenance.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "provenance bridge probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing followthemoney",
+      "capability": "relationship aggregate model probe"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime probes"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_adapter.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime adapter"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_adapter_persistence.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime adapter persistence"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_concurrency.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime concurrency"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_observability.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime observability"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_sessions.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime sessions"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_runtime_throttling.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "missing crawlee",
+      "capability": "acquisition runtime throttling"
+    },
+    {
+      "test": "tests/experimental/test_chassis_bakeoff_yente_application.py",
+      "classification": "EXTERNAL_DEPENDENCY",
+      "reason": "Yente installed only in isolated bake-off job",
+      "capability": "separate-service challenger probe"
+    }
+  ],
+  "xfail_inventory": [
+    {
+      "test": "tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing",
+      "classification": "INTENTIONAL_OPTIONAL",
+      "reason": "TEST_OBSOLETE superseded by aggregate qualification analysis",
+      "capability": "legacy benchmark regression"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "BR-001",
+      "capability": "CAP-07 Acquisition Runtime",
+      "type": "INFRASTRUCTURE",
+      "description": "external runtime execution environment remains unavailable in the current checkout context",
+      "scope": "external"
+    },
+    {
+      "id": "BR-002",
+      "capability": "CAP-02 Company ER / CAP-03 Person ER",
+      "type": "EXTERNAL_DEPENDENCY",
+      "description": "benchmark challengers require followthemoney, rigour, or crawlee in the bake-off environment",
+      "scope": "external"
+    }
+  ]
+}

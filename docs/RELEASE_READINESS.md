@@ -7,9 +7,9 @@ Status: CANONICAL
 ### Architecture Baseline
 
 - criteria: canonical charter, architecture, domain, data, quality, V&V, and completion plan exist
-- current evidence: partial canonical docs created in this session
+- current evidence: canonical docs are present and synchronized with the green internal regression state
 - status: PARTIAL
-- blockers: Company ER, Person ER, and residual benchmark-backed reconciliation
+- blockers: Company ER, Person ER, and external benchmark runners remain open
 
 ### Integrated
 
@@ -21,9 +21,9 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: targeted legacy contract failures have been reconciled in selective review, acceptance, and evidence consistency
-- status: PARTIAL
-- blockers: full suite still needs a final pass after the current WIP is reconciled
+- current evidence: full internal regression suite passed with `864 passed`, `24 skipped`, `1 xfailed`
+- status: PASS
+- blockers: skip/xfail inventory is classified; external benchmark challengers still need sanctioned runtime support
 
 ### Operationally Ready
 
