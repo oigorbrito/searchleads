@@ -1,0 +1,54 @@
+{
+  "baseline_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
+  "api_status": "PASS (local fallback chassis exposes health, readiness, acquisition, evidence, qualification, review, export, and capabilities surfaces)",
+  "blockers": [
+    "BR-001 Crawlee breadth remains external and environment-dependent",
+    "deployment topology remains partially specified"
+  ],
+  "branch": "work/chassis-implementation-v1",
+  "company_er_operational": "PROVISIONAL_COMPOSE (operational wiring complete)",
+  "compat_adapter_count": 2,
+  "consumer_migration": {
+    "legacy_consumers": [
+      "searchleads.qualification.dental.qualify_dental_person",
+      "searchleads.lead_export.export.LeadExportBundle",
+      "searchleads.selective_review.routing.review_qualification",
+      "searchleads.gap_automation.planning.detect_gaps",
+      "searchleads.acceptance.end_to_end.run_end_to_end_acceptance"
+    ],
+    "migrated_consumers": [
+      "searchleads.qualification.canonical.qualify_dental_relationship",
+      "searchleads.lead_export.canonical.export_canonical_json",
+      "searchleads.application.chassis.create_app",
+      "searchleads.runtime_adapter.ReferenceAcquisitionRuntimeAdapter",
+      "searchleads.selective_review.routing.review_qualification_decision"
+    ]
+  },
+  "crawlee_status": "EXTERNAL_BREADTH_BLOCKED",
+  "deployment_status": "PARTIAL",
+  "e2e_status": "PASS",
+  "final_commit_sha": "2d2301ef4d1c5f8d3edc8e08a5f7c2d9d7c2c5f7",
+  "observability_status": "BASIC",
+  "person_er_operational": "PROVISIONAL_COMPOSE (review-first wiring complete)",
+  "qualification_integration": "PASS",
+  "readiness_gates": {
+    "architecture_baseline": "READY",
+    "integrated": "NEAR_READY",
+    "internally_verified": "PASS",
+    "operationally_ready": "NOT_YET"
+  },
+  "runtime": "Python 3.12.10; local fallback chassis active; FastAPI absent in local environment",
+  "runtime_adapter": "PASS",
+  "tested_commit_sha": "2d2301ef4d1c5f8d3edc8e08a5f7c2d9d7c2c5f7",
+  "tests": [
+    {
+      "command": "python -m pytest tests/test_operational_canonical_integration.py tests/test_domain_canonical_model.py tests/test_persistence.py",
+      "result": "63 passed"
+    },
+    {
+      "command": "python -m pytest",
+      "result": "872 passed, 24 skipped, 1 xfailed"
+    }
+  ],
+  "wave": 5
+}
