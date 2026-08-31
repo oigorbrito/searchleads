@@ -41,6 +41,8 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - current repository evidence is insufficient to claim external certification
 - any live certification must be documented as such and tied to evidence
 - live certification artifacts must remain separate from internal regression evidence
+- source authority is scoped per fact; certification of one fact does not authorize all facts from the same source
+- freshness policy and revalidation due dates are mandatory for temporal facts
 
 ## Unresolved Gates
 
@@ -48,3 +50,4 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - live contact deliverability
 - send authorization
 - jurisdiction-specific compliance sign-off
+- human verification for professional registration remains external

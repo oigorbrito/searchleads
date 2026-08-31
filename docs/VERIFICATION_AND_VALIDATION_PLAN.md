@@ -45,7 +45,7 @@ Status: CANONICAL
 - environment: controlled fixture set
 - evidence generated: metric table and winner/deferral state
 - semantics: no PASS without executable results
-- current internal state: local regression suite passed (`882 passed`, `24 skipped`, `1 xfailed`)
+- current internal state: local regression suite passed (`884 passed`, `24 skipped`, `1 xfailed`)
 - skip semantics: external-dependency skips are classified, not treated as hidden failures
 - xfail semantics: retained only when marked `TEST_OBSOLETE` or another explicit intentional category
 
@@ -83,6 +83,20 @@ Status: CANONICAL
 - environment: authorized live path
 - evidence generated: external confirmation and artifact records
 - semantics: live certification is separate from internal verification
+
+### Source Authority
+
+- purpose: validate source identity, authority scope, and freshness policy
+- environment: live or replayed evidence with explicit authority mapping
+- evidence generated: source authority maps, contract drift records, and freshness classifications
+- semantics: source authority for one fact does not imply authority for all facts
+
+### Compliance and Pilot
+
+- purpose: verify versioned compliance policy, manual authorization, suppression precedence, and SEND_READY proof
+- environment: local runtime with policy fixtures and audit bundles
+- evidence generated: compliance decisions, authorization records, and send-ready proofs
+- semantics: no hidden authorization and no silent policy reuse across versions
 
 ## Global Rule
 

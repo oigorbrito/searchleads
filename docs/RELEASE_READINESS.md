@@ -21,7 +21,7 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: full internal regression suite passed with `882 passed`, `24 skipped`, `1 xfailed`
+- current evidence: full internal regression suite passed with `884 passed`, `24 skipped`, `1 xfailed`
 - status: PASS
 - blockers: skip/xfail inventory is classified; external benchmark challengers still need sanctioned runtime support
 
@@ -35,13 +35,13 @@ Status: CANONICAL
 ### Externally Certified
 
 - criteria: live dependency paths and compliance gates are validated
-- current evidence: none claimed
-- status: NOT_YET
-- blockers: live certification, external dependencies, compliance
+- current evidence: wave 08 live observation confirmed BrasilAPI accessibility, SERPRO public portal accessibility, and the CFO consultation login boundary; full external certification remains partial
+- status: PARTIAL
+- blockers: live certification, external dependencies, compliance, human verification
 
 ### Commercial Pilot Ready
 
 - criteria: qualification, contacts, compliance, and SEND_READY conditions are all satisfied
-- current evidence: qualification policy exists; contact-use, suppression, and pilot readiness contracts are now represented canonically; send readiness remains separate from external authorization
+- current evidence: qualification policy exists; contact-use, suppression, pilot readiness, compliance policy interface, and send-ready proof contracts are now represented canonically
 - status: NOT_YET
-- blockers: commercial compliance and live certification
+- blockers: commercial compliance, live certification, and manual authorization

@@ -76,6 +76,31 @@ class PilotReadinessState(StrEnum):
     READY = "READY"
 
 
+class SourceCertificationStatus(StrEnum):
+    CERTIFIED = "CERTIFIED"
+    CERTIFIED_WITH_LIMITATIONS = "CERTIFIED_WITH_LIMITATIONS"
+    BLOCKED_CREDENTIAL = "BLOCKED_CREDENTIAL"
+    BLOCKED_HUMAN_VERIFICATION = "BLOCKED_HUMAN_VERIFICATION"
+    BLOCKED_NETWORK = "BLOCKED_NETWORK"
+    SOURCE_UNAVAILABLE = "SOURCE_UNAVAILABLE"
+    CONTRACT_FAIL = "CONTRACT_FAIL"
+    OPTIONAL_NOT_RUN = "OPTIONAL_NOT_RUN"
+
+
+class SourceAuthorityScope(StrEnum):
+    PRODUCT_CRITICAL = "PRODUCT_CRITICAL"
+    CAMPAIGN_CRITICAL = "CAMPAIGN_CRITICAL"
+    OPTIONAL_BREADTH = "OPTIONAL_BREADTH"
+    EXPERIMENTAL_ONLY = "EXPERIMENTAL_ONLY"
+
+
+class FreshnessPolicy(StrEnum):
+    REVALIDATE_BEFORE_USE = "REVALIDATE_BEFORE_USE"
+    REVALIDATE_ON_CHANGE = "REVALIDATE_ON_CHANGE"
+    REVALIDATE_ON_EXPIRY = "REVALIDATE_ON_EXPIRY"
+    STALE = "STALE"
+
+
 @dataclass(frozen=True, slots=True)
 class ConfigurationField:
     env_var: str
@@ -276,6 +301,119 @@ class LiveSourceCertification:
             raise ValueError("integrity_digest must not be blank when supplied")
         if self.failure_classification is not None and not self.failure_classification.strip():
             raise ValueError("failure_classification must not be blank when supplied")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceAuthorityFact:
+    fact_name: str
+    authority_scope: SourceAuthorityScope
+    description: str
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.fact_name, self.description)):
+            raise ValueError("source authority fact requires non-blank fields")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceAuthorityMapEntry:
+    source_id: str
+    source_name: str
+    source_authority: str
+    source_type: str
+    criticality: SourceAuthorityScope
+    facts: tuple[SourceAuthorityFact, ...]
+    freshness_policy: FreshnessPolicy
+    certification_status: SourceCertificationStatus
+    next_gate: str
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.source_id, self.source_name, self.source_authority, self.source_type, self.next_gate)):
+            raise ValueError("source authority map entry requires non-blank fields")
+        if not self.facts:
+            raise ValueError("source authority map entry requires at least one fact")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceContractDrift:
+    source_id: str
+    source_name: str
+    status: SourceCertificationStatus
+    missing_fields: tuple[str, ...] = ()
+    unexpected_fields: tuple[str, ...] = ()
+    semantic_changes: tuple[str, ...] = ()
+    observed_at: datetime | None = None
+    evidence_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.source_id, self.source_name)):
+            raise ValueError("source contract drift requires non-blank identity")
+        if self.observed_at is not None and self.observed_at.tzinfo is None:
+            raise ValueError("observed_at must be timezone-aware")
+        if self.evidence_id is not None and not self.evidence_id.strip():
+            raise ValueError("evidence_id must not be blank when supplied")
+
+
+@dataclass(frozen=True, slots=True)
+class CampaignCompliancePolicy:
+    policy_id: str
+    version: str
+    jurisdiction: str
+    channel: str
+    target_rules: tuple[str, ...]
+    contact_use_rules: tuple[str, ...]
+    suppression_rules: tuple[str, ...]
+    required_certifications: tuple[str, ...]
+    authorization_authority: str
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.policy_id, self.version, self.jurisdiction, self.channel, self.authorization_authority)):
+            raise ValueError("campaign compliance policy requires non-blank identity")
+        if not self.target_rules or not self.contact_use_rules or not self.suppression_rules or not self.required_certifications:
+            raise ValueError("campaign compliance policy requires rule sets")
+
+
+@dataclass(frozen=True, slots=True)
+class ManualAuthorizationRecord:
+    authorization_id: str
+    campaign_id: str
+    policy_id: str
+    version: str
+    authorized_by: str
+    timestamp: datetime
+    scope: str
+    expires_at: datetime | None
+    reason: str
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.authorization_id, self.campaign_id, self.policy_id, self.version, self.authorized_by, self.scope, self.reason)):
+            raise ValueError("manual authorization record requires non-blank fields")
+        if self.timestamp.tzinfo is None:
+            raise ValueError("timestamp must be timezone-aware")
+        if self.expires_at is not None and self.expires_at.tzinfo is None:
+            raise ValueError("expires_at must be timezone-aware")
+
+
+@dataclass(frozen=True, slots=True)
+class SendReadyProof:
+    proof_id: str
+    evaluation_id: str
+    qualification_decision_id: str | None
+    contact_validation_id: str | None
+    contact_use_decision_id: str | None
+    suppression_decision_id: str | None
+    certification_refs: tuple[str, ...]
+    policy_version: str
+    authorization_ref: str | None
+    result: SendReadyAssessment
+    timestamp: datetime
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.proof_id, self.evaluation_id, self.policy_version)):
+            raise ValueError("send ready proof requires non-blank fields")
+        if self.timestamp.tzinfo is None:
+            raise ValueError("timestamp must be timezone-aware")
+        if any(not item.strip() for item in self.certification_refs):
+            raise ValueError("certification_refs must not contain blanks")
 
 
 @dataclass(frozen=True, slots=True)
@@ -645,6 +783,66 @@ def build_external_certification_inventory() -> tuple[CertificationScope, ...]:
     )
 
 
+def build_source_authority_map() -> tuple[SourceAuthorityMapEntry, ...]:
+    return (
+        SourceAuthorityMapEntry(
+            "source:brasilapi:cnpj-v1",
+            "BrasilAPI CNPJ v1",
+            "official BrasilAPI public endpoint",
+            "public-api",
+            SourceAuthorityScope.PRODUCT_CRITICAL,
+            (
+                SourceAuthorityFact("company registry facts", SourceAuthorityScope.PRODUCT_CRITICAL, "registry-derived company identity and status"),
+                SourceAuthorityFact("source observation", SourceAuthorityScope.PRODUCT_CRITICAL, "raw response and parseable contract evidence"),
+            ),
+            FreshnessPolicy.REVALIDATE_BEFORE_USE,
+            SourceCertificationStatus.CERTIFIED_WITH_LIMITATIONS,
+            "revalidate before use and on response shape change",
+        ),
+        SourceAuthorityMapEntry(
+            "source:serpro:transparency",
+            "SERPRO transparency page",
+            "official SERPRO transparency portal",
+            "public-web",
+            SourceAuthorityScope.PRODUCT_CRITICAL,
+            (
+                SourceAuthorityFact("source discovery", SourceAuthorityScope.PRODUCT_CRITICAL, "official page identity and published endpoints"),
+                SourceAuthorityFact("replayable capture", SourceAuthorityScope.PRODUCT_CRITICAL, "captured HTML or response body for offline replay"),
+            ),
+            FreshnessPolicy.REVALIDATE_ON_CHANGE,
+            SourceCertificationStatus.SOURCE_UNAVAILABLE,
+            "revalidate on source change or when live capture succeeds",
+        ),
+        SourceAuthorityMapEntry(
+            "source:cfo:registration",
+            "CFO/CRO registration",
+            "official CFO public consultation surface",
+            "public-web",
+            SourceAuthorityScope.CAMPAIGN_CRITICAL,
+            (
+                SourceAuthorityFact("professional registration status", SourceAuthorityScope.CAMPAIGN_CRITICAL, "current registration visibility for dental professional verification"),
+            ),
+            FreshnessPolicy.REVALIDATE_ON_EXPIRY,
+            SourceCertificationStatus.BLOCKED_HUMAN_VERIFICATION,
+            "manual verification required before current status certification",
+        ),
+        SourceAuthorityMapEntry(
+            "source:dns-http:contact-path",
+            "DNS/HTTP contact path",
+            "DNS and HTTP transport surfaces",
+            "technical-validation",
+            SourceAuthorityScope.OPTIONAL_BREADTH,
+            (
+                SourceAuthorityFact("domain existence", SourceAuthorityScope.OPTIONAL_BREADTH, "DNS resolution and HTTP accessibility"),
+                SourceAuthorityFact("publication observation", SourceAuthorityScope.OPTIONAL_BREADTH, "contact page or publication availability"),
+            ),
+            FreshnessPolicy.REVALIDATE_ON_CHANGE,
+            SourceCertificationStatus.OPTIONAL_NOT_RUN,
+            "revalidate when contact publication becomes pilot-critical",
+        ),
+    )
+
+
 def build_live_certification_contract() -> tuple[str, ...]:
     return (
         "certification_id",
@@ -664,6 +862,66 @@ def build_live_certification_contract() -> tuple[str, ...]:
         "result",
         "failure_classification",
         "revalidation_due",
+    )
+
+
+def evaluate_source_freshness(*, certified_at: datetime | None, policy: FreshnessPolicy, expired: bool = False) -> str:
+    if policy is FreshnessPolicy.STALE:
+        return "STALE"
+    if certified_at is None:
+        return "UNKNOWN"
+    if certified_at.tzinfo is None:
+        raise ValueError("certified_at must be timezone-aware")
+    if expired:
+        return "EXPIRED"
+    if policy is FreshnessPolicy.REVALIDATE_BEFORE_USE:
+        return "REVALIDATE_BEFORE_USE"
+    if policy is FreshnessPolicy.REVALIDATE_ON_CHANGE:
+        return "REVALIDATE_ON_CHANGE"
+    return "REVALIDATE_ON_EXPIRY"
+
+
+def evaluate_source_contract_drift(
+    *,
+    source_id: str,
+    source_name: str,
+    expected_fields: tuple[str, ...],
+    observed_fields: tuple[str, ...],
+    observed_at: datetime,
+    evidence_id: str | None = None,
+) -> SourceContractDrift:
+    missing = tuple(field for field in expected_fields if field not in observed_fields)
+    unexpected = tuple(field for field in observed_fields if field not in expected_fields)
+    semantic_changes = ()
+    status = SourceCertificationStatus.CERTIFIED if not missing and not unexpected else SourceCertificationStatus.CONTRACT_FAIL
+    return SourceContractDrift(source_id, source_name, status, missing, unexpected, semantic_changes, observed_at, evidence_id)
+
+
+def build_compliance_gap_analysis() -> tuple[tuple[str, str, str, str, str, str, str], ...]:
+    return (
+        ("LEGAL-001", "Brazil", "email campaign", "published corporate contact", "current policy requires legal review input", "legal review and campaign policy version", "YES"),
+        ("LEGAL-002", "Brazil", "pilot batch", "professional registration status", "current policy requires fresh external certification", "CFO/CRO current status lookup", "YES"),
+        ("LEGAL-003", "Brazil", "any outbound contact", "suppressed contacts", "suppression controls are internal but external approval can override only manually", "campaign authorization", "YES"),
+    )
+
+
+def build_campaign_compliance_policy(
+    *,
+    policy_id: str = "policy:commercial-pilot:v1",
+    version: str = "v1",
+    jurisdiction: str = "BR",
+    channel: str = "email",
+) -> CampaignCompliancePolicy:
+    return CampaignCompliancePolicy(
+        policy_id,
+        version,
+        jurisdiction,
+        channel,
+        target_rules=("single ICP", "bounded geography", "manual approval required"),
+        contact_use_rules=("published != deliverable", "deliverable != authorized", "suppression wins"),
+        suppression_rules=("contact suppression", "person suppression", "company/domain suppression"),
+        required_certifications=("BrasilAPI CNPJ", "SERPRO", "CFO/CRO"),
+        authorization_authority="campaign owner and compliance reviewer",
     )
 
 
@@ -689,12 +947,44 @@ def default_compliance_blockers() -> tuple[ComplianceBlocker, ...]:
     )
 
 
+def evaluate_send_ready_proof(
+    *,
+    evaluation_id: str,
+    qualification_decision_id: str | None,
+    contact_validation_id: str | None,
+    contact_use_decision: ContactUseDecision | None,
+    suppression_rule: SuppressionRule | None,
+    certification_refs: tuple[str, ...],
+    policy: CampaignCompliancePolicy,
+    authorization: ManualAuthorizationRecord | None,
+    inputs: SendReadyInputs,
+    timestamp: datetime,
+) -> SendReadyProof:
+    assessment = evaluate_send_ready(inputs)
+    authorization_ref = authorization.authorization_id if authorization is not None else None
+    suppression_decision_id = suppression_rule.suppression_id if suppression_rule is not None else None
+    proof = SendReadyProof(
+        proof_id=f"proof:{evaluation_id}",
+        evaluation_id=evaluation_id,
+        qualification_decision_id=qualification_decision_id,
+        contact_validation_id=contact_validation_id,
+        contact_use_decision_id=contact_use_decision.decision_id if contact_use_decision is not None else None,
+        suppression_decision_id=suppression_decision_id,
+        certification_refs=certification_refs,
+        policy_version=policy.version,
+        authorization_ref=authorization_ref,
+        result=assessment,
+        timestamp=timestamp,
+    )
+    return proof
+
+
 def build_certification_matrix() -> tuple[tuple[str, str, str, str, str, str], ...]:
     return (
-        ("BrasilAPI CNPJ v1", "company acquisition", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "live source certification required"),
-        ("SERPRO transparency page", "company enrichment", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "source identity and replay evidence required"),
-        ("CRO/CFO registry", "professional registration", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "current registration status required"),
-        ("DNS/HTTP contact path", "contact publication", "OPTIONAL_BREADTH", "BLOCKED_EXTERNAL", "", "publication/reachability evidence required"),
+        ("BrasilAPI CNPJ v1", "company acquisition", "PRODUCT_CRITICAL", "CERTIFIED_WITH_LIMITATIONS", "", "live source certification and replay required"),
+        ("SERPRO transparency page", "company enrichment", "PRODUCT_CRITICAL", "SOURCE_UNAVAILABLE", "", "official portal capture pending live access"),
+        ("CRO/CFO registry", "professional registration", "CAMPAIGN_CRITICAL", "BLOCKED_HUMAN_VERIFICATION", "", "manual verification boundary required"),
+        ("DNS/HTTP contact path", "contact publication", "OPTIONAL_BREADTH", "OPTIONAL_NOT_RUN", "", "promotion not required for current gate"),
     )
 
 
@@ -976,6 +1266,7 @@ def _parse_optional_url(value: Any, name: str) -> str | None:
 __all__ = [
     "CertificationScope",
     "CertificationResult",
+    "CampaignCompliancePolicy",
     "ComplianceBlocker",
     "ComplianceDecision",
     "ConfigurationClassification",
@@ -983,6 +1274,8 @@ __all__ = [
     "ContactUseDecision",
     "ContactUseState",
     "CommercialPilotReadiness",
+    "FreshnessPolicy",
+    "ManualAuthorizationRecord",
     "LiveSourceCertification",
     "LiveCertificationRecord",
     "OperationalConfiguration",
@@ -995,19 +1288,31 @@ __all__ = [
     "OperationalTelemetrySnapshot",
     "ProcessHealth",
     "PilotReadinessState",
+    "SendReadyProof",
     "SendReadyAssessment",
     "SendReadyInputs",
     "SendReadyState",
+    "SourceAuthorityFact",
+    "SourceAuthorityMapEntry",
+    "SourceAuthorityScope",
+    "SourceCertificationStatus",
+    "SourceContractDrift",
     "SystemReadiness",
     "SystemReadinessReport",
     "SuppressionRule",
     "assess_contact_use",
+    "build_campaign_compliance_policy",
+    "build_compliance_gap_analysis",
     "build_certification_matrix",
     "build_external_certification_inventory",
     "build_live_certification_contract",
     "build_live_certification_matrix",
+    "build_source_authority_map",
     "default_compliance_blockers",
     "evaluate_compliance_decision",
     "evaluate_pilot_readiness",
+    "evaluate_send_ready_proof",
+    "evaluate_source_contract_drift",
+    "evaluate_source_freshness",
     "evaluate_send_ready",
 ]

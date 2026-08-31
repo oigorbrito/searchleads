@@ -66,11 +66,11 @@ Single-process local development and test execution are supported now. A lightwe
 
 ### Operations View
 
-A dedicated operational layer handles startup, shutdown, health, readiness, backup, restore, recovery, structured events, and SEND_READY evaluation. These concerns are separate from the canonical domain and separate again from live certification.
+A dedicated operational layer handles startup, shutdown, health, readiness, backup, restore, recovery, structured events, SEND_READY evaluation, source authority mapping, and compliance proof bundles. These concerns are separate from the canonical domain and separate again from live certification.
 
 ### Compliance View
 
-Qualification is not send readiness. Contact provenance, campaign legality, and live certification remain separate gates.
+Qualification is not send readiness. Contact provenance, campaign legality, source authority, and live certification remain separate gates.
 
 ## Component Boundaries
 
@@ -83,6 +83,7 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - acquisition/runtime adapters
 - review/export/lead-materialization adapters
 - operational lifecycle, telemetry, and certification helpers
+- authority/freshness/compliance proof helpers
 
 ## Trust Boundaries
 
@@ -91,6 +92,7 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - derived statements and facts
 - manual review decisions
 - live certification and compliance gates
+- source authority and freshness maps
 
 ## Unresolved Issues
 
@@ -98,3 +100,4 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - Person ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
 - Crawlee breadth remains optional and not yet operationally proven in this repository.
 - deployment topology is now explicit for the local single-process path, but live certification and compliance remain separate external gates.
+- live certification, source authority freshness, and compliance policy remain separate external gates.

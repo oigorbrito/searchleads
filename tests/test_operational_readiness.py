@@ -9,8 +9,11 @@ from searchleads.domain import Company, Evidence, Lead, PersonCompanyRelationshi
 from searchleads.operational import (
     CertificationResult,
     ConfigurationClassification,
+    CampaignCompliancePolicy,
     ContactUseState,
     CommercialPilotReadiness,
+    FreshnessPolicy,
+    ManualAuthorizationRecord,
     OperationalConfiguration,
     OperationalError,
     OperationalEvent,
@@ -20,13 +23,21 @@ from searchleads.operational import (
     ProcessHealth,
     SendReadyInputs,
     SendReadyState,
+    SourceAuthorityScope,
+    SourceCertificationStatus,
     build_certification_matrix,
+    build_campaign_compliance_policy,
+    build_compliance_gap_analysis,
     build_external_certification_inventory,
     build_live_certification_contract,
     build_live_certification_matrix,
+    build_source_authority_map,
     assess_contact_use,
     default_compliance_blockers,
     evaluate_compliance_decision,
+    evaluate_send_ready_proof,
+    evaluate_source_contract_drift,
+    evaluate_source_freshness,
     evaluate_pilot_readiness,
     evaluate_send_ready,
     SuppressionRule,
@@ -399,3 +410,62 @@ def test_wave07_pilot_readiness_requires_external_governance() -> None:
     assert ready.ready is False
     assert authorized.ready is True
     assert authorized.state is PilotReadinessState.READY
+
+
+def test_wave08_source_authority_freshness_and_compliance_policy_are_explicit() -> None:
+    source_map = build_source_authority_map()
+    policy = build_campaign_compliance_policy()
+    gaps = build_compliance_gap_analysis()
+
+    assert {entry.source_name for entry in source_map} == {
+        "BrasilAPI CNPJ v1",
+        "SERPRO transparency page",
+        "CFO/CRO registration",
+        "DNS/HTTP contact path",
+    }
+    assert source_map[0].criticality is SourceAuthorityScope.PRODUCT_CRITICAL
+    assert source_map[2].certification_status is SourceCertificationStatus.BLOCKED_HUMAN_VERIFICATION
+    assert evaluate_source_freshness(certified_at=NOW, policy=FreshnessPolicy.REVALIDATE_BEFORE_USE) == "REVALIDATE_BEFORE_USE"
+    assert policy.version == "v1"
+    assert any(item[0] == "LEGAL-001" for item in gaps)
+
+
+def test_wave08_drift_detection_and_send_ready_proof_are_fail_closed() -> None:
+    drift = evaluate_source_contract_drift(
+        source_id="source:brasilapi:cnpj-v1",
+        source_name="BrasilAPI CNPJ v1",
+        expected_fields=("cnpj", "razao_social", "uf"),
+        observed_fields=("cnpj", "razao_social"),
+        observed_at=NOW,
+        evidence_id="evidence-99",
+    )
+    policy = build_campaign_compliance_policy()
+    authorization = ManualAuthorizationRecord(
+        "auth-1",
+        "campaign-1",
+        policy.policy_id,
+        policy.version,
+        "compliance-reviewer",
+        NOW,
+        "pilot",
+        None,
+        "bounded pilot",
+    )
+    proof = evaluate_send_ready_proof(
+        evaluation_id="eval-1",
+        qualification_decision_id="qual-1",
+        contact_validation_id="contact-validation-1",
+        contact_use_decision=None,
+        suppression_rule=None,
+        certification_refs=("cert-1",),
+        policy=policy,
+        authorization=authorization,
+        inputs=SendReadyInputs(discovered=True, validated=True, qualified=True, compliance_cleared=True, live_certified=True),
+        timestamp=NOW,
+    )
+
+    assert drift.status is SourceCertificationStatus.CONTRACT_FAIL
+    assert "uf" in drift.missing_fields
+    assert proof.policy_version == "v1"
+    assert proof.authorization_ref == "auth-1"
+    assert proof.result.ready
