@@ -1,0 +1,33 @@
+{
+  "branch": "work/chassis-implementation-v1",
+  "clean_base_sha": "2c3ffcdad2fcc6527f299e8dc0e6a402df36b35d",
+  "closure_wave": 4,
+  "domain_model_status": "VERIFIED",
+  "engineering_baseline_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
+  "known_blockers": [
+    "BR-001 acquisition runtime environment",
+    "BR-002 challenger breadth remains post-baseline recalibration"
+  ],
+  "migration_status": "VERIFIED",
+  "person_er_status": "PROVISIONAL_COMPOSE",
+  "persistence_status": "VERIFIED",
+  "qualification_status": "IMPLEMENTED",
+  "results": {
+    "full_regression": "868 passed, 24 skipped, 1 xfailed",
+    "targeted_round_trip": "59 passed"
+  },
+  "tests": [
+    {
+      "command": "python -m pytest tests/test_domain_canonical_model.py tests/test_persistence.py",
+      "result": "59 passed"
+    },
+    {
+      "command": "python -m pytest",
+      "result": "868 passed, 24 skipped, 1 xfailed"
+    }
+  ],
+  "tested_commit_sha": "0de729ce60efb6b803a670137a43c5a428507f10",
+  "wave_final_commit_sha": "0de729ce60efb6b803a670137a43c5a428507f10",
+  "company_er_status": "PROVISIONAL_COMPOSE",
+  "python_version": "3.12.10"
+}

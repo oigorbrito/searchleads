@@ -1,0 +1,49 @@
+from __future__ import annotations
+
+from enum import StrEnum
+
+
+class DecisionClass(StrEnum):
+    EVIDENCE_BACKED = "EVIDENCE_BACKED"
+    HYPOTHESIS = "HYPOTHESIS"
+    ENGINEERING_CHOICE = "ENGINEERING_CHOICE"
+    LOCALLY_VERIFIED = "LOCALLY_VERIFIED"
+    UNKNOWN = "UNKNOWN"
+
+
+class ContactKind(StrEnum):
+    EMAIL = "EMAIL"
+    PHONE = "PHONE"
+    WHATSAPP = "WHATSAPP"
+    CONTACT_FORM = "CONTACT_FORM"
+    LINKEDIN = "LINKEDIN"
+    INSTAGRAM = "INSTAGRAM"
+    PROFESSIONAL_PROFILE = "PROFESSIONAL_PROFILE"
+    OTHER = "OTHER"
+
+
+class ContactStatus(StrEnum):
+    DISCOVERED = "DISCOVERED"
+    VALIDATED = "VALIDATED"
+    STALE = "STALE"
+    INVALID = "INVALID"
+    UNKNOWN = "UNKNOWN"
+
+
+class ConflictStatus(StrEnum):
+    OPEN = "OPEN"
+    RESOLVED = "RESOLVED"
+    DEFERRED = "DEFERRED"
+
+
+class LeadStage(StrEnum):
+    CANDIDATE = "CANDIDATE"
+    REVIEW = "REVIEW"
+    QUALIFIED = "QUALIFIED"
+    DISQUALIFIED = "DISQUALIFIED"
+
+
+class QualificationStatus(StrEnum):
+    UNKNOWN = "UNKNOWN"
+    QUALIFIED = "QUALIFIED"
+    NOT_QUALIFIED = "NOT_QUALIFIED"

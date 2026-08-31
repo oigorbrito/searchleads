@@ -1,0 +1,122 @@
+{
+  "wave": 8,
+  "branch": "work/chassis-implementation-v1",
+  "tested_commit_sha": "f368185",
+  "final_commit_sha": "f368185",
+  "internal_test_results": {
+    "targeted": "12 passed in tests/test_operational_readiness.py",
+    "supporting": "63 passed in tests/test_operational_canonical_integration.py tests/test_persistence.py tests/test_domain_canonical_model.py",
+    "full_regression": "884 passed, 24 skipped, 1 xfailed"
+  },
+  "live_environment": {
+    "mode": "web official source observation",
+    "notes": [
+      "BrasilAPI CNPJ endpoint returned JSON for a known valid CNPJ",
+      "SERPRO public portal was reachable and exposed the service catalog / transparency boundary",
+      "CFO consultation page was reachable but requires login, so human verification remains the current boundary"
+    ]
+  },
+  "source_inventory": [
+    {
+      "source_id": "source:brasilapi:cnpj-v1",
+      "source_name": "BrasilAPI CNPJ v1",
+      "criticality": "PRODUCT_CRITICAL"
+    },
+    {
+      "source_id": "source:serpro:transparency",
+      "source_name": "SERPRO transparency page",
+      "criticality": "PRODUCT_CRITICAL"
+    },
+    {
+      "source_id": "source:cfo:registration",
+      "source_name": "CFO/CRO registration",
+      "criticality": "CAMPAIGN_CRITICAL"
+    },
+    {
+      "source_id": "source:dns-http:contact-path",
+      "source_name": "DNS/HTTP contact path",
+      "criticality": "OPTIONAL_BREADTH"
+    }
+  ],
+  "source_results": [
+    {
+      "source_name": "BrasilAPI CNPJ v1",
+      "status": "CERTIFIED_WITH_LIMITATIONS",
+      "observed": "live JSON reachable and parseable for a known CNPJ",
+      "limitations": "live certification still needs replay artifact and freshness revalidation"
+    },
+    {
+      "source_name": "SERPRO transparency page",
+      "status": "SOURCE_UNAVAILABLE",
+      "observed": "public portal reachable and service catalog visible",
+      "limitations": "product-critical live certification endpoint not executed in this wave"
+    },
+    {
+      "source_name": "CFO/CRO registration",
+      "status": "BLOCKED_HUMAN_VERIFICATION",
+      "observed": "consultation login boundary reachable",
+      "limitations": "registration lookup requires human login / verification"
+    },
+    {
+      "source_name": "DNS/HTTP contact path",
+      "status": "OPTIONAL_NOT_RUN",
+      "observed": "not required for current gate",
+      "limitations": "remains a campaign dependency rather than a product-critical blocker"
+    }
+  ],
+  "source_authority_map": [
+    {
+      "source_name": "BrasilAPI CNPJ v1",
+      "authority": "registry-derived company facts only",
+      "freshness": "REVALIDATE_BEFORE_USE"
+    },
+    {
+      "source_name": "SERPRO transparency page",
+      "authority": "official source identity and replayable capture",
+      "freshness": "REVALIDATE_ON_CHANGE"
+    },
+    {
+      "source_name": "CFO/CRO registration",
+      "authority": "professional registration status only",
+      "freshness": "REVALIDATE_ON_EXPIRY"
+    },
+    {
+      "source_name": "DNS/HTTP contact path",
+      "authority": "technical validation only",
+      "freshness": "REVALIDATE_ON_CHANGE"
+    }
+  ],
+  "freshness_policies": [
+    "REVALIDATE_BEFORE_USE",
+    "REVALIDATE_ON_CHANGE",
+    "REVALIDATE_ON_EXPIRY"
+  ],
+  "compliance_gap_register": [
+    {
+      "id": "LEGAL-001",
+      "question": "Which campaign/legal policy authorizes outbound use of the selected contact class in Brazil?",
+      "jurisdiction": "BR",
+      "campaign_type": "email",
+      "blocks_send_ready": true,
+      "blocks_pilot": true
+    },
+    {
+      "id": "LEGAL-002",
+      "question": "Which authority signs off on the live professional-registration freshness requirement?",
+      "jurisdiction": "BR",
+      "campaign_type": "pilot",
+      "blocks_send_ready": true,
+      "blocks_pilot": true
+    }
+  ],
+  "send_ready_contract_status": "IMPLEMENTED",
+  "send_ready_tests": "send-ready proof, suppression precedence, policy versioning, and fail-closed evaluation are covered by tests",
+  "pilot_gate_status": "NOT_YET",
+  "review_burden": "qualification review, compliance review, and manual authorization remain explicit",
+  "external_blockers": [
+    "campaign legal review",
+    "external legal/compliance sign-off",
+    "campaign authorization",
+    "human verification for the professional registry"
+  ]
+}
