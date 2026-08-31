@@ -45,6 +45,8 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - blockers: execution and contract alignment
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks company identity direction
+- contract status: PENDING_BENCHMARK
+- benchmark evidence: `registry_only` precision 100.0%, recall 18.5%; `exact_evidence` precision 82.6%, recall 70.4%, false_merge_rate 14.8%
 
 ### CAP-03 Person ER
 
@@ -59,6 +61,8 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - blockers: execution and contract alignment
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks person identity direction
+- contract status: PASS for local contract tests, decision status remains DEFER
+- benchmark evidence: operational auto-match authority is false; operational candidate matches 5/25 with 1 false positive; local contract test suite passed
 
 ### CAP-04 Evidence and Persistence
 
@@ -118,7 +122,8 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 
 ## Critical Path
 
-CAP-01 Architecture Baseline
+Baseline documentation published
+→ legacy contract reconciliation
 → CAP-02 Company ER
 → CAP-03 Person ER
 → CAP-04 Evidence and Persistence alignment
@@ -129,7 +134,7 @@ CAP-01 Architecture Baseline
 
 ## Current Critical Path Item
 
-CAP-01 Architecture Baseline
+legacy contract reconciliation
 
 ## Next Unblocked Capability
 
@@ -151,4 +156,16 @@ CAP-04 Evidence and Persistence
 - canonical docs outrank experimental bake-off docs
 - qualification remains separate from send readiness
 - evidence must stay distinct from statements
+- PERSON_ER_CONTRACT is passable independently of PERSON_ER_TECHNOLOGY_DECISION
+- COMPANY_ER remains benchmark-dependent with an exact-evidence challenger that is not yet acceptable as a closed decision
 
+## Failure Reconciliation Matrix
+
+| Test / Failure | Canonical Requirement | Classification | Required action | Blocking capability | Release impact | Status |
+|---|---|---|---|---|---|---|
+| `tests/test_selective_review.py` contact/lead constructor failures | FR-006, QR-001, QR-002 | TEST_OBSOLETE for some cases; CONTRACT_AMBIGUITY for others | align fixtures to current invariants or restate contract in canonical docs | CAP-04, CAP-05 | medium | open |
+| `tests/test_dental_commercial_acceptance.py` defensive policy guard | CR-001, FR-001 | IMPLEMENTATION_REGRESSION if constructor guard is the intended contract, otherwise TEST_OBSOLETE | distinguish construction-time validation from runtime acceptance guard | CAP-06 | medium | open |
+| `tests/test_evidence_envelope_consistency.py` mismatch vs integrity error | DR-001, QR-003 | CONTRACT_AMBIGUITY | reconcile expected exception class hierarchy and canonical error semantics | CAP-04 | medium | open |
+| `tests/test_person_entity_resolution.py` local contract | FR-004, QR-002 | PASS | retain as local contract evidence; do not infer technology winner | CAP-03 | low | pass |
+| experimental chassis bake-off tests | FR-003, FR-004, QR-002 | EXPERIMENTAL_ONLY | keep as evidence only, not implementation gate | CAP-02, CAP-03 | low | evidence only |
+| missing external benchmark runtime | FR-003, FR-004 | INFRASTRUCTURE_FAILURE | obtain runnable benchmark path or alternate sanctioned runtime | CAP-02, CAP-03 | high | open |

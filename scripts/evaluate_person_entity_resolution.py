@@ -19,7 +19,7 @@ def record(record_id,data):
     if data.get('profile'): kwargs['professional_profiles']=(signal(data['profile'],data['rel']+'l'),)
     return PersonRecord(**kwargs)
 
-data=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text())
+data=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text(encoding='utf-8'))
 pairs=tuple(LabeledPersonPair(c['id'],record(c['id']+'L',c['left']),record(c['id']+'R',c['right']),c['same'],c['category']) for c in data['pairs'])
 print(json.dumps({
     'operational':asdict(evaluate_person_resolution(pairs)),
