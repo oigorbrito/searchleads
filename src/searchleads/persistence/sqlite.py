@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import shutil
 import sqlite3
 from dataclasses import fields, is_dataclass, replace
 from datetime import datetime
@@ -259,6 +260,10 @@ class SQLiteRepository:
 
     def close(self) -> None:
         self._connection.close()
+
+    @property
+    def schema_version(self) -> int:
+        return int(self._connection.execute("PRAGMA user_version").fetchone()[0])
 
     def _initialize_schema(self) -> None:
         # V1 base shape is intentionally created first so historical databases
@@ -641,3 +646,25 @@ class SQLiteRepository:
             if evidence is None:  # pragma: no cover - impossible without concurrent deletion
                 raise PersistenceError("evidence disappeared during iteration")
             yield evidence
+
+    def backup_to(self, destination: str | Path) -> Path:
+        """Write a byte-for-byte SQLite backup to ``destination``."""
+        destination_path = Path(destination)
+        if destination_path.parent and not destination_path.parent.exists():
+            destination_path.parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(destination_path) as target_connection:
+            self._connection.backup(target_connection)
+            target_connection.commit()
+        return destination_path
+
+    @staticmethod
+    def restore_from(backup_path: str | Path, destination: str | Path) -> Path:
+        """Restore a backup file into ``destination``."""
+        source_path = Path(backup_path)
+        destination_path = Path(destination)
+        if not source_path.exists():
+            raise FileNotFoundError(source_path)
+        if destination_path.parent and not destination_path.parent.exists():
+            destination_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination_path)
+        return destination_path

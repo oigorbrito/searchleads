@@ -151,6 +151,21 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - release impact: advances the system from canonical building blocks to operational integration
 - contract status: VERIFIED_PARTIAL
 
+### CAP-10 Operational Readiness, Recovery, and Send Gates
+
+- objective: prove the system can be installed, started, observed, backed up, restored, recovered, and certified up to explicit external blockers
+- requirements: OR-001, OR-002, OR-003, OR-004, CR-001, CR-002
+- dependencies: CAP-09, operational lifecycle helpers, backup/restore path, live certification matrix, and SEND_READY state machine
+- architecture decision: keep operational readiness separate from commercial send readiness and external live certification
+- implementation state: VERIFIED_PARTIAL
+- verification: startup/readiness checks, backup/restore, crash/recovery, structured events, live certification plan, and full regression
+- acceptance criteria: local install/startup/recovery path is reproducible, operational health is explicit, and external certification remains a separate gate
+- evidence: operational readiness tests, persistence backup/restore, and live certification matrix
+- blockers: live certification and compliance remain external
+- exit criteria: operational readiness is internally proven and externally blocked items are explicit
+- release impact: advances the product from operational integration to operational control
+- contract status: VERIFIED_PARTIAL
+
 ## Critical Path
 
 Baseline documentation published
@@ -160,15 +175,16 @@ Baseline documentation published
 → CAP-06 Qualification
 → CAP-07 Acquisition Runtime
 → CAP-09 Canonical Consumer Wiring and Operational Integration
+→ CAP-10 Operational Readiness, Recovery, and Send Gates
 → integrated E2E and operational readiness
 
 ## Current Critical Path Item
 
-CAP-09 Canonical Consumer Wiring and Operational Integration
+CAP-10 Operational Readiness, Recovery, and Send Gates
 
 ## Next Unblocked Capability
 
-CAP-09 Canonical Consumer Wiring and Operational Integration
+CAP-10 Operational Readiness, Recovery, and Send Gates
 
 ## Blocked Capabilities
 
@@ -194,6 +210,8 @@ CAP-09 Canonical Consumer Wiring and Operational Integration
 - CAP-09 canonical operational integration tests passed
 - full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed` at the wave 04 checkpoint
 - full regression suite now passes with `872 passed`, `24 skipped`, `1 xfailed`
+- CAP-10 operational readiness tests cover startup, health, readiness, backup, restore, recovery, SEND_READY, and live certification planning
+- full regression suite now passes with `879 passed`, `24 skipped`, `1 xfailed`
 
 ## New Decisions
 
@@ -207,6 +225,9 @@ CAP-09 Canonical Consumer Wiring and Operational Integration
 - CAP-04 Evidence and Persistence is verified on the clean implementation line
 - CAP-09 Canonical Consumer Wiring and Operational Integration is the next operational path
 - BR-001 now narrows to Crawlee breadth, not the baseline runtime adapter
+- CAP-10 Operational Readiness, Recovery, and Send Gates is the next operational path
+- operational lifecycle helpers now cover startup, shutdown, backup, restore, recovery, and SEND_READY gating
+- operational readiness remains separate from commercial SEND_READY and external live certification
 
 ## Failure Reconciliation Matrix
 
@@ -255,3 +276,4 @@ CAP-09 Canonical Consumer Wiring and Operational Integration
 |---|---|---|---|---|---|---|---|---|
 | BR-001 | CAP-07 Acquisition Runtime | INFRASTRUCTURE | external runtime execution environment remains unavailable in the current checkout context | external | yes | obtain valid runtime path or sanctioned benchmark environment | CI/runtime | open |
 | BR-002 | CAP-02 Company ER / CAP-03 Person ER | EXTERNAL_DEPENDENCY | benchmark challengers require `followthemoney`, `rigour`, or `crawlee` in the bake-off environment | external | yes | run challenger suite in sanctioned bake-off runtime | benchmark harness | open |
+| BR-003 | CAP-10 Operational Readiness / External Certification | EXTERNAL_DEPENDENCY | live source certification, compliance sign-off, and send authorization remain external to the current repo | external | yes | execute live certification matrix in an authorized environment and record the evidence IDs | operations/compliance | open |

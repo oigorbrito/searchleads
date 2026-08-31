@@ -11,6 +11,7 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - store only the evidence needed for the product purpose
 - keep raw payloads only when they are required for replay and auditability
 - avoid broad collection claims
+- operational logs and telemetry should remain structured and redacted
 
 ## Contact Provenance
 
@@ -22,6 +23,7 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - external sources are untrusted until checked
 - persisted records are trusted only within integrity constraints
 - secrets never belong in canonical docs
+- backup/restore must preserve integrity boundaries without exposing secrets
 
 ## Access Boundaries
 
@@ -38,6 +40,7 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 
 - current repository evidence is insufficient to claim external certification
 - any live certification must be documented as such and tied to evidence
+- live certification artifacts must remain separate from internal regression evidence
 
 ## Unresolved Gates
 
@@ -45,4 +48,3 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - live contact deliverability
 - send authorization
 - jurisdiction-specific compliance sign-off
-

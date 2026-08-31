@@ -56,6 +56,7 @@ from searchleads.runtime_adapter import (
 )
 from searchleads.selective_review import build_review_queue, review_qualification
 from searchleads.persistence import SQLiteRepository
+from searchleads.persistence import SCHEMA_VERSION as SQLITE_SCHEMA_VERSION
 
 
 class _SimpleRoute:
@@ -246,7 +247,12 @@ def create_app(
 
     @route("get", "/readyz")
     def readyz() -> dict[str, str]:
-        ready = app.state.repository is not None and app.state.runtime_adapter is not None
+        ready = False
+        if app.state.repository is not None and app.state.runtime_adapter is not None:
+            try:
+                ready = app.state.repository.schema_version == SQLITE_SCHEMA_VERSION
+            except Exception:
+                ready = False
         return {"status": "ready" if ready else "not_ready"}
 
     @route("post", "/acquisition/request")
@@ -372,11 +378,20 @@ def create_app(
 
     @route("get", "/capabilities")
     def capabilities() -> dict[str, Any]:
+        repository_ready = False
+        schema_version = None
+        if app.state.repository is not None:
+            try:
+                schema_version = app.state.repository.schema_version
+                repository_ready = schema_version == SQLITE_SCHEMA_VERSION
+            except Exception:
+                repository_ready = False
         return {
             "health": True,
-            "readiness": app.state.repository is not None and app.state.runtime_adapter is not None,
+            "readiness": repository_ready and app.state.runtime_adapter is not None,
             "runtime_adapter": type(app.state.runtime_adapter).__name__ if app.state.runtime_adapter else None,
             "repository": type(app.state.repository).__name__ if app.state.repository else None,
+            "schema_version": schema_version,
         }
 
     if FastAPI is None:

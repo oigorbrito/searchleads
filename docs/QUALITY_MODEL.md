@@ -36,7 +36,7 @@ The project quality model is a SearchLeads-specific reduction of ISO/IEC 25010 c
 ### Operability and Deployability
 
 - measures: startup clarity, health/readiness definition, recovery procedures, deployment reproducibility
-- target: operators can tell what is blocked and why
+- target: operators can tell what is blocked and why, can restore canonical state from backup, and can separate SEND_READY from system readiness
 
 ### Data Integrity
 

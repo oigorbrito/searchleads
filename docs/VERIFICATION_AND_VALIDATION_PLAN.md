@@ -45,7 +45,7 @@ Status: CANONICAL
 - environment: controlled fixture set
 - evidence generated: metric table and winner/deferral state
 - semantics: no PASS without executable results
-- current internal state: local regression suite passed (`864 passed`, `24 skipped`, `1 xfailed`)
+- current internal state: local regression suite passed (`879 passed`, `24 skipped`, `1 xfailed`)
 - skip semantics: external-dependency skips are classified, not treated as hidden failures
 - xfail semantics: retained only when marked `TEST_OBSOLETE` or another explicit intentional category
 
@@ -69,6 +69,13 @@ Status: CANONICAL
 - environment: full local workflow path
 - evidence generated: runnable end-to-end result
 - semantics: no hidden mocks for claims of end-to-end coverage
+
+### Operational
+
+- purpose: verify startup, shutdown, recovery, backup, restore, and SEND_READY gating
+- environment: local file-backed SQLite and runtime helpers
+- evidence generated: operational lifecycle results and recovery artifacts
+- semantics: operational readiness is separate from live certification
 
 ### Live Certification
 

@@ -14,23 +14,23 @@ Status: CANONICAL
 ### Integrated
 
 - criteria: main capabilities compose and run together
-- current evidence: canonical operational integration tests passed, the fallback runtime adapter is wired, and the API chassis exposes health/readiness plus qualification/export surfaces
-- status: NEAR_READY
-- blockers: deployment topology, live Crawlee breadth, and operational runtime evidence
+- current evidence: canonical operational integration tests passed, the fallback runtime adapter is wired, the API chassis exposes health/readiness plus qualification/export surfaces, and the operational readiness harness now covers startup, shutdown, backup, restore, recovery, and SEND_READY gating
+- status: READY
+- blockers: live Crawlee breadth remains external, but it no longer blocks the internal integrated path
 
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: full internal regression suite passed with `872 passed`, `24 skipped`, `1 xfailed`
+- current evidence: full internal regression suite passed with `879 passed`, `24 skipped`, `1 xfailed`
 - status: PASS
 - blockers: skip/xfail inventory is classified; external benchmark challengers still need sanctioned runtime support
 
 ### Operationally Ready
 
 - criteria: startup, shutdown, recovery, observability, and deployment topology are specified and verified
-- current evidence: documentation only
-- status: NOT_YET
-- blockers: operational verification and deployment evidence
+- current evidence: startup, health, readiness, backup, restore, recovery, structured events, live certification planning, and deployment topology are now implemented and tested locally
+- status: READY
+- blockers: live certification and compliance remain external
 
 ### Externally Certified
 

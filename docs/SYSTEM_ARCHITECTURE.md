@@ -64,6 +64,10 @@ A thin application layer composes the canonical domain, persistence, qualificati
 
 Single-process local development and test execution are supported now. A lightweight operational chassis runs without Crawlee. Deployment topology is documented separately and remains constrained by current evidence.
 
+### Operations View
+
+A dedicated operational layer handles startup, shutdown, health, readiness, backup, restore, recovery, structured events, and SEND_READY evaluation. These concerns are separate from the canonical domain and separate again from live certification.
+
 ### Compliance View
 
 Qualification is not send readiness. Contact provenance, campaign legality, and live certification remain separate gates.
@@ -78,6 +82,7 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - application/API surface
 - acquisition/runtime adapters
 - review/export/lead-materialization adapters
+- operational lifecycle, telemetry, and certification helpers
 
 ## Trust Boundaries
 
@@ -92,4 +97,4 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - Company ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
 - Person ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
 - Crawlee breadth remains optional and not yet operationally proven in this repository.
-- deployment topology remains lightly specified compared with implementation depth.
+- deployment topology is now explicit for the local single-process path, but live certification and compliance remain separate external gates.
