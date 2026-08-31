@@ -166,6 +166,21 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - release impact: advances the product from operational integration to operational control
 - contract status: VERIFIED_PARTIAL
 
+### CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
+
+- objective: formalize the external certification inventory, compliance decision objects, contact-use policy, suppression boundary, and controlled pilot gate
+- requirements: CR-001, CR-002, OR-003, OR-004
+- dependencies: CAP-10, live certification contract, compliance policy versioning, and explicit suppression handling
+- architecture decision: live certification is a separate evidence layer; contact-use and pilot readiness must fail closed
+- implementation state: VERIFIED_PARTIAL
+- verification: contract tests, deterministic compliance decisions, suppression checks, and pilot readiness evaluation
+- acceptance criteria: certification inventory, compliance contract, contact-use policy, suppression, and pilot readiness are all represented canonically
+- evidence: wave 07 operational contract tests and certification inventory helpers
+- blockers: live external certification, legal sign-off, and campaign authorization remain external
+- exit criteria: internal pilot gate is explicit and audit-friendly without sending real campaigns
+- release impact: advances the product from operational control to externally governed commercial readiness
+- contract status: VERIFIED_PARTIAL
+
 ## Critical Path
 
 Baseline documentation published
@@ -176,15 +191,16 @@ Baseline documentation published
 → CAP-07 Acquisition Runtime
 → CAP-09 Canonical Consumer Wiring and Operational Integration
 → CAP-10 Operational Readiness, Recovery, and Send Gates
+→ CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 → integrated E2E and operational readiness
 
 ## Current Critical Path Item
 
-CAP-10 Operational Readiness, Recovery, and Send Gates
+CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 
 ## Next Unblocked Capability
 
-CAP-10 Operational Readiness, Recovery, and Send Gates
+CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 
 ## Blocked Capabilities
 
@@ -211,7 +227,8 @@ CAP-10 Operational Readiness, Recovery, and Send Gates
 - full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed` at the wave 04 checkpoint
 - full regression suite now passes with `872 passed`, `24 skipped`, `1 xfailed`
 - CAP-10 operational readiness tests cover startup, health, readiness, backup, restore, recovery, SEND_READY, and live certification planning
-- full regression suite now passes with `879 passed`, `24 skipped`, `1 xfailed`
+- full regression suite now passes with `882 passed`, `24 skipped`, `1 xfailed`
+- CAP-11 live certification inventory, compliance contract, contact-use, suppression, and pilot readiness contracts are now represented canonically
 
 ## New Decisions
 
@@ -228,6 +245,7 @@ CAP-10 Operational Readiness, Recovery, and Send Gates
 - CAP-10 Operational Readiness, Recovery, and Send Gates is the next operational path
 - operational lifecycle helpers now cover startup, shutdown, backup, restore, recovery, and SEND_READY gating
 - operational readiness remains separate from commercial SEND_READY and external live certification
+- live certification inventory, compliance decision, contact-use policy, suppression, and controlled pilot readiness are now explicit contracts
 
 ## Failure Reconciliation Matrix
 
@@ -277,3 +295,4 @@ CAP-10 Operational Readiness, Recovery, and Send Gates
 | BR-001 | CAP-07 Acquisition Runtime | INFRASTRUCTURE | external runtime execution environment remains unavailable in the current checkout context | external | yes | obtain valid runtime path or sanctioned benchmark environment | CI/runtime | open |
 | BR-002 | CAP-02 Company ER / CAP-03 Person ER | EXTERNAL_DEPENDENCY | benchmark challengers require `followthemoney`, `rigour`, or `crawlee` in the bake-off environment | external | yes | run challenger suite in sanctioned bake-off runtime | benchmark harness | open |
 | BR-003 | CAP-10 Operational Readiness / External Certification | EXTERNAL_DEPENDENCY | live source certification, compliance sign-off, and send authorization remain external to the current repo | external | yes | execute live certification matrix in an authorized environment and record the evidence IDs | operations/compliance | open |
+| BR-004 | CAP-11 Live Certification / Pilot Readiness | EXTERNAL_DEPENDENCY | live certification, legal sign-off, and campaign authorization remain external to the current repo | external | yes | execute authorized live certification and record the compliance contract evidence | operations/compliance | open |

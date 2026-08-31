@@ -7,18 +7,29 @@ import pytest
 
 from searchleads.domain import Company, Evidence, Lead, PersonCompanyRelationship, PersonIdentity, QualificationStatus, Source
 from searchleads.operational import (
+    CertificationResult,
     ConfigurationClassification,
+    ContactUseState,
+    CommercialPilotReadiness,
     OperationalConfiguration,
     OperationalError,
     OperationalEvent,
     OperationalFailureClass,
     OperationalRuntime,
+    PilotReadinessState,
     ProcessHealth,
     SendReadyInputs,
     SendReadyState,
+    build_certification_matrix,
+    build_external_certification_inventory,
+    build_live_certification_contract,
     build_live_certification_matrix,
+    assess_contact_use,
     default_compliance_blockers,
+    evaluate_compliance_decision,
+    evaluate_pilot_readiness,
     evaluate_send_ready,
+    SuppressionRule,
 )
 from searchleads.persistence import SQLiteRepository
 from searchleads.runtime_adapter import AcquisitionRequest, ReferenceAcquisitionRuntimeAdapter
@@ -262,3 +273,129 @@ def test_structured_event_is_redacted_to_scalar_details() -> None:
     assert payload["details"]["request_id"] == "request-1"
     assert "raw_payload" not in payload["details"]
     assert payload["error_class"] is None
+
+
+def test_wave07_external_inventory_and_contract_are_explicit() -> None:
+    inventory = build_external_certification_inventory()
+    contract = build_live_certification_contract()
+    matrix = build_certification_matrix()
+
+    assert {item.source for item in inventory} == {
+        "BrasilAPI CNPJ v1",
+        "SERPRO transparency page",
+        "CRO/CFO registry",
+        "DNS/HTTP contact path",
+    }
+    assert "certification_id" in contract
+    assert any(row[0] == "BrasilAPI CNPJ v1" for row in matrix)
+
+
+def test_wave07_compliance_contact_use_and_suppression_are_fail_closed() -> None:
+    suppression = SuppressionRule("sup-1", "contact", "contact-1", "opt-out")
+    compliance = evaluate_compliance_decision(
+        subject_id="contact-1",
+        campaign_policy_version="policy-v1",
+        legal_review_required=False,
+        suppressed=False,
+        certification_blocked=False,
+        evidence_refs=("evidence-1",),
+        reviewed_at=NOW,
+    )
+    blocked = assess_contact_use(
+        contact_id="contact-1",
+        relationship_id="relationship-1",
+        campaign_policy_version="policy-v1",
+        publication_verified=True,
+        compliance_decision=compliance,
+        suppression_rules=(suppression,),
+        evidence_refs=("evidence-1",),
+        reviewed_at=NOW,
+    )
+
+    assert compliance.decision is ContactUseState.ALLOWED_BY_POLICY
+    assert blocked.decision is ContactUseState.SUPPRESSED
+    assert blocked.reason_code == "SUPPRESSED"
+
+    review = assess_contact_use(
+        contact_id="contact-2",
+        relationship_id="relationship-2",
+        campaign_policy_version="policy-v1",
+        publication_verified=True,
+        compliance_decision=evaluate_compliance_decision(
+            subject_id="contact-2",
+            campaign_policy_version="policy-v1",
+            legal_review_required=True,
+            suppressed=False,
+            certification_blocked=False,
+            reviewed_at=NOW,
+        ),
+        evidence_refs=("evidence-2",),
+        reviewed_at=NOW,
+    )
+    assert review.decision is ContactUseState.REVIEW_REQUIRED
+
+
+def test_wave07_pilot_readiness_requires_external_governance() -> None:
+    compliance = evaluate_compliance_decision(
+        subject_id="pilot-1",
+        campaign_policy_version="policy-v1",
+        evidence_refs=("evidence-3",),
+        reviewed_at=NOW,
+    )
+    contact_use = assess_contact_use(
+        contact_id="contact-3",
+        relationship_id="relationship-3",
+        campaign_policy_version="policy-v1",
+        publication_verified=True,
+        compliance_decision=compliance,
+        evidence_refs=("evidence-3",),
+        reviewed_at=NOW,
+    )
+
+    blocked = evaluate_pilot_readiness(
+        operational_ready=True,
+        live_sources_certified=False,
+        send_ready=False,
+        policy_version_fixed=False,
+        suppression_ready=True,
+        review_path_ready=True,
+        audit_export_ready=True,
+        measurement_ready=True,
+        compliance_decision=compliance,
+        contact_use_decision=contact_use,
+    )
+    ready = evaluate_pilot_readiness(
+        operational_ready=True,
+        live_sources_certified=True,
+        send_ready=True,
+        policy_version_fixed=True,
+        suppression_ready=True,
+        review_path_ready=True,
+        audit_export_ready=True,
+        measurement_ready=True,
+        compliance_decision=compliance,
+        contact_use_decision=contact_use,
+        manual_authorization_required=True,
+        manual_authorization_granted=False,
+    )
+    authorized = evaluate_pilot_readiness(
+        operational_ready=True,
+        live_sources_certified=True,
+        send_ready=True,
+        policy_version_fixed=True,
+        suppression_ready=True,
+        review_path_ready=True,
+        audit_export_ready=True,
+        measurement_ready=True,
+        compliance_decision=compliance,
+        contact_use_decision=contact_use,
+        manual_authorization_required=True,
+        manual_authorization_granted=True,
+    )
+
+    assert blocked.ready is False
+    assert "live_sources_certified" in blocked.blockers
+    assert ready.state is PilotReadinessState.READY_PENDING_MANUAL_AUTHORIZATION
+    assert ready.ready is False
+    assert authorized.ready is True
+    assert authorized.state is PilotReadinessState.READY

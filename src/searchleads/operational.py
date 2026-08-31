@@ -54,6 +54,28 @@ class SendReadyState(StrEnum):
     COMPLIANCE_BLOCKED = "COMPLIANCE_BLOCKED"
 
 
+class ContactUseState(StrEnum):
+    UNKNOWN = "UNKNOWN"
+    ALLOWED_BY_POLICY = "ALLOWED_BY_POLICY"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    SUPPRESSED = "SUPPRESSED"
+    BLOCKED = "BLOCKED"
+
+
+class CertificationResult(StrEnum):
+    UNIT_PASS = "UNIT_PASS"
+    INTEGRATION_PASS = "INTEGRATION_PASS"
+    LIVE_PASS = "LIVE_PASS"
+    LIVE_BLOCKED = "LIVE_BLOCKED"
+    LIVE_FAIL = "LIVE_FAIL"
+
+
+class PilotReadinessState(StrEnum):
+    NOT_READY = "NOT_READY"
+    READY_PENDING_MANUAL_AUTHORIZATION = "READY_PENDING_MANUAL_AUTHORIZATION"
+    READY = "READY"
+
+
 @dataclass(frozen=True, slots=True)
 class ConfigurationField:
     env_var: str
@@ -205,6 +227,127 @@ class ComplianceBlocker:
             raise ValueError("compliance blocker requires non-blank identity and description")
         if not self.status.strip() or not self.owner.strip():
             raise ValueError("compliance blocker status and owner must be non-blank")
+
+
+@dataclass(frozen=True, slots=True)
+class LiveSourceCertification:
+    certification_id: str
+    source: str
+    source_type: str
+    official_endpoint_or_surface: str
+    timestamp: datetime
+    tested_commit_sha: str
+    request_class: str
+    request_identifier: str
+    http_status: int | None
+    response_contract: str
+    raw_evidence_id: str | None
+    integrity_digest: str | None
+    expected_semantics: str
+    observed_semantics: str
+    result: CertificationResult
+    failure_classification: str | None
+    revalidation_due: datetime | None
+
+    def __post_init__(self) -> None:
+        required_text = (
+            self.certification_id,
+            self.source,
+            self.source_type,
+            self.official_endpoint_or_surface,
+            self.tested_commit_sha,
+            self.request_class,
+            self.request_identifier,
+            self.response_contract,
+            self.expected_semantics,
+            self.observed_semantics,
+        )
+        if any(not item.strip() for item in required_text):
+            raise ValueError("live source certification requires non-blank fields")
+        if self.timestamp.tzinfo is None:
+            raise ValueError("timestamp must be timezone-aware")
+        if self.revalidation_due is not None and self.revalidation_due.tzinfo is None:
+            raise ValueError("revalidation_due must be timezone-aware")
+        if self.http_status is not None and self.http_status <= 0:
+            raise ValueError("http_status must be positive when supplied")
+        if self.raw_evidence_id is not None and not self.raw_evidence_id.strip():
+            raise ValueError("raw_evidence_id must not be blank when supplied")
+        if self.integrity_digest is not None and not self.integrity_digest.strip():
+            raise ValueError("integrity_digest must not be blank when supplied")
+        if self.failure_classification is not None and not self.failure_classification.strip():
+            raise ValueError("failure_classification must not be blank when supplied")
+
+
+@dataclass(frozen=True, slots=True)
+class ContactUseDecision:
+    decision_id: str
+    contact_id: str
+    relationship_id: str
+    campaign_policy_version: str
+    decision: ContactUseState
+    reason_code: str
+    evidence_refs: tuple[str, ...] = ()
+    reviewed_at: datetime | None = None
+    authority: str = "automatic"
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.decision_id, self.contact_id, self.relationship_id, self.campaign_policy_version, self.reason_code, self.authority)):
+            raise ValueError("contact use decision requires non-blank fields")
+        if self.reviewed_at is not None and self.reviewed_at.tzinfo is None:
+            raise ValueError("reviewed_at must be timezone-aware")
+        if any(not item.strip() for item in self.evidence_refs):
+            raise ValueError("evidence_refs must not contain blanks")
+
+
+@dataclass(frozen=True, slots=True)
+class SuppressionRule:
+    suppression_id: str
+    scope: str
+    subject_id: str
+    reason: str
+    active: bool = True
+    reviewed_at: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.suppression_id, self.scope, self.subject_id, self.reason)):
+            raise ValueError("suppression rule requires non-blank fields")
+        if self.reviewed_at is not None and self.reviewed_at.tzinfo is None:
+            raise ValueError("reviewed_at must be timezone-aware")
+
+
+@dataclass(frozen=True, slots=True)
+class ComplianceDecision:
+    decision_id: str
+    subject_id: str
+    campaign_policy_version: str
+    decision: ContactUseState
+    reason_code: str
+    evidence_refs: tuple[str, ...] = ()
+    reviewed_at: datetime | None = None
+    expires_at: datetime | None = None
+    authority: str = "automatic"
+
+    def __post_init__(self) -> None:
+        if any(not item.strip() for item in (self.decision_id, self.subject_id, self.campaign_policy_version, self.reason_code, self.authority)):
+            raise ValueError("compliance decision requires non-blank fields")
+        if self.reviewed_at is not None and self.reviewed_at.tzinfo is None:
+            raise ValueError("reviewed_at must be timezone-aware")
+        if self.expires_at is not None and self.expires_at.tzinfo is None:
+            raise ValueError("expires_at must be timezone-aware")
+        if any(not item.strip() for item in self.evidence_refs):
+            raise ValueError("evidence_refs must not contain blanks")
+
+
+@dataclass(frozen=True, slots=True)
+class CommercialPilotReadiness:
+    state: PilotReadinessState
+    ready: bool
+    blockers: tuple[str, ...] = ()
+    manual_authorization_required: bool = True
+    certification_results: tuple[LiveSourceCertification, ...] = ()
+    contact_use_decision: ContactUseDecision | None = None
+    compliance_decision: ComplianceDecision | None = None
+    suppression_rules: tuple[SuppressionRule, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -493,6 +636,37 @@ class CertificationScope:
     expiry_policy: str = "revalidate before live certification expiry"
 
 
+def build_external_certification_inventory() -> tuple[CertificationScope, ...]:
+    return (
+        CertificationScope("BrasilAPI CNPJ v1", "company acquisition", "live-network", "CNPJ lookups and response parsing"),
+        CertificationScope("SERPRO transparency page", "company enrichment", "live-network", "official source discovery and replayable capture"),
+        CertificationScope("CRO/CFO registry", "professional registration", "live-network", "registration status and source identity"),
+        CertificationScope("DNS/HTTP contact path", "contact publication", "live-network", "publication and reachability observations"),
+    )
+
+
+def build_live_certification_contract() -> tuple[str, ...]:
+    return (
+        "certification_id",
+        "source",
+        "source_type",
+        "official_endpoint_or_surface",
+        "timestamp",
+        "tested_commit_sha",
+        "request_class",
+        "request_identifier",
+        "http_status",
+        "response_contract",
+        "raw_evidence_id",
+        "integrity_digest",
+        "expected_semantics",
+        "observed_semantics",
+        "result",
+        "failure_classification",
+        "revalidation_due",
+    )
+
+
 def build_live_certification_matrix() -> tuple[LiveCertificationRecord, ...]:
     now = None
     blocker = "live network unavailable in this local environment"
@@ -512,6 +686,189 @@ def default_compliance_blockers() -> tuple[ComplianceBlocker, ...]:
         ComplianceBlocker("CB-004", "suppression and opt-out", "suppression and opt-out handling is not yet certified"),
         ComplianceBlocker("CB-005", "send authorization", "send authorization remains separate from qualification"),
         ComplianceBlocker("CB-006", "retention", "retention and deletion policy still needs explicit owner"),
+    )
+
+
+def build_certification_matrix() -> tuple[tuple[str, str, str, str, str, str], ...]:
+    return (
+        ("BrasilAPI CNPJ v1", "company acquisition", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "live source certification required"),
+        ("SERPRO transparency page", "company enrichment", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "source identity and replay evidence required"),
+        ("CRO/CFO registry", "professional registration", "PRODUCT_CRITICAL", "BLOCKED_EXTERNAL", "", "current registration status required"),
+        ("DNS/HTTP contact path", "contact publication", "OPTIONAL_BREADTH", "BLOCKED_EXTERNAL", "", "publication/reachability evidence required"),
+    )
+
+
+def assess_contact_use(
+    *,
+    contact_id: str,
+    relationship_id: str,
+    campaign_policy_version: str,
+    publication_verified: bool = False,
+    compliance_decision: ComplianceDecision | None = None,
+    suppression_rules: tuple[SuppressionRule, ...] = (),
+    evidence_refs: tuple[str, ...] = (),
+    reviewed_at: datetime | None = None,
+) -> ContactUseDecision:
+    if any(not item.strip() for item in (contact_id, relationship_id, campaign_policy_version)):
+        raise ValueError("contact_id, relationship_id, and campaign_policy_version must be non-blank")
+    if reviewed_at is not None and reviewed_at.tzinfo is None:
+        raise ValueError("reviewed_at must be timezone-aware")
+    active_suppression = next((rule for rule in suppression_rules if rule.active and rule.subject_id == contact_id), None)
+    if active_suppression is not None:
+        return ContactUseDecision(
+            f"contact-use:{contact_id}:{campaign_policy_version}",
+            contact_id,
+            relationship_id,
+            campaign_policy_version,
+            ContactUseState.SUPPRESSED,
+            "SUPPRESSED",
+            evidence_refs,
+            reviewed_at,
+            "automatic",
+        )
+    if compliance_decision is not None:
+        if compliance_decision.decision is ContactUseState.BLOCKED:
+            return ContactUseDecision(
+                f"contact-use:{contact_id}:{campaign_policy_version}",
+                contact_id,
+                relationship_id,
+                campaign_policy_version,
+                ContactUseState.BLOCKED,
+                compliance_decision.reason_code,
+                evidence_refs + compliance_decision.evidence_refs,
+                reviewed_at or compliance_decision.reviewed_at,
+                compliance_decision.authority,
+            )
+        if compliance_decision.decision is ContactUseState.REVIEW_REQUIRED:
+            return ContactUseDecision(
+                f"contact-use:{contact_id}:{campaign_policy_version}",
+                contact_id,
+                relationship_id,
+                campaign_policy_version,
+                ContactUseState.REVIEW_REQUIRED,
+                compliance_decision.reason_code,
+                evidence_refs + compliance_decision.evidence_refs,
+                reviewed_at or compliance_decision.reviewed_at,
+                compliance_decision.authority,
+            )
+        if compliance_decision.decision is ContactUseState.ALLOWED_BY_POLICY and publication_verified:
+            return ContactUseDecision(
+                f"contact-use:{contact_id}:{campaign_policy_version}",
+                contact_id,
+                relationship_id,
+                campaign_policy_version,
+                ContactUseState.ALLOWED_BY_POLICY,
+                "ALLOWED_BY_POLICY",
+                evidence_refs + compliance_decision.evidence_refs,
+                reviewed_at or compliance_decision.reviewed_at,
+                compliance_decision.authority,
+            )
+    if publication_verified:
+        return ContactUseDecision(
+            f"contact-use:{contact_id}:{campaign_policy_version}",
+            contact_id,
+            relationship_id,
+            campaign_policy_version,
+            ContactUseState.REVIEW_REQUIRED,
+            "REVIEW_REQUIRED",
+            evidence_refs,
+            reviewed_at,
+            "automatic",
+        )
+    return ContactUseDecision(
+        f"contact-use:{contact_id}:{campaign_policy_version}",
+        contact_id,
+        relationship_id,
+        campaign_policy_version,
+        ContactUseState.UNKNOWN,
+        "CONTACT_USE_UNKNOWN",
+        evidence_refs,
+        reviewed_at,
+        "automatic",
+    )
+
+
+def evaluate_compliance_decision(
+    *,
+    subject_id: str,
+    campaign_policy_version: str,
+    legal_review_required: bool = False,
+    suppressed: bool = False,
+    certification_blocked: bool = False,
+    evidence_refs: tuple[str, ...] = (),
+    reviewed_at: datetime | None = None,
+) -> ComplianceDecision:
+    if any(not item.strip() for item in (subject_id, campaign_policy_version)):
+        raise ValueError("subject_id and campaign_policy_version must be non-blank")
+    if reviewed_at is not None and reviewed_at.tzinfo is None:
+        raise ValueError("reviewed_at must be timezone-aware")
+    if suppressed:
+        return ComplianceDecision("compliance:block", subject_id, campaign_policy_version, ContactUseState.BLOCKED, "SUPPRESSED", evidence_refs, reviewed_at, None, "automatic")
+    if certification_blocked or legal_review_required:
+        return ComplianceDecision("compliance:review", subject_id, campaign_policy_version, ContactUseState.REVIEW_REQUIRED, "LEGAL_REVIEW_REQUIRED", evidence_refs, reviewed_at, None, "automatic")
+    return ComplianceDecision("compliance:allow", subject_id, campaign_policy_version, ContactUseState.ALLOWED_BY_POLICY, "ALLOWED_BY_POLICY", evidence_refs, reviewed_at, None, "automatic")
+
+
+def evaluate_pilot_readiness(
+    *,
+    operational_ready: bool,
+    live_sources_certified: bool,
+    send_ready: bool,
+    policy_version_fixed: bool,
+    suppression_ready: bool,
+    review_path_ready: bool,
+    audit_export_ready: bool,
+    measurement_ready: bool,
+    manual_authorization_required: bool = True,
+    manual_authorization_granted: bool = False,
+    compliance_decision: ComplianceDecision | None = None,
+    contact_use_decision: ContactUseDecision | None = None,
+    suppression_rules: tuple[SuppressionRule, ...] = (),
+) -> CommercialPilotReadiness:
+    blockers: list[str] = []
+    if not operational_ready:
+        blockers.append("operational_ready")
+    if not live_sources_certified:
+        blockers.append("live_sources_certified")
+    if not send_ready:
+        blockers.append("send_ready")
+    if not policy_version_fixed:
+        blockers.append("policy_version_fixed")
+    if not suppression_ready:
+        blockers.append("suppression_ready")
+    if not review_path_ready:
+        blockers.append("review_path_ready")
+    if not audit_export_ready:
+        blockers.append("audit_export_ready")
+    if not measurement_ready:
+        blockers.append("measurement_ready")
+    if compliance_decision is not None and compliance_decision.decision is not ContactUseState.ALLOWED_BY_POLICY:
+        blockers.append(compliance_decision.reason_code)
+    if contact_use_decision is not None and contact_use_decision.decision is not ContactUseState.ALLOWED_BY_POLICY:
+        blockers.append(contact_use_decision.reason_code)
+    if any(rule.active for rule in suppression_rules):
+        blockers.append("active_suppression_present")
+    if blockers:
+        return CommercialPilotReadiness(
+            PilotReadinessState.NOT_READY,
+            False,
+            tuple(dict.fromkeys(blockers)),
+            manual_authorization_required,
+            (),
+            contact_use_decision,
+            compliance_decision,
+            suppression_rules,
+        )
+    state = PilotReadinessState.READY_PENDING_MANUAL_AUTHORIZATION if manual_authorization_required and not manual_authorization_granted else PilotReadinessState.READY
+    return CommercialPilotReadiness(
+        state,
+        state is PilotReadinessState.READY,
+        (),
+        manual_authorization_required,
+        (),
+        contact_use_decision,
+        compliance_decision,
+        suppression_rules,
     )
 
 
@@ -618,9 +975,15 @@ def _parse_optional_url(value: Any, name: str) -> str | None:
 
 __all__ = [
     "CertificationScope",
+    "CertificationResult",
     "ComplianceBlocker",
+    "ComplianceDecision",
     "ConfigurationClassification",
     "ConfigurationField",
+    "ContactUseDecision",
+    "ContactUseState",
+    "CommercialPilotReadiness",
+    "LiveSourceCertification",
     "LiveCertificationRecord",
     "OperationalConfiguration",
     "OperationalError",
@@ -631,12 +994,20 @@ __all__ = [
     "OperationalRuntime",
     "OperationalTelemetrySnapshot",
     "ProcessHealth",
+    "PilotReadinessState",
     "SendReadyAssessment",
     "SendReadyInputs",
     "SendReadyState",
     "SystemReadiness",
     "SystemReadinessReport",
+    "SuppressionRule",
+    "assess_contact_use",
+    "build_certification_matrix",
+    "build_external_certification_inventory",
+    "build_live_certification_contract",
     "build_live_certification_matrix",
     "default_compliance_blockers",
+    "evaluate_compliance_decision",
+    "evaluate_pilot_readiness",
     "evaluate_send_ready",
 ]

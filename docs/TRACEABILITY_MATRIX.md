@@ -26,13 +26,15 @@ Status: CANONICAL
 | OR-001 | Acquisition runtime composition | `src/searchleads/gap_automation/execution.py`, `src/searchleads/runtime_adapter.py`, `src/searchleads/application/chassis.py`, `docs/ACQUISITION_RUNTIME_DECISION_V1.md`, `docs/OPERATIONS_AND_DEPLOYMENT.md` | `tests/test_operational_canonical_integration.py`, experimental runtime probes | static decision evidence plus local fallback adapter | VERIFIED_PARTIAL | No |
 | OR-003 | Operational lifecycle and recovery | `src/searchleads/operational.py`, `src/searchleads/persistence/sqlite.py`, `src/searchleads/application/chassis.py`, `docs/OPERATIONS_AND_DEPLOYMENT.md` | `tests/test_operational_readiness.py` | startup, health, readiness, backup, restore, recovery, and replay coverage | VERIFIED_PARTIAL | No |
 | OR-004 | System readiness vs SEND_READY separation | `src/searchleads/operational.py`, `docs/SECURITY_PRIVACY_COMPLIANCE.md`, `docs/OPERATIONS_AND_DEPLOYMENT.md` | `tests/test_operational_readiness.py` | explicit SEND_READY state machine and compliance blocker register | VERIFIED_PARTIAL | No |
+| OR-005 | External certification and pilot readiness | `src/searchleads/operational.py`, `docs/SEARCHLEADS_COMPLETION_PLAN.md`, `docs/SECURITY_PRIVACY_COMPLIANCE.md`, `docs/RELEASE_READINESS.md` | `tests/test_operational_readiness.py` | certification inventory, compliance decision, contact-use policy, suppression, and pilot readiness contracts | VERIFIED_PARTIAL | Yes |
 
 ## Current Verification Note
 
 - `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
 - `INTERNAL_REGRESSION_SUITE = PASS`
-- full-suite result: `879 passed`, `24 skipped`, `1 xfailed`
+- full-suite result: `882 passed`, `24 skipped`, `1 xfailed`
 - skips are external-dependency probes for bake-off capabilities, not hidden product failures
 - the single xfail is `TEST_OBSOLETE` and intentionally retained as legacy benchmark evidence
 - Company ER and Person ER are provisionally composed from local benchmark evidence; external challenger breadth remains open
 - operational readiness helpers are now covered by `tests/test_operational_readiness.py`
+- external certification inventory, contact-use policy, suppression, and pilot readiness helpers are covered by `tests/test_operational_readiness.py`

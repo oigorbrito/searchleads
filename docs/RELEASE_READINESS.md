@@ -21,7 +21,7 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: full internal regression suite passed with `879 passed`, `24 skipped`, `1 xfailed`
+- current evidence: full internal regression suite passed with `882 passed`, `24 skipped`, `1 xfailed`
 - status: PASS
 - blockers: skip/xfail inventory is classified; external benchmark challengers still need sanctioned runtime support
 
@@ -42,6 +42,6 @@ Status: CANONICAL
 ### Commercial Pilot Ready
 
 - criteria: qualification, contacts, compliance, and SEND_READY conditions are all satisfied
-- current evidence: qualification policy exists, but send readiness is separate
+- current evidence: qualification policy exists; contact-use, suppression, and pilot readiness contracts are now represented canonically; send readiness remains separate from external authorization
 - status: NOT_YET
 - blockers: commercial compliance and live certification
