@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from searchleads.domain import (
-    Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, Lead, QualificationStatus,
+    Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, Lead, LeadStage,
+    QualificationStatus,
 )
 from searchleads.entity_resolution import CompanyRecord, ResolutionDisposition, TriageDecision
 from searchleads.selective_review import (
@@ -32,10 +33,20 @@ def route(case):
         conflict=Conflict('conflict:1','company:1','legal_name',('fact:1','fact:2'),status,selected)
         return review_conflict(conflict,high_impact=case.get('high_impact',False),evidence_ids=('ev:1',))
     if kind=='contact':
-        contact=ContactPoint('contact:1','company:1',ContactKind.EMAIL,'x@example.com',('ev:1',),ContactStatus(case['state']),NOW)
+        status=ContactStatus(case['state'])
+        kwargs={}
+        if status is not ContactStatus.DISCOVERED:
+            kwargs.update(validation_evidence_ids=('ev:v',), validated_at=NOW)
+        contact=ContactPoint('contact:1','company:1',ContactKind.EMAIL,'x@example.com',('ev:1',),status, NOW, **kwargs)
         return review_contact(contact)
     if kind=='lead':
-        lead=Lead('lead:1','company:1',qualification_status=QualificationStatus(case['state']),qualification_reasons=('ICP unresolved',))
+        qualification=QualificationStatus(case['state'])
+        stage={
+            QualificationStatus.UNKNOWN: LeadStage.CANDIDATE,
+            QualificationStatus.QUALIFIED: LeadStage.QUALIFIED,
+            QualificationStatus.NOT_QUALIFIED: LeadStage.DISQUALIFIED,
+        }[qualification]
+        lead=Lead('lead:1','company:1',stage=stage,qualification_status=qualification,qualification_reasons=('ICP unresolved',))
         return review_qualification(lead,high_value=case.get('high_value',False))
     raise AssertionError(kind)
 

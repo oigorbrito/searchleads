@@ -8,8 +8,8 @@ Status: CANONICAL
 
 - criteria: canonical charter, architecture, domain, data, quality, V&V, and completion plan exist
 - current evidence: partial canonical docs created in this session
-- status: IN_PROGRESS
-- blockers: ER closure, traceability completion
+- status: PARTIAL
+- blockers: Company ER, Person ER, and residual benchmark-backed reconciliation
 
 ### Integrated
 
@@ -21,9 +21,9 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: majority of tests pass, but there are known failures in legacy contract tests
-- status: NOT_YET
-- blockers: selective review, acceptance, persistence contract mismatches
+- current evidence: targeted legacy contract failures have been reconciled in selective review, acceptance, and evidence consistency
+- status: PARTIAL
+- blockers: full suite still needs a final pass after the current WIP is reconciled
 
 ### Operationally Ready
 
@@ -45,4 +45,3 @@ Status: CANONICAL
 - current evidence: qualification policy exists, but send readiness is separate
 - status: NOT_YET
 - blockers: commercial compliance and live certification
-

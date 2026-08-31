@@ -79,7 +79,10 @@ def test_nonfinite_float_rejected():
     with pytest.raises(TypeError,match='non-finite'): export_json(b)
 
 def test_naive_datetime_rejected():
-    b=base_bundle(); e=replace(b.evidence[0],captured_at=NOW.replace(tzinfo=None)); b=replace(b,evidence=(e,b.evidence[1]))
+    b=base_bundle()
+    e=replace(b.evidence[0])
+    object.__setattr__(e,'captured_at',NOW.replace(tzinfo=None))
+    b=replace(b,evidence=(e,b.evidence[1]))
     with pytest.raises(TypeError,match='naive'): export_json(b)
 
 @pytest.mark.parametrize('field,records',[
@@ -111,7 +114,7 @@ def test_contact_owner_outside_bundle_rejected():
 def test_contact_missing_discovery_and_validation_evidence_rejected():
     b=base_bundle(); bad=replace(b.contacts[0],discovery_evidence_ids=('missing',))
     with pytest.raises(ValueError,match='discovery references'): to_export_dict(replace(b,contacts=(bad,)))
-    bad=replace(b.contacts[0],validation_evidence_ids=('missing',))
+    bad=replace(b.contacts[0],status=ContactStatus.VALIDATED,validation_evidence_ids=('missing',),validated_at=NOW)
     with pytest.raises(ValueError,match='validation references'): to_export_dict(replace(b,contacts=(bad,)))
 
 def test_candidate_wrong_subject_missing_evidence_provenance_and_mismatch_rejected():

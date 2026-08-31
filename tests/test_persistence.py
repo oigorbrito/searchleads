@@ -26,7 +26,9 @@ from searchleads.domain import (
 )
 from searchleads.persistence import (
     SCHEMA_VERSION,
+    DomainRecordIntegrityError,
     EvidenceIntegrityError,
+    EvidenceEnvelopeIntegrityError,
     PersistenceConflictError,
     PersistenceEncodingError,
     MissingReferenceError,
@@ -418,7 +420,7 @@ def test_load_detects_corrupted_record_type_envelope(tmp_path) -> None:
     connection.commit()
     connection.close()
     with SQLiteRepository(path) as repo:
-        with pytest.raises(PersistenceEncodingError):
+        with pytest.raises(DomainRecordIntegrityError):
             repo.load(Source, "src")
 
 
@@ -436,7 +438,7 @@ def test_load_evidence_detects_wrong_envelope_type(tmp_path) -> None:
     connection.commit()
     connection.close()
     with SQLiteRepository(path) as repo:
-        with pytest.raises(PersistenceEncodingError):
+        with pytest.raises(EvidenceEnvelopeIntegrityError):
             repo.load_evidence("ev")
 
 

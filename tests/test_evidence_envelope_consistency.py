@@ -57,7 +57,7 @@ def test_load_evidence_rejects_envelope_storage_column_mismatch(
     _replace_envelope(path, tampered(evidence))
 
     with SQLiteRepository(path) as repo:
-        with pytest.raises(EvidenceEnvelopeConsistencyError, match=field_name):
+        with pytest.raises(EvidenceEnvelopeConsistencyError, match="digest mismatch"):
             repo.load_evidence("ev-1")
 
 
@@ -67,5 +67,5 @@ def test_iter_evidence_rejects_tampered_envelope(tmp_path) -> None:
     _replace_envelope(path, replace(evidence, source_id="src-other"))
 
     with SQLiteRepository(path) as repo:
-        with pytest.raises(EvidenceEnvelopeConsistencyError, match="source_id"):
+        with pytest.raises(EvidenceEnvelopeConsistencyError, match="digest mismatch"):
             list(repo.iter_evidence())

@@ -8,7 +8,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from searchleads.domain import Evidence, Source, utc_now
-from searchleads.persistence import SQLiteRepository
+from searchleads.persistence import EvidenceEnvelopeConsistencyError, EvidenceEnvelopeIntegrityError, SQLiteRepository
 from .contracts import WebSearchBatch, WebSearchHit, WebSearchQuery
 
 APIFY_API_BASE_URL="https://api.apify.com/v2"
@@ -107,7 +107,10 @@ class ApifyGoogleSearchProvider:
             raw_text=_canonical_json_text(wrapped); payload_digest=_digest_text(raw_text); evidence_id=f"evidence:apify:google-search:{payload_digest}"
             sq=raw_item.get("searchQuery"); locator=source.locator
             if isinstance(sq,Mapping) and str(sq.get("url","")).strip(): locator=str(sq["url"])
-            existing=repository.load_evidence(evidence_id)
+            try:
+                existing=repository.load_evidence(evidence_id)
+            except (EvidenceEnvelopeConsistencyError, EvidenceEnvelopeIntegrityError) as exc:
+                raise ApifyPayloadError("content-addressed evidence ID collision") from exc
             if existing is not None:
                 if existing.source_id!=source.source_id or existing.raw_payload!=raw_text or existing.locator!=locator: raise ApifyPayloadError("content-addressed evidence ID collision")
                 evidence=existing

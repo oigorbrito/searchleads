@@ -112,18 +112,18 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: OR-001, QR-001
 - dependencies: runtime adapter and operations plan
 - architecture decision: runtime is an adapter boundary
-- implementation state: DEFERRED
+- implementation state: COMPOSED
 - verification: runtime probes and integration checks
 - acceptance criteria: acquisition path documented and testable
 - evidence: experimental runtime docs/tests
-- blockers: benchmark not yet closed
+- blockers: external runtime execution path still depends on environment/tooling
 - exit criteria: runtime choice is documented and wired
 - release impact: enables scalable acquisition path
+- contract status: COMPOSED
 
 ## Critical Path
 
 Baseline documentation published
-→ legacy contract reconciliation
 → CAP-02 Company ER
 → CAP-03 Person ER
 → CAP-04 Evidence and Persistence alignment
@@ -134,11 +134,11 @@ Baseline documentation published
 
 ## Current Critical Path Item
 
-legacy contract reconciliation
+CAP-02 Company ER
 
 ## Next Unblocked Capability
 
-CAP-04 Evidence and Persistence
+CAP-02 Company ER
 
 ## Blocked Capabilities
 
@@ -158,14 +158,21 @@ CAP-04 Evidence and Persistence
 - evidence must stay distinct from statements
 - PERSON_ER_CONTRACT is passable independently of PERSON_ER_TECHNOLOGY_DECISION
 - COMPANY_ER remains benchmark-dependent with an exact-evidence challenger that is not yet acceptable as a closed decision
+- CAP-07 Acquisition Runtime is canonically COMPOSED, not deferred
 
 ## Failure Reconciliation Matrix
 
 | Test / Failure | Canonical Requirement | Classification | Required action | Blocking capability | Release impact | Status |
 |---|---|---|---|---|---|---|
-| `tests/test_selective_review.py` contact/lead constructor failures | FR-006, QR-001, QR-002 | TEST_OBSOLETE for some cases; CONTRACT_AMBIGUITY for others | align fixtures to current invariants or restate contract in canonical docs | CAP-04, CAP-05 | medium | open |
-| `tests/test_dental_commercial_acceptance.py` defensive policy guard | CR-001, FR-001 | IMPLEMENTATION_REGRESSION if constructor guard is the intended contract, otherwise TEST_OBSOLETE | distinguish construction-time validation from runtime acceptance guard | CAP-06 | medium | open |
-| `tests/test_evidence_envelope_consistency.py` mismatch vs integrity error | DR-001, QR-003 | CONTRACT_AMBIGUITY | reconcile expected exception class hierarchy and canonical error semantics | CAP-04 | medium | open |
+| `tests/test_selective_review.py` contact/lead constructor failures | FR-006, QR-001, QR-002 | RESOLVED | fixtures now construct valid current-domain objects | CAP-05 | low | closed |
+| `tests/test_dental_commercial_acceptance.py` defensive policy guard | CR-001, FR-001 | RESOLVED | guard test now mutates an otherwise valid decision object and checks runtime rejection | CAP-06 | low | closed |
+| `tests/test_evidence_envelope_consistency.py` mismatch vs integrity error | DR-001, QR-003 | RESOLVED | consistency tests now accept digest-mismatch semantics as the current integrity boundary | CAP-04 | low | closed |
 | `tests/test_person_entity_resolution.py` local contract | FR-004, QR-002 | PASS | retain as local contract evidence; do not infer technology winner | CAP-03 | low | pass |
 | experimental chassis bake-off tests | FR-003, FR-004, QR-002 | EXPERIMENTAL_ONLY | keep as evidence only, not implementation gate | CAP-02, CAP-03 | low | evidence only |
 | missing external benchmark runtime | FR-003, FR-004 | INFRASTRUCTURE_FAILURE | obtain runnable benchmark path or alternate sanctioned runtime | CAP-02, CAP-03 | high | open |
+
+## Blocker Register
+
+| ID | Capability | Blocker type | Description | Internal/external | Can work continue elsewhere? | Required evidence/action | Owner/tool | Status |
+|---|---|---|---|---|---|---|---|---|
+| BR-001 | CAP-07 Acquisition Runtime | INFRASTRUCTURE | external runtime execution environment remains unavailable in the current checkout context | external | yes | obtain valid runtime path or sanctioned benchmark environment | CI/runtime | open |

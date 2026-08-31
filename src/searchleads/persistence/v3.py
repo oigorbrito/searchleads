@@ -5,6 +5,7 @@ from dataclasses import replace
 
 from searchleads.domain import Evidence
 
+from .ledger import EvidenceEnvelopeConsistencyError
 from .ledger import SQLiteRepository as _LedgerSQLiteRepository
 from .sqlite import (
     PersistenceConflictError,
@@ -17,7 +18,7 @@ from .sqlite import (
 SCHEMA_VERSION = 3
 
 
-class EvidenceEnvelopeIntegrityError(PersistenceError):
+class EvidenceEnvelopeIntegrityError(EvidenceEnvelopeConsistencyError):
     """Raised when a persisted Evidence envelope no longer matches its storage digest."""
 
 

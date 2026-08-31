@@ -22,4 +22,5 @@ Status: CANONICAL
 | QR-001 | Acceptance / export | `src/searchleads/acceptance/end_to_end.py`, `src/searchleads/lead_export/export.py` | `tests/test_end_to_end_acceptance.py`, `tests/test_lead_export.py` | export/acceptance runs | CANONICAL | No |
 | QR-002 | ER review routing | `src/searchleads/selective_review/routing.py` | `tests/test_selective_review.py` | curated review routing tests | CANONICAL | No |
 | CR-001 | Qualification | `src/searchleads/qualification_policy/dental_v1.py`, `src/searchleads/qualification/dental.py` | `tests/test_dental_qualification.py`, `tests/test_dental_commercial_acceptance.py` | policy and acceptance tests | CANONICAL | No |
-
+| DR-001 | Persistence envelope integrity | `src/searchleads/persistence/v3.py`, `src/searchleads/persistence/ledger.py` | `tests/test_evidence_envelope_consistency.py` | digest mismatch and consistency rejection | CANONICAL | No |
+| OR-001 | Acquisition runtime composition | `src/searchleads/gap_automation/execution.py`, `docs/ACQUISITION_RUNTIME_DECISION_V1.md` | experimental runtime probes | static decision evidence | CANONICAL | No |

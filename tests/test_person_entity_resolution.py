@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import pytest
 
-from searchleads.domain import CandidateFact, ContactKind, ContactPoint, Person
+from searchleads.domain import CandidateFact, ContactKind, ContactPoint, ContactStatus, Person
 from searchleads.person_entity_resolution import (
     EvidenceSignal, LabeledPersonPair, PersonRecord, PersonResolutionDisposition,
     compare_person_features, evaluate_experimental_auto_match, evaluate_person_resolution,
@@ -13,7 +13,7 @@ from searchleads.person_entity_resolution import (
 )
 
 ROOT=Path(__file__).resolve().parents[1]
-DATA=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text())
+DATA=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text(encoding='utf-8'))
 NOW=datetime(2026,8,25,20,0,tzinfo=timezone.utc)
 
 def sig(value, ev): return EvidenceSignal(value,(ev,))
@@ -90,7 +90,17 @@ def test_record_builder_preserves_relationship_fact_and_contact_evidence():
     name=CandidateFact('fn','p','person_name','Ana','Ana',('ev-name',),'prov',observed_at=NOW)
     role=CandidateFact('fr','p','professional_role_title','CEO','CEO',('ev-role',),'prov',observed_at=NOW)
     noise=CandidateFact('fx','other','person_name','Other','Other',('ev-x',),'prov',observed_at=NOW)
-    email=ContactPoint('ce','p',ContactKind.EMAIL,'ANA@EXAMPLE.COM',('ev-email',),discovered_at=NOW,validation_evidence_ids=('ev-email-v',))
+    email=ContactPoint(
+        'ce',
+        'p',
+        ContactKind.EMAIL,
+        'ANA@EXAMPLE.COM',
+        ('ev-email',),
+        status=ContactStatus.VALIDATED,
+        discovered_at=NOW,
+        validation_evidence_ids=('ev-email-v',),
+        validated_at=NOW,
+    )
     phone=ContactPoint('cp','p',ContactKind.PHONE,'(11) 99999-0000',('ev-phone',),discovered_at=NOW)
     profile=ContactPoint('cl','p',ContactKind.PROFESSIONAL_PROFILE,'https://linkedin.com/in/ana',('ev-linkedin',),discovered_at=NOW)
     ignored=ContactPoint('ci','other',ContactKind.EMAIL,'other@example.com',('ev-other',),discovered_at=NOW)

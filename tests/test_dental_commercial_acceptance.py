@@ -12,15 +12,23 @@ def test_acceptance_defensive_policy_status_and_determinism_guards(monkeypatch):
     import searchleads.acceptance.dental_qualification as mod
     original=mod._run_once
     decision,lead=original()
-    from dataclasses import replace
     import pytest
 
-    monkeypatch.setattr(mod,'_run_once',lambda:(replace(decision,policy_id='wrong'),lead))
+    def mutated_decision(**changes):
+        clone=object.__new__(type(decision))
+        for name in decision.__dataclass_fields__:
+            object.__setattr__(clone,name,getattr(decision,name))
+        for name,value in changes.items():
+            object.__setattr__(clone,name,value)
+        return clone
+
+    monkeypatch.setattr(mod,'_run_once',lambda:(mutated_decision(policy_id='wrong'),lead))
     with pytest.raises(AssertionError,match='wrong policy'): mod.run_dental_commercial_acceptance()
 
-    monkeypatch.setattr(mod,'_run_once',lambda:(replace(decision,qualification_status=mod.QualificationStatus.UNKNOWN),lead))
+    monkeypatch.setattr(mod,'_run_once',lambda:(mutated_decision(qualification_status=mod.QualificationStatus.UNKNOWN),lead))
     with pytest.raises(AssertionError,match='did not qualify'): mod.run_dental_commercial_acceptance()
 
+    from dataclasses import replace
     calls=iter(((decision,lead),(decision,replace(lead,lead_id='different'))))
     monkeypatch.setattr(mod,'_run_once',lambda:next(calls))
     with pytest.raises(AssertionError,match='not deterministic'): mod.run_dental_commercial_acceptance()
