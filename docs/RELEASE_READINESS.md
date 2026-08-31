@@ -7,7 +7,7 @@ Status: CANONICAL
 ### Architecture Baseline
 
 - criteria: canonical charter, architecture, domain, data, quality, V&V, and completion plan exist
-- current evidence: canonical docs are present and synchronized with the green internal regression state; Company ER and Person ER now have provisional local benchmark policies
+- current evidence: canonical docs are present and synchronized with the green internal regression state; Company ER and Person ER now have provisional local benchmark policies; the clean implementation line is live
 - status: READY
 - blockers: external challenger breadth and operational runtime gaps remain open
 
@@ -21,7 +21,7 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: full internal regression suite passed with `864 passed`, `24 skipped`, `1 xfailed`
+- current evidence: full internal regression suite passed with `868 passed`, `24 skipped`, `1 xfailed`
 - status: PASS
 - blockers: skip/xfail inventory is classified; external benchmark challengers still need sanctioned runtime support
 

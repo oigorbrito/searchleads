@@ -24,9 +24,16 @@ from searchleads.domain import (
     Lead,
     LeadStage,
     Person,
+    PersonCompanyRelationship,
+    PersonIdentity,
+    ProfessionalRegistration,
+    QualificationDecision,
     Provenance,
     QualificationStatus,
+    RelationshipContactLink,
     Source,
+    Statement,
+    StatementEvidenceLink,
 )
 
 SCHEMA_VERSION = 2
@@ -62,7 +69,25 @@ class SchemaVersionError(PersistenceError):
     """Raised when the database schema version is unsupported or inconsistent."""
 
 
-Record = Source | Evidence | Provenance | CandidateFact | CanonicalFact | Conflict | Company | Person | ContactPoint | Lead
+Record = (
+    Source
+    | Evidence
+    | Provenance
+    | CandidateFact
+    | CanonicalFact
+    | Conflict
+    | Company
+    | Person
+    | PersonIdentity
+    | PersonCompanyRelationship
+    | ProfessionalRegistration
+    | RelationshipContactLink
+    | Statement
+    | StatementEvidenceLink
+    | ContactPoint
+    | Lead
+    | QualificationDecision
+)
 TRecord = TypeVar("TRecord", bound=Record)
 
 _RECORD_TYPES: dict[str, type[Record]] = {
@@ -76,8 +101,15 @@ _RECORD_TYPES: dict[str, type[Record]] = {
         Conflict,
         Company,
         Person,
+        PersonIdentity,
+        PersonCompanyRelationship,
+        ProfessionalRegistration,
+        RelationshipContactLink,
+        Statement,
+        StatementEvidenceLink,
         ContactPoint,
         Lead,
+        QualificationDecision,
     )
 }
 _ENUM_TYPES: dict[str, type[StrEnum]] = {
@@ -100,8 +132,15 @@ _ID_FIELDS: dict[type[Record], str] = {
     Conflict: "conflict_id",
     Company: "company_id",
     Person: "person_id",
+    PersonIdentity: "person_id",
+    PersonCompanyRelationship: "relationship_id",
+    ProfessionalRegistration: "registration_id",
+    RelationshipContactLink: "link_id",
+    Statement: "statement_id",
+    StatementEvidenceLink: "link_id",
     ContactPoint: "contact_id",
     Lead: "lead_id",
+    QualificationDecision: "decision_id",
 }
 
 
@@ -439,9 +478,32 @@ class SQLiteRepository:
             # here would create an insertion cycle because Person/ContactPoint
             # require their owner Company to exist first.
             return
+        if isinstance(record, PersonIdentity):
+            return
         if isinstance(record, Person):
             self._require(Company, record.company_id, context)
             self._require_evidence(record.relationship_evidence_ids, context)
+            return
+        if isinstance(record, PersonCompanyRelationship):
+            self._require(PersonIdentity, record.person_id, context)
+            self._require(Company, record.company_id, context)
+            self._require_evidence(record.evidence_ids, context)
+            return
+        if isinstance(record, ProfessionalRegistration):
+            self._require(PersonIdentity, record.person_id, context)
+            self._require_evidence(record.evidence_ids, context)
+            return
+        if isinstance(record, RelationshipContactLink):
+            self._require(PersonCompanyRelationship, record.relationship_id, context)
+            self._require(ContactPoint, record.contact_id, context)
+            self._require_evidence(record.evidence_ids, context)
+            return
+        if isinstance(record, Statement):
+            self._require(Provenance, record.provenance_id, context)
+            return
+        if isinstance(record, StatementEvidenceLink):
+            self._require(Statement, record.statement_id, context)
+            self._require_evidence(record.evidence_ids, context)
             return
         if isinstance(record, ContactPoint):
             if not (self._exists(Company, record.owner_id) or self._exists(Person, record.owner_id)):
@@ -453,6 +515,10 @@ class SQLiteRepository:
             return
         if isinstance(record, Lead):
             self._require(Company, record.company_id, context)
+            return
+        if isinstance(record, QualificationDecision):
+            self._require(Lead, record.lead_id, context)
+            self._require_evidence(record.evidence_ids, context)
             return
         raise PersistenceEncodingError(  # pragma: no cover - _record_id rejects unsupported types first
             f"unsupported record type: {type(record).__name__}"

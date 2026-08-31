@@ -24,11 +24,11 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: FR-001, QR-001, OR-002, CR-002
 - dependencies: current repo docs and implementation inventory
 - architecture decision: canonical docs govern experimental docs
-- implementation state: IMPLEMENTING
+- implementation state: VERIFIED
 - verification: document inventory and consistency review
 - acceptance criteria: charter, requirements, architecture, domain, data, quality, V&V, readiness, traceability, and plan exist
 - evidence: created canonical docs in this session
-- blockers: ER closure and traceability completion
+- blockers: none
 - exit criteria: baseline docs are authoritative and linked
 - release impact: unlocks controlled downstream planning
 
@@ -38,11 +38,11 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: FR-003, QR-002
 - dependencies: benchmark harness and curated fixtures
 - architecture decision: benchmark-closed ER, no silent merge authority
-- implementation state: BLOCKED
+- implementation state: VERIFIED_PARTIAL
 - verification: adversarial benchmark and regression
 - acceptance criteria: winner or continued defer with explicit evidence
 - evidence: current scorecard and experimental tests
-- blockers: execution and contract alignment
+- blockers: external challenger breadth and post-baseline recalibration
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks company identity direction
 - contract status: PROVISIONAL_COMPOSE
@@ -54,11 +54,11 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: FR-004, QR-002, DR-003
 - dependencies: benchmark harness and curated fixtures
 - architecture decision: person identity independent from company relationship
-- implementation state: BLOCKED
+- implementation state: VERIFIED_PARTIAL
 - verification: adversarial benchmark and regression
 - acceptance criteria: decision on merge/review/abstain behavior
 - evidence: current scorecard and experimental tests
-- blockers: execution and contract alignment
+- blockers: external challenger breadth and post-baseline recalibration
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks person identity direction
 - contract status: PASS for local contract tests, decision status is PROVISIONAL_COMPOSE
@@ -70,11 +70,11 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: DR-001, QR-003
 - dependencies: sqlite persistence and digest verification
 - architecture decision: evidence remains separate from derived statements
-- implementation state: VERIFIED_PARTIAL
+- implementation state: VERIFIED
 - verification: persistence and fault-injection tests
 - acceptance criteria: tampering is rejected, replay remains deterministic
-- evidence: existing persistence tests
-- blockers: some contract tests still need alignment
+- evidence: persistence regression plus canonical domain round-trips
+- blockers: none
 - exit criteria: consistency errors are explicit and covered
 - release impact: protects auditability
 
@@ -121,11 +121,25 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - release impact: enables scalable acquisition path
 - contract status: COMPOSED
 
+### CAP-08 Domain and Persistence Transplant
+
+- objective: transplant canonical domain, persistence codecs, and migration adapters onto the clean implementation line
+- requirements: FR-003, FR-004, DR-001, DR-003, QR-002
+- dependencies: baseline freeze, clean base, canonical domain records
+- architecture decision: preserve legacy adapters while canonical records become first-class
+- implementation state: VERIFIED
+- verification: domain round-trips, migration, bridge, and ER integration tests
+- acceptance criteria: new canonical types persist/load, compatibility layer remains explicit, relationship scope and statement bridge are test-backed
+- evidence: canonical domain record tests, structural migration helpers, and full regression
+- blockers: acquisition runtime breadth remains external; challenger breadth is post-baseline recalibration
+- exit criteria: canonical core transplants without silent merge
+- release impact: starts the clean implementation line
+- contract status: VERIFIED
+
 ## Critical Path
 
 Baseline documentation published
-→ CAP-02 Company ER
-→ CAP-03 Person ER
+→ CAP-08 Domain and Persistence Transplant
 → CAP-04 Evidence and Persistence alignment
 → CAP-05 Contact Discovery and Validation
 → CAP-06 Qualification
@@ -134,16 +148,15 @@ Baseline documentation published
 
 ## Current Critical Path Item
 
-CAP-02 Company ER
+CAP-07 Acquisition Runtime
 
 ## Next Unblocked Capability
 
-CAP-02 Company ER
+None; CAP-07 Acquisition Runtime is the next operational path, but it remains blocked by BR-001.
 
 ## Blocked Capabilities
 
-- CAP-02 Company ER
-- CAP-03 Person ER
+- CAP-07 Acquisition Runtime
 
 ## New Evidence
 
@@ -156,6 +169,12 @@ CAP-02 Company ER
 - wave 03 local benchmark executed on sanctioned Windows runtime
 - `Company ER` and `Person ER` are now `PROVISIONAL_COMPOSE`
 - `ENGINEERING_BASELINE_ESTABLISHED = YES` (`fb774cc6ddc4f8c7fc397476f868bd1de3a70506`)
+- clean implementation line created from the engineering baseline
+- baseline freeze document recorded
+- clean implementation transplant matrix recorded
+- CAP-08 verified on the clean implementation line
+- CAP-04 verified against the persistence regression and canonical round-trips
+- full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed`
 
 ## New Decisions
 
@@ -165,6 +184,9 @@ CAP-02 Company ER
 - PERSON_ER_CONTRACT is passable independently of PERSON_ER_TECHNOLOGY_DECISION
 - COMPANY_ER is provisionally composed from local benchmark evidence, with external challenger breadth still open
 - CAP-07 Acquisition Runtime is canonically COMPOSED, not deferred
+- CAP-08 Domain and Persistence Transplant is verified on the clean implementation line
+- CAP-04 Evidence and Persistence is verified on the clean implementation line
+- CAP-07 Acquisition Runtime is the next operational path, but BR-001 still blocks execution
 
 ## Failure Reconciliation Matrix
 
