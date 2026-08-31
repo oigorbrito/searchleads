@@ -4,13 +4,16 @@ Status: CANONICAL
 
 ## Supported Runtime
 
-Current repository execution is Python-based and local-test oriented.
+Current repository execution is Python-based, local-test oriented, and now includes a lightweight operational chassis that can run without Crawlee.
 
 ## Services
 
 - domain and persistence libraries
 - discovery and validation workflows
 - qualification and acceptance flows
+- application/API surface
+- runtime adapter boundary
+- canonical export and review surfaces
 - experimental bake-off probes
 
 ## Dependencies
@@ -29,6 +32,7 @@ Current repository execution is Python-based and local-test oriented.
 ## Startup and Shutdown
 
 - startup must validate supported schema state
+- startup must validate repository and runtime adapter availability before readiness is reported
 - shutdown should preserve committed state
 - interrupted migrations require repair semantics
 
@@ -55,6 +59,8 @@ Current repository execution is Python-based and local-test oriented.
 
 - health is not equivalent to business readiness
 - readiness must be tied to a gate definition
+- health reports process liveness
+- readiness reports internal wiring and dependency availability, not commercial SEND_READY
 
 ## Backups and Restoration
 
@@ -71,5 +77,5 @@ Current repository execution is Python-based and local-test oriented.
 ## Deployment Topology
 
 - lightweight local and CI execution are current
+- the fallback chassis supports local operational integration without Crawlee
 - external operational topology remains a future baseline item
-

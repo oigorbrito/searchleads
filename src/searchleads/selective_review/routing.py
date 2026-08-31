@@ -11,7 +11,7 @@ import hashlib
 from typing import Iterable
 
 from searchleads.domain import (
-    Conflict, ConflictStatus, ContactPoint, ContactStatus, Lead, QualificationStatus,
+    Conflict, ConflictStatus, ContactPoint, ContactStatus, Lead, QualificationDecision, QualificationStatus,
 )
 from searchleads.entity_resolution import CompanyRecord, ResolutionDisposition, TriageDecision
 
@@ -170,6 +170,25 @@ def review_qualification(lead: Lead, *, high_value: bool) -> ReviewItem | None:
         ReviewPriority.HIGH,
         (lead.company_id, lead.lead_id),
         "high-value qualification ambiguity: " + suffix,
+    )
+
+
+def review_qualification_decision(
+    lead: Lead,
+    decision: QualificationDecision,
+    *,
+    high_value: bool,
+) -> ReviewItem | None:
+    item = review_qualification(lead, high_value=high_value)
+    if item is None:
+        return None
+    reason = f"canonical qualification decision {decision.qualification_status.value}: " + item.reason
+    return _make_item(
+        ReviewKind.QUALIFICATION,
+        ReviewPriority.HIGH,
+        (lead.company_id, lead.lead_id, decision.decision_id),
+        reason,
+        decision.evidence_ids,
     )
 
 

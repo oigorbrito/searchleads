@@ -38,7 +38,7 @@ SearchLeads is a lead discovery and qualification system that consumes external 
 
 ### Product View
 
-The product exposes discovery, validation, qualification, export, and acceptance capabilities. It does not promise broad crawling, silent fuzzy identity merge, or campaign authorization.
+The product exposes discovery, validation, qualification, export, acceptance, and operational API capabilities. It does not promise broad crawling, silent fuzzy identity merge, or campaign authorization.
 
 ### Domain View
 
@@ -54,15 +54,15 @@ Company ER and Person ER are conservatively provisioned from local benchmark evi
 
 ### Acquisition View
 
-Acquisition is an adapter boundary, not the root chassis. Existing runtime experiments remain evidence, not authority.
+Acquisition is an adapter boundary, not the root chassis. The current repository includes a local fallback runtime adapter and a thin operational chassis. Crawlee remains optional breadth, not the baseline authority.
 
 ### Application/API View
 
-A thin application layer should compose the canonical domain, persistence, and acquisition/runtime adapters.
+A thin application layer composes the canonical domain, persistence, qualification/review/export surfaces, and acquisition/runtime adapters. The current chassis exposes health, readiness, acquisition, evidence, qualification, review, export, and capabilities endpoints or equivalent local call points.
 
 ### Deployment View
 
-Single-process local development and test execution are supported now. Operational deployment topology is documented separately and remains constrained by current evidence.
+Single-process local development and test execution are supported now. A lightweight operational chassis runs without Crawlee. Deployment topology is documented separately and remains constrained by current evidence.
 
 ### Compliance View
 
@@ -77,6 +77,7 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 - discovery/validation/qualification workflows
 - application/API surface
 - acquisition/runtime adapters
+- review/export/lead-materialization adapters
 
 ## Trust Boundaries
 
@@ -90,4 +91,5 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 
 - Company ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
 - Person ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
+- Crawlee breadth remains optional and not yet operationally proven in this repository.
 - deployment topology remains lightly specified compared with implementation depth.

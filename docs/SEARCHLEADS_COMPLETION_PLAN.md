@@ -112,14 +112,14 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - requirements: OR-001, QR-001
 - dependencies: runtime adapter and operations plan
 - architecture decision: runtime is an adapter boundary
-- implementation state: COMPOSED
-- verification: runtime probes and integration checks
+- implementation state: VERIFIED_PARTIAL
+- verification: runtime probes, integration checks, and local fallback adapter
 - acceptance criteria: acquisition path documented and testable
-- evidence: experimental runtime docs/tests
-- blockers: external runtime execution path still depends on environment/tooling
+- evidence: runtime adapter plus application chassis integration tests
+- blockers: Crawlee breadth remains external and environment-dependent
 - exit criteria: runtime choice is documented and wired
 - release impact: enables scalable acquisition path
-- contract status: COMPOSED
+- contract status: VERIFIED_PARTIAL
 
 ### CAP-08 Domain and Persistence Transplant
 
@@ -136,6 +136,21 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - release impact: starts the clean implementation line
 - contract status: VERIFIED
 
+### CAP-09 Canonical Consumer Wiring and Operational Integration
+
+- objective: wire canonical consumer flows through the runtime adapter, API chassis, qualification, review, export, and operational E2E
+- requirements: FR-001, FR-003, FR-004, FR-005, FR-006, DR-001, DR-002, QR-001, OR-001, OR-002, CR-001
+- dependencies: CAP-08, CAP-07, canonical export, and the application chassis
+- architecture decision: thin application shell composes the canonical domain and a local fallback runtime adapter while Crawlee remains optional breadth
+- implementation state: VERIFIED_PARTIAL
+- verification: operational integration tests, health/readiness checks, canonical export, and full regression
+- acceptance criteria: canonical consumer scope is explicit, runtime works without Crawlee, API surface exists, and canonical E2E passes
+- evidence: canonical operational integration tests and full regression
+- blockers: Crawlee breadth remains external; deployment topology remains lightly specified
+- exit criteria: consumer wiring is stable and observable
+- release impact: advances the system from canonical building blocks to operational integration
+- contract status: VERIFIED_PARTIAL
+
 ## Critical Path
 
 Baseline documentation published
@@ -144,19 +159,20 @@ Baseline documentation published
 → CAP-05 Contact Discovery and Validation
 → CAP-06 Qualification
 → CAP-07 Acquisition Runtime
+→ CAP-09 Canonical Consumer Wiring and Operational Integration
 → integrated E2E and operational readiness
 
 ## Current Critical Path Item
 
-CAP-07 Acquisition Runtime
+CAP-09 Canonical Consumer Wiring and Operational Integration
 
 ## Next Unblocked Capability
 
-None; CAP-07 Acquisition Runtime is the next operational path, but it remains blocked by BR-001.
+CAP-09 Canonical Consumer Wiring and Operational Integration
 
 ## Blocked Capabilities
 
-- CAP-07 Acquisition Runtime
+- none
 
 ## New Evidence
 
@@ -164,7 +180,7 @@ None; CAP-07 Acquisition Runtime is the next operational path, but it remains bl
 - project authority consolidated
 - ER blockers remain benchmark dependent
 - `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
-- `INTERNAL_REGRESSION_SUITE = PASS` (`864 passed`, `24 skipped`, `1 xfailed`)
+- `INTERNAL_REGRESSION_SUITE = PASS` (`864 passed`, `24 skipped`, `1 xfailed`) at the wave 03 / baseline checkpoint
 - skips and xfail are classified rather than hidden
 - wave 03 local benchmark executed on sanctioned Windows runtime
 - `Company ER` and `Person ER` are now `PROVISIONAL_COMPOSE`
@@ -174,7 +190,10 @@ None; CAP-07 Acquisition Runtime is the next operational path, but it remains bl
 - clean implementation transplant matrix recorded
 - CAP-08 verified on the clean implementation line
 - CAP-04 verified against the persistence regression and canonical round-trips
-- full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed`
+- CAP-07 verified partially with the local fallback runtime adapter and chassis
+- CAP-09 canonical operational integration tests passed
+- full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed` at the wave 04 checkpoint
+- full regression suite now passes with `872 passed`, `24 skipped`, `1 xfailed`
 
 ## New Decisions
 
@@ -183,10 +202,11 @@ None; CAP-07 Acquisition Runtime is the next operational path, but it remains bl
 - evidence must stay distinct from statements
 - PERSON_ER_CONTRACT is passable independently of PERSON_ER_TECHNOLOGY_DECISION
 - COMPANY_ER is provisionally composed from local benchmark evidence, with external challenger breadth still open
-- CAP-07 Acquisition Runtime is canonically COMPOSED, not deferred
+- CAP-07 Acquisition Runtime is verified partially on the local fallback adapter, not deferred
 - CAP-08 Domain and Persistence Transplant is verified on the clean implementation line
 - CAP-04 Evidence and Persistence is verified on the clean implementation line
-- CAP-07 Acquisition Runtime is the next operational path, but BR-001 still blocks execution
+- CAP-09 Canonical Consumer Wiring and Operational Integration is the next operational path
+- BR-001 now narrows to Crawlee breadth, not the baseline runtime adapter
 
 ## Failure Reconciliation Matrix
 
