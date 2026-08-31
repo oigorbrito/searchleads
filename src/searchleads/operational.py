@@ -101,6 +101,19 @@ class FreshnessPolicy(StrEnum):
     STALE = "STALE"
 
 
+class ContactClass(StrEnum):
+    COMPANY_GENERIC = "COMPANY_GENERIC"
+    BUSINESS_PERSONALIZED = "BUSINESS_PERSONALIZED"
+    PERSONAL = "PERSONAL"
+    UNKNOWN = "UNKNOWN"
+
+
+class AuthorizationStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    REVOKED = "REVOKED"
+    EXPIRED = "EXPIRED"
+
+
 @dataclass(frozen=True, slots=True)
 class ConfigurationField:
     env_var: str
@@ -359,15 +372,20 @@ class CampaignCompliancePolicy:
     version: str
     jurisdiction: str
     channel: str
+    allowed_contact_classes: tuple[ContactClass, ...]
     target_rules: tuple[str, ...]
     contact_use_rules: tuple[str, ...]
     suppression_rules: tuple[str, ...]
     required_certifications: tuple[str, ...]
     authorization_authority: str
+    legal_signoff_required: bool = True
+    manual_review_required: bool = True
 
     def __post_init__(self) -> None:
         if any(not item.strip() for item in (self.policy_id, self.version, self.jurisdiction, self.channel, self.authorization_authority)):
             raise ValueError("campaign compliance policy requires non-blank identity")
+        if not self.allowed_contact_classes:
+            raise ValueError("campaign compliance policy requires at least one allowed contact class")
         if not self.target_rules or not self.contact_use_rules or not self.suppression_rules or not self.required_certifications:
             raise ValueError("campaign compliance policy requires rule sets")
 
@@ -383,6 +401,8 @@ class ManualAuthorizationRecord:
     scope: str
     expires_at: datetime | None
     reason: str
+    status: AuthorizationStatus = AuthorizationStatus.ACTIVE
+    revoked_at: datetime | None = None
 
     def __post_init__(self) -> None:
         if any(not item.strip() for item in (self.authorization_id, self.campaign_id, self.policy_id, self.version, self.authorized_by, self.scope, self.reason)):
@@ -391,6 +411,16 @@ class ManualAuthorizationRecord:
             raise ValueError("timestamp must be timezone-aware")
         if self.expires_at is not None and self.expires_at.tzinfo is None:
             raise ValueError("expires_at must be timezone-aware")
+        if self.revoked_at is not None and self.revoked_at.tzinfo is None:
+            raise ValueError("revoked_at must be timezone-aware")
+
+    @property
+    def active(self) -> bool:
+        if self.status is not AuthorizationStatus.ACTIVE:
+            return False
+        if self.expires_at is not None and self.expires_at <= utc_now():
+            return False
+        return self.revoked_at is None
 
 
 @dataclass(frozen=True, slots=True)
@@ -917,6 +947,7 @@ def build_campaign_compliance_policy(
         version,
         jurisdiction,
         channel,
+        (ContactClass.COMPANY_GENERIC, ContactClass.BUSINESS_PERSONALIZED),
         target_rules=("single ICP", "bounded geography", "manual approval required"),
         contact_use_rules=("published != deliverable", "deliverable != authorized", "suppression wins"),
         suppression_rules=("contact suppression", "person suppression", "company/domain suppression"),
@@ -962,6 +993,8 @@ def evaluate_send_ready_proof(
 ) -> SendReadyProof:
     assessment = evaluate_send_ready(inputs)
     authorization_ref = authorization.authorization_id if authorization is not None else None
+    if authorization is not None and not authorization.active:
+        assessment = SendReadyAssessment(SendReadyState.COMPLIANCE_BLOCKED, False, ("authorization inactive",), ("authorization inactive",))
     suppression_decision_id = suppression_rule.suppression_id if suppression_rule is not None else None
     proof = SendReadyProof(
         proof_id=f"proof:{evaluation_id}",

@@ -33,10 +33,11 @@ Status: CANONICAL
 
 - `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
 - `INTERNAL_REGRESSION_SUITE = PASS`
-- full-suite result: `884 passed`, `24 skipped`, `1 xfailed`
+- full-suite result: `885 passed`, `24 skipped`, `1 xfailed`
 - skips are external-dependency probes for bake-off capabilities, not hidden product failures
 - the single xfail is `TEST_OBSOLETE` and intentionally retained as legacy benchmark evidence
 - Company ER and Person ER are provisionally composed from local benchmark evidence; external challenger breadth remains open
 - operational readiness helpers are now covered by `tests/test_operational_readiness.py`
 - external certification inventory, contact-use policy, suppression, and pilot readiness helpers are covered by `tests/test_operational_readiness.py`
 - source authority, freshness, compliance policy, manual authorization, drift detection, and send-ready proof helpers are covered by `tests/test_operational_readiness.py`
+- BrasilAPI replay/freshness and policy revocation helpers are covered by `tests/test_operational_readiness.py`

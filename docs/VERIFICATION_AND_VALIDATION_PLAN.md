@@ -46,6 +46,7 @@ Status: CANONICAL
 - evidence generated: metric table and winner/deferral state
 - semantics: no PASS without executable results
 - current internal state: local regression suite passed (`884 passed`, `24 skipped`, `1 xfailed`)
+- current internal state: local regression suite passed (`885 passed`, `24 skipped`, `1 xfailed`)
 - skip semantics: external-dependency skips are classified, not treated as hidden failures
 - xfail semantics: retained only when marked `TEST_OBSOLETE` or another explicit intentional category
 
@@ -97,6 +98,13 @@ Status: CANONICAL
 - environment: local runtime with policy fixtures and audit bundles
 - evidence generated: compliance decisions, authorization records, and send-ready proofs
 - semantics: no hidden authorization and no silent policy reuse across versions
+
+### Legal Review
+
+- purpose: record official legal sources that constrain campaign policy and outbound use
+- environment: official public legal sources only
+- evidence generated: cited legal sources and engineering interpretations
+- semantics: legal facts are recorded separately from engineering interpretation
 
 ## Global Rule
 

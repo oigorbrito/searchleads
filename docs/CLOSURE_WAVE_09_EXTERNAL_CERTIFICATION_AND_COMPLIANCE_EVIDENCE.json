@@ -1,0 +1,140 @@
+{
+  "wave": 9,
+  "branch": "work/chassis-implementation-v1",
+  "tested_commit_sha": "f368185",
+  "final_commit_sha": "pending-current-commit",
+  "internal_regression": {
+    "command": "python -m pytest",
+    "result": "885 passed, 24 skipped, 1 xfailed"
+  },
+  "live_tests": [
+    {
+      "source": "BrasilAPI CNPJ v1",
+      "status": "LIVE_OBSERVED",
+      "result": "JSON reachable for a known valid CNPJ; replay/freshness contracts recorded internally"
+    },
+    {
+      "source": "SERPRO transparency page",
+      "status": "LIVE_OBSERVED_PARTIAL",
+      "result": "public portal reachable; product-critical live certification path remains partial"
+    },
+    {
+      "source": "CFO/CRO registration",
+      "status": "BLOCKED_HUMAN_VERIFICATION",
+      "result": "login/verification boundary reachable; no CAPTCHA/login bypass attempted"
+    }
+  ],
+  "brasilapi_certification": {
+    "status": "CERTIFIED_WITH_LIMITATIONS",
+    "replay": "implemented and tested through contract-level replay semantics",
+    "freshness": "REVALIDATE_BEFORE_USE"
+  },
+  "serpro_certification": {
+    "status": "SOURCE_UNAVAILABLE",
+    "path": "product-critical live certification endpoint/path not confirmed as required for the current implementation",
+    "authority": "official portal reachable; product-critical dependency needs separate confirmation"
+  },
+  "professional_registration_workflow": {
+    "status": "BLOCKED_HUMAN_VERIFICATION",
+    "human_contract": "operator records source, registration number, status, timestamp, and evidence references without bypassing login"
+  },
+  "source_authority": [
+    {
+      "source": "BrasilAPI CNPJ v1",
+      "facts": ["company registry facts"],
+      "authority_scope": "PRODUCT_CRITICAL"
+    },
+    {
+      "source": "SERPRO transparency page",
+      "facts": ["source identity", "replayable capture"],
+      "authority_scope": "PRODUCT_CRITICAL"
+    },
+    {
+      "source": "CFO/CRO registration",
+      "facts": ["professional registration status"],
+      "authority_scope": "CAMPAIGN_CRITICAL"
+    }
+  ],
+  "freshness": {
+    "BrasilAPI CNPJ v1": "REVALIDATE_BEFORE_USE",
+    "SERPRO transparency page": "REVALIDATE_ON_CHANGE",
+    "CFO/CRO registration": "REVALIDATE_ON_EXPIRY"
+  },
+  "legal_sources_reviewed": [
+    {
+      "source": "Planalto",
+      "title": "Lei Geral de Proteção de Dados Pessoais (Lei 13.709/2018, compilada)",
+      "topic": "LGPD principles, legal bases, transparency, and rights",
+      "access_date": "2026-08-31"
+    },
+    {
+      "source": "ANPD",
+      "title": "Direito dos Titulares",
+      "topic": "information, access, correction, deletion, revocation, and opposition rights",
+      "access_date": "2026-08-31"
+    },
+    {
+      "source": "ANPD",
+      "title": "Guia Orientativo Hipóteses Legais de Tratamento de Dados Pessoais - Legítimo Interesse",
+      "topic": "purpose, necessity, balancing test, and safeguards",
+      "access_date": "2026-08-31"
+    },
+    {
+      "source": "Planalto",
+      "title": "Marco Civil da Internet (Lei 12.965/2014, compiled)",
+      "topic": "internet privacy, information, and consumer-related boundary",
+      "access_date": "2026-08-31"
+    },
+    {
+      "source": "Planalto",
+      "title": "Código de Defesa do Consumidor (Lei 8.078/1990, compiled)",
+      "topic": "information duty and unfair/abusive commercial practice boundaries",
+      "access_date": "2026-08-31"
+    }
+  ],
+  "compliance_gap_status": [
+    {
+      "id": "LEGAL-001",
+      "status": "REVIEW_REQUIRED",
+      "required_action": "policy owner or legal reviewer must approve the outbound contact class and campaign basis for Brazil"
+    },
+    {
+      "id": "LEGAL-002",
+      "status": "RECLASSIFIED",
+      "required_action": "freshness of professional-registration verification is treated as campaign/compliance policy unless a legal owner marks it as a legal rule"
+    }
+  ],
+  "compliance_policy": {
+    "policy_id": "policy:commercial-pilot:v1",
+    "version": "v1",
+    "jurisdiction": "BR",
+    "channel": "email",
+    "status": "IMPLEMENTED"
+  },
+  "manual_authorization": {
+    "status": "IMPLEMENTED",
+    "revocation": "supported"
+  },
+  "send_ready_proof": {
+    "status": "IMPLEMENTED",
+    "contents": ["qualification", "contact validation", "contact-use decision", "suppression", "source certifications", "policy version", "authorization ref"]
+  },
+  "pilot_dry_run": {
+    "status": "IMPLEMENTED",
+    "result": "dry-run proof bundles available; no campaign sent"
+  },
+  "review_burden": {
+    "company_er_review": "provisional / not reopened",
+    "person_er_review": "provisional / not reopened",
+    "compliance_review": "manual legal review required",
+    "professional_verification_human_burden": "explicit"
+  },
+  "external_certification_gate": "PARTIAL",
+  "commercial_pilot_gate": "BLOCKED_LEGAL",
+  "blockers": [
+    "legal sign-off",
+    "manual campaign authorization",
+    "human verification for professional registration",
+    "SERPRO product-critical path confirmation"
+  ]
+}

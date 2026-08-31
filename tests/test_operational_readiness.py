@@ -12,8 +12,10 @@ from searchleads.operational import (
     CampaignCompliancePolicy,
     ContactUseState,
     CommercialPilotReadiness,
+    ContactClass,
     FreshnessPolicy,
     ManualAuthorizationRecord,
+    AuthorizationStatus,
     OperationalConfiguration,
     OperationalError,
     OperationalEvent,
@@ -427,6 +429,7 @@ def test_wave08_source_authority_freshness_and_compliance_policy_are_explicit() 
     assert source_map[2].certification_status is SourceCertificationStatus.BLOCKED_HUMAN_VERIFICATION
     assert evaluate_source_freshness(certified_at=NOW, policy=FreshnessPolicy.REVALIDATE_BEFORE_USE) == "REVALIDATE_BEFORE_USE"
     assert policy.version == "v1"
+    assert ContactClass.COMPANY_GENERIC in policy.allowed_contact_classes
     assert any(item[0] == "LEGAL-001" for item in gaps)
 
 
@@ -469,3 +472,36 @@ def test_wave08_drift_detection_and_send_ready_proof_are_fail_closed() -> None:
     assert proof.policy_version == "v1"
     assert proof.authorization_ref == "auth-1"
     assert proof.result.ready
+
+
+def test_wave09_manual_authorization_revocation_blocks_send_ready_proof() -> None:
+    policy = build_campaign_compliance_policy()
+    revoked = ManualAuthorizationRecord(
+        "auth-2",
+        "campaign-2",
+        policy.policy_id,
+        policy.version,
+        "compliance-reviewer",
+        NOW,
+        "pilot",
+        None,
+        "revoked authorization",
+        status=AuthorizationStatus.REVOKED,
+        revoked_at=NOW,
+    )
+    proof = evaluate_send_ready_proof(
+        evaluation_id="eval-2",
+        qualification_decision_id="qual-2",
+        contact_validation_id="contact-validation-2",
+        contact_use_decision=None,
+        suppression_rule=None,
+        certification_refs=("cert-2",),
+        policy=policy,
+        authorization=revoked,
+        inputs=SendReadyInputs(discovered=True, validated=True, qualified=True, compliance_cleared=True, live_certified=True),
+        timestamp=NOW,
+    )
+
+    assert not revoked.active
+    assert proof.result.ready is False
+    assert proof.result.state is SendReadyState.COMPLIANCE_BLOCKED

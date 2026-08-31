@@ -44,6 +44,14 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - source authority is scoped per fact; certification of one fact does not authorize all facts from the same source
 - freshness policy and revalidation due dates are mandatory for temporal facts
 
+## Legal Source Facts
+
+- LGPD Art. 6 establishes purpose, adequacy, necessity, free access, and other principles for processing personal data
+- LGPD Art. 7 lists legal bases including consent and legitimate interest
+- LGPD Art. 18 and ANPD guidance preserve data-subject rights to information, access, correction, blocking, deletion, revocation, and opposition where applicable
+- ANPD legitimate-interest guidance frames a balancing test with purpose, necessity, and safeguards
+- engineering may implement safe defaults and require review, but it does not create legal approval
+
 ## Unresolved Gates
 
 - campaign legal review
@@ -51,3 +59,4 @@ SearchLeads handles business contact data and associated evidence. That makes mi
 - send authorization
 - jurisdiction-specific compliance sign-off
 - human verification for professional registration remains external
+- legal sign-off remains external unless a formal policy owner records approval

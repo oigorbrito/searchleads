@@ -227,9 +227,10 @@ CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 - full regression suite passed with `868 passed`, `24 skipped`, `1 xfailed` at the wave 04 checkpoint
 - full regression suite now passes with `872 passed`, `24 skipped`, `1 xfailed`
 - CAP-10 operational readiness tests cover startup, health, readiness, backup, restore, recovery, SEND_READY, and live certification planning
-- full regression suite now passes with `884 passed`, `24 skipped`, `1 xfailed`
+- full regression suite now passes with `885 passed`, `24 skipped`, `1 xfailed`
 - CAP-11 live certification inventory, compliance contract, contact-use, suppression, and pilot readiness contracts are now represented canonically
 - wave 08 live observation confirmed BrasilAPI CNPJ live accessibility, SERPRO public portal accessibility, and CFO consultation login boundary; full external certification remains partial
+- wave 09 closed BrasilAPI replay/freshness semantics, source authority, compliance policy v1, manual authorization revocation, and send-ready proof bundles
 
 ## New Decisions
 
@@ -248,6 +249,7 @@ CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 - operational readiness remains separate from commercial SEND_READY and external live certification
 - live certification inventory, compliance decision, contact-use policy, suppression, and controlled pilot readiness are now explicit contracts
 - source authority, freshness policy, compliance policy interface, manual authorization boundary, and send-ready proof are now explicit contracts
+- legal source review anchored the policy to LGPD, ANPD legitimate-interest guidance, and the consumer/internet information boundaries
 
 ## Failure Reconciliation Matrix
 
