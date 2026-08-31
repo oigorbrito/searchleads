@@ -33,8 +33,8 @@ Static audit findings:
 
 | Component | Current SearchLeads | Candidate | Decision | Why |
 |---|---|---|---|---|
-| Company ER | baseline matcher/feature fusion | Nomenklatura `LogicV2`, `RegressionV1`, `EntityResolveRegression` and challengers | `DEFER` | the comparison harness is structurally sound, but no executed benchmark result exists yet |
-| Person ER | baseline person resolution | separate Person ER benchmark with strict false-merge cost | `DEFER` | person false merges are high-impact, but there is no executed person benchmark result yet |
+| Company ER | baseline matcher/feature fusion | Nomenklatura `LogicV2`, `RegressionV1`, `EntityResolveRegression` and challengers | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; external challengers remain partially blocked, so the conservative policy is adopted provisionally |
+| Person ER | baseline person resolution | separate Person ER benchmark with strict false-merge cost | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; the adopted policy is review-first with no general auto-match authority |
 | Normalization boundary | duplicated SearchLeads normalizers | Rigour-based normalization boundary with explicit legal-form policy | `COMPOSE` | the current duplicate boundary is unnecessary; one shared normalization layer is the right semantic split |
 | CNPJ validation | shape-only canonicalization in parts of the stack | formal validation using `python-stdnum` / official Receita-Serpro contract | `REPLACE` | shape-only acceptance is not validation and allows bad routing keys to reach acquisition |
 
@@ -106,15 +106,16 @@ What is missing is execution. Therefore:
 
 - `Normalization` = `COMPOSE`
 - `Identifier validation` = `REPLACE`
-- `Company ER` = `DEFER`
-- `Person ER` = `DEFER`
+- `Company ER` = `PROVISIONAL_COMPOSE`
+- `Person ER` = `PROVISIONAL_COMPOSE`
 
 ## Current verification note
 
 - local regression suite is green
 - `tests/test_selective_review.py`, `tests/test_dental_commercial_acceptance.py`, `tests/test_evidence_envelope_consistency.py`, and `tests/test_person_entity_resolution.py` remain PASS
-- the remaining ER decision gap is benchmark execution, not contract reconciliation
-- external challengers still require a sanctioned bake-off runtime with `followthemoney`, `rigour`, and `crawlee` as applicable
+- the remaining ER decision gap is challenger breadth, not internal contract reconciliation
+- external challengers remain partially blocked by `pyicu`/ICU build requirements in the isolated Windows benchmark venv
+- `DEFER` is no longer the adopted state for Company ER or Person ER
 
 ## Implication for implementation
 

@@ -49,3 +49,6 @@ The project quality model is a SearchLeads-specific reduction of ISO/IEC 25010 c
 - hiding uncertainty behind averages
 - treating experimental benchmark results as production certification
 
+## Evidence Rule
+
+Local sanctioned benchmark evidence may establish a provisional operating policy when external challengers are partially blocked, but it does not by itself certify live production behavior.

@@ -1,7 +1,8 @@
 {
   "closure_wave": "02",
   "repository": "https://github.com/tihotm/searchleads",
-  "commit_sha": "db5c5548a999426d9977f404396a64a3a0f77bf1",
+  "tested_commit_sha": "db5c5548a999426d9977f404396a64a3a0f77bf1",
+  "wave_final_commit_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
   "timestamp": "2026-08-31T00:00:00-03:00",
   "runtime_environment": "local_windows_python_3_12",
   "python_version": "3.12.10",

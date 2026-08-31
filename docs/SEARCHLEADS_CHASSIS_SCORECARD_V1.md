@@ -29,8 +29,8 @@ Live authority as of 2026-08-30:
 | Facts/statements | `CandidateFact`/`CanonicalFact`/`Conflict` overlap semantics | FTM `Statement` + explicit Evidence bridge | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
 | Provenance | parallel SearchLeads lineage objects | FTM statement metadata + SearchLeads Evidence identity | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
 | Conflict handling | persisted conflict records and derived workflow state | derive by default; persist only adjudication or irreducible cache state | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium + | + | - | low | low | medium |
-| Company ER | current company matcher / field fusion | Nomenklatura `LogicV2` / `RegressionV1` / `EntityResolveRegression` + Rigour normalization | `DEFER` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | unknown | unknown | unknown | unknown | unknown | unknown | low |
-| Person ER | current person resolution | Nomenklatura / Splink / Dedupe challengers | `DEFER` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | unknown | unknown | unknown | unknown | unknown | unknown | low |
+| Company ER | current company matcher / field fusion | Nomenklatura `LogicV2` / `RegressionV1` / `EntityResolveRegression` + Rigour normalization | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | medium + | review-first | medium | low | low | medium |
+| Person ER | current person resolution | Nomenklatura / Splink / Dedupe challengers | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | strong + | review-first | medium | low | low | medium |
 | Normalization | duplicated SearchLeads name normalization | Rigour + `python-stdnum` + official CNPJ oracle | `COMPOSE` | `OFFICIAL_SPEC` + `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium risk | + | - | medium | low | medium |
 | Identifier validation | shape-only CNPJ canonicalization in parts of the stack | `python-stdnum` / official Receita-Serpro CNPJ contract | `REPLACE` | `OFFICIAL_SPEC` + `ENGINEERING_EVIDENCE` | strong + | strong + | + | - | low | low | high |
 | Acquisition runtime | `gap_automation.execution` | Crawlee request queue / retry / sessions / stats | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | low | medium |
@@ -85,8 +85,8 @@ The strongest provisional decisions are:
 
 ## Residual gaps
 
-- Company ER and Person ER are still benchmark-dependent.
-- execution of the benchmark harness is still blocked by GitHub Actions infrastructure.
+- Company ER and Person ER now have executed local benchmark policies, but external challenger breadth remains partially blocked.
+- execution of the benchmark harness is still blocked for some challengers by Windows build/runtime dependencies.
 - deployment cost, throughput and recovery are still benchmark-dependent.
 
 Until runners produce real step logs, those gaps remain `DEFER` and must not be narrated as PASS.

@@ -7,9 +7,9 @@ Status: CANONICAL
 ### Architecture Baseline
 
 - criteria: canonical charter, architecture, domain, data, quality, V&V, and completion plan exist
-- current evidence: canonical docs are present and synchronized with the green internal regression state
-- status: PARTIAL
-- blockers: Company ER, Person ER, and external benchmark runners remain open
+- current evidence: canonical docs are present and synchronized with the green internal regression state; Company ER and Person ER now have provisional local benchmark policies
+- status: READY
+- blockers: external challenger breadth and operational runtime gaps remain open
 
 ### Integrated
 

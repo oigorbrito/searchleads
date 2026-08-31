@@ -50,7 +50,7 @@ Raw Evidence is persisted separately from derived records. Storage integrity is 
 
 ### Entity Resolution View
 
-Company ER and Person ER remain conservative and benchmark-dependent. Review and abstention are first-class outcomes.
+Company ER and Person ER are conservatively provisioned from local benchmark evidence. Review and abstention are first-class outcomes, and external challenger breadth remains open.
 
 ### Acquisition View
 
@@ -88,7 +88,6 @@ Qualification is not send readiness. Contact provenance, campaign legality, and 
 
 ## Unresolved Issues
 
-- Company ER winner is not yet benchmark-closed.
-- Person ER winner is not yet benchmark-closed.
+- Company ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
+- Person ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
 - deployment topology remains lightly specified compared with implementation depth.
-

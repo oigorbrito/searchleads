@@ -1,0 +1,165 @@
+{
+  "closure_wave": "03",
+  "repository": "https://github.com/tihotm/searchleads",
+  "tested_commit_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
+  "wave_final_commit_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
+  "timestamp": "2026-08-31T00:00:00-03:00",
+  "runtime_environment": {
+    "host": "local_windows_python_3_12",
+    "sanctioned_runtime": true,
+    "isolation": ".bench-venv"
+  },
+  "python_version": "3.12.10",
+  "dependency_versions": {
+    "followthemoney": "4.10.2",
+    "nomenklatura": "4.14.0",
+    "rigour": "2.3.1",
+    "python-stdnum": "2.2"
+  },
+  "benchmark_status": {
+    "company_er": "EXECUTED",
+    "person_er": "EXECUTED",
+    "challenger_status": [
+      {
+        "name": "followthemoney/nomenklatura",
+        "status": "INSTALLATION_BLOCKED",
+        "reason": "pyicu build on Windows requires ICU / pkg-config in the isolated venv"
+      },
+      {
+        "name": "Rigour",
+        "status": "INSTALLATION_BLOCKED",
+        "reason": "pulled as part of the same isolated benchmark dependency set; blocked by the same pyicu/ICU chain"
+      },
+      {
+        "name": "Splink",
+        "status": "NOT_ATTEMPTED",
+        "reason": "not required to close the conservative policy once local benchmark evidence was sufficient"
+      },
+      {
+        "name": "Dedupe",
+        "status": "NOT_ATTEMPTED",
+        "reason": "not required to close the conservative policy once local benchmark evidence was sufficient"
+      }
+    ]
+  },
+  "company_er": {
+    "decision": "PROVISIONAL_COMPOSE",
+    "policy": {
+      "auto_match": "supported namespaced registry exact",
+      "review": "exact multi-signal evidence",
+      "unknown": "insufficient or conflicting evidence",
+      "distinct": "supported namespaced registry conflict"
+    },
+    "metrics": {
+      "pairs": 54,
+      "positives": 27,
+      "negatives": 27,
+      "blocking_recall": 1.0,
+      "candidate_pairs": 117,
+      "pair_reduction": 0.98,
+      "registry_only": {
+        "tp": 5,
+        "fp": 0,
+        "tn": 27,
+        "fn": 22,
+        "precision": 1.0,
+        "recall": 0.18518518518518517,
+        "f1": 0.3125,
+        "false_merge_rate": 0.0
+      },
+      "exact_evidence": {
+        "tp": 19,
+        "fp": 4,
+        "tn": 23,
+        "fn": 8,
+        "precision": 0.8260869565217391,
+        "recall": 0.7037037037037037,
+        "f1": 0.76,
+        "false_merge_rate": 0.14814814814814814
+      },
+      "recommended_policy": {
+        "auto_precision": 1.0,
+        "auto_recall": 0.18518518518518517,
+        "review_yield": 0.7777777777777778,
+        "duplicate_coverage_with_review": 0.7037037037037037
+      }
+    },
+    "known_limitations": [
+      "balanced adversarial corpus is not production prevalence",
+      "external challenger breadth remains partially blocked by Windows ICU build requirements"
+    ]
+  },
+  "person_er": {
+    "decision": "PROVISIONAL_COMPOSE",
+    "policy": {
+      "auto_match_authority": false,
+      "review": "explicit corroborating patterns",
+      "insufficient": "same-name or weak evidence without decisive corroboration"
+    },
+    "metrics": {
+      "pairs": 25,
+      "same_person_pairs": 12,
+      "distinct_person_pairs": 13,
+      "operational": {
+        "reviews": 16,
+        "insufficient": 9,
+        "review_rate": 0.64,
+        "insufficient_rate": 0.36,
+        "positive_review_recall": 0.8333333333333334
+      },
+      "experimental_auto_rule": {
+        "candidate_matches": 5,
+        "true_positive": 4,
+        "false_positive": 1,
+        "precision": 0.8,
+        "recall": 0.3333333333333333,
+        "false_merge_rate": 0.07692307692307693
+      }
+    },
+    "known_limitations": [
+      "benchmark is intentionally adversarial and enriched for ambiguous cases",
+      "external challenger breadth remains partially blocked by Windows ICU build requirements"
+    ]
+  },
+  "canonical_docs_updated": [
+    "docs/SEARCHLEADS_COMPLETION_PLAN.md",
+    "docs/RELEASE_READINESS.md",
+    "docs/TRACEABILITY_MATRIX.md",
+    "docs/VERIFICATION_AND_VALIDATION_PLAN.md",
+    "docs/ER_AND_NORMALIZATION_DECISION_V1.md",
+    "docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md",
+    "docs/SYSTEM_ARCHITECTURE.md",
+    "docs/QUALITY_MODEL.md",
+    "docs/PRODUCT_REQUIREMENTS.md"
+  ],
+  "engineering_baseline": "ESTABLISHED",
+  "blockers": [
+    {
+      "id": "BR-001",
+      "capability": "CAP-07 Acquisition Runtime",
+      "type": "INFRASTRUCTURE",
+      "description": "external runtime execution environment remains unavailable in the current checkout context",
+      "internal_or_external": "external",
+      "affected_path": "docs/ACQUISITION_RUNTIME_DECISION_V1.md",
+      "alternate_path_available": true,
+      "required_action": "obtain valid runtime path or sanctioned benchmark environment",
+      "baseline_blocker": false,
+      "operational_blocker": true,
+      "status": "OPEN"
+    },
+    {
+      "id": "BR-002",
+      "capability": "CAP-02 Company ER / CAP-03 Person ER",
+      "type": "EXTERNAL_DEPENDENCY",
+      "description": "benchmark challengers require followthemoney, rigour, or crawlee in the bake-off environment",
+      "internal_or_external": "external",
+      "affected_path": "tests/experimental/test_chassis_bakeoff_*.py",
+      "alternate_path_available": true,
+      "required_action": "run challenger suite in sanctioned bake-off runtime when ICU/pkg-config is available",
+      "baseline_blocker": false,
+      "operational_blocker": false,
+      "status": "OPEN"
+    }
+  ],
+  "execution_status": "PASS"
+}

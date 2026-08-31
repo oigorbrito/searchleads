@@ -45,7 +45,7 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - blockers: execution and contract alignment
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks company identity direction
-- contract status: PENDING_BENCHMARK
+- contract status: PROVISIONAL_COMPOSE
 - benchmark evidence: `registry_only` precision 100.0%, recall 18.5%; `exact_evidence` precision 82.6%, recall 70.4%, false_merge_rate 14.8%
 
 ### CAP-03 Person ER
@@ -61,7 +61,7 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - blockers: execution and contract alignment
 - exit criteria: documented decision plus tests aligned
 - release impact: unblocks person identity direction
-- contract status: PASS for local contract tests, decision status remains DEFER
+- contract status: PASS for local contract tests, decision status is PROVISIONAL_COMPOSE
 - benchmark evidence: operational auto-match authority is false; operational candidate matches 5/25 with 1 false positive; local contract test suite passed
 
 ### CAP-04 Evidence and Persistence
@@ -153,6 +153,9 @@ CAP-02 Company ER
 - `LEGACY_CONTRACT_RECONCILIATION = COMPLETE`
 - `INTERNAL_REGRESSION_SUITE = PASS` (`864 passed`, `24 skipped`, `1 xfailed`)
 - skips and xfail are classified rather than hidden
+- wave 03 local benchmark executed on sanctioned Windows runtime
+- `Company ER` and `Person ER` are now `PROVISIONAL_COMPOSE`
+- `ENGINEERING_BASELINE_ESTABLISHED = YES` (`fb774cc6ddc4f8c7fc397476f868bd1de3a70506`)
 
 ## New Decisions
 
@@ -160,7 +163,7 @@ CAP-02 Company ER
 - qualification remains separate from send readiness
 - evidence must stay distinct from statements
 - PERSON_ER_CONTRACT is passable independently of PERSON_ER_TECHNOLOGY_DECISION
-- COMPANY_ER remains benchmark-dependent with an exact-evidence challenger that is not yet acceptable as a closed decision
+- COMPANY_ER is provisionally composed from local benchmark evidence, with external challenger breadth still open
 - CAP-07 Acquisition Runtime is canonically COMPOSED, not deferred
 
 ## Failure Reconciliation Matrix
