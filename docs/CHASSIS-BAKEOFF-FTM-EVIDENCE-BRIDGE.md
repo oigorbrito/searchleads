@@ -1,6 +1,6 @@
 # FollowTheMoney statement ↔ SearchLeads Evidence bridge
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`.
+Status: `LOCAL_EXPERIMENT`.
 
 ## Question
 
@@ -92,13 +92,26 @@ Responsible for:
 3. one FTM statement linked to multiple Evidence records;
 4. simultaneous preservation of FTM dataset/origin/time metadata and SearchLeads raw payload/reprocessing identity.
 
-## Decision consequence
+When `SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR` is configured, those probes emit these stable structured observations:
 
-`ENGINEERING_EVIDENCE`: FollowTheMoney `dataset`/`origin` lineage is useful but is not a drop-in replacement for SearchLeads Evidence identity.
+- `ftm-evidence-bridge-one-to-many-v1`;
+- `ftm-evidence-id-overload-negative-control-v1`;
+- `ftm-evidence-bridge-many-to-one-v1`;
+- `ftm-searchleads-lineage-responsibility-split-v1`.
 
-`ENGINEERING_EVIDENCE`: SearchLeads does not need to duplicate the full FTM semantic graph merely to keep stronger Evidence. The two responsibilities can be composed with an explicit mapping layer.
+All four are `FUNCTIONAL_PROBE` observations. They record bounded identifier/cardinality behavior under the pinned environment; they do not assign `evidence_state` or an architecture decision.
 
-`HYPOTHESIS`: if the wider chassis bake-off succeeds, the preferable migration path is:
+## Interpretation boundary
+
+`OBSERVATION`: the current probe design tests whether explicit sidecar mapping can preserve the two required Evidence↔statement cardinalities while keeping FTM lineage fields separate from SearchLeads raw-Evidence identity.
+
+`OBSERVATION`: the negative control intentionally forces one `evidence_id` onto two semantically distinct FTM statements and checks the resulting identity collision. This demonstrates that the specific identifier-overloading mapping is unsafe; it is not evidence that FollowTheMoney itself is defective.
+
+`HYPOTHESIS`: a composition using an explicit statement↔Evidence mapping can retain FTM semantic lineage together with SearchLeads raw capture/reprocessing responsibilities.
+
+`DECISION`: no active `COMPOSE`, `ADOPT`, `RETAIN`, or `REJECT` decision is authorized by this document. Any historical engineering preference remains separate from the empirical claim state.
+
+The broader candidate shape remains:
 
 ```text
 raw/source capture
@@ -114,4 +127,4 @@ Nomenklatura identity resolution
 SearchLeads qualification/commercial policy
 ```
 
-This remains experimental until the regression and bake-off suites execute on a functioning runner.
+The current structured observations remain `NOT_EVALUATED` until the probes execute on a functioning runner and their artifacts are available to the canonical report. A passing functional probe would support only its bounded behavior claim; it would not by itself establish production suitability or comparative superiority.
