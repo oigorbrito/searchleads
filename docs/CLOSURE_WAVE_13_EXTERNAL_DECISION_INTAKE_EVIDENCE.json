@@ -3,17 +3,14 @@
   "branch": "work/chassis-implementation-v1",
   "wave_start_sha": "66ef96128646ba1af4f91797af13c36b451ca161",
   "tested_commit_sha": "7218eb2b3f65e7007ce677304e8ee2374cfd6903",
+  "wave_final_commit_sha": "68194dee9863f27f1fb733d173dc59a5ab7e9424",
   "evidence_publication_sha": "120c605b06e6210fdcb99d92561f887056d43dbd",
   "mission": "make the remaining human/legal/source decisions ingestible, scoped, expiring, revocable, auditable and fail-closed without campaign execution",
   "implemented": {
     "module": "src/searchleads/campaign_preflight.py",
     "tests": "tests/test_campaign_preflight.py",
     "ci_gate": "external governance contract regression",
-    "records": [
-      "ComplianceSignoffRecord",
-      "ProfessionalVerificationRecord",
-      "CampaignAuthorizationRecord"
-    ],
+    "records": ["ComplianceSignoffRecord", "ProfessionalVerificationRecord", "CampaignAuthorizationRecord"],
     "preflight": "evaluate_campaign_preflight"
   },
   "compliance_signoff_contract": {
