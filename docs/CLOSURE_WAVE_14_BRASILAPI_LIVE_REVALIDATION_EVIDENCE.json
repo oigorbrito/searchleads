@@ -1,0 +1,66 @@
+{
+  "wave": 14,
+  "branch": "work/chassis-implementation-v1",
+  "wave_start_sha": "b38ce75e6d8c09ac3ba8965dec65d5f0dd8056aa",
+  "tested_commit_sha": "d2ce7ba1203c07551c0fa36fc06ceebb9abf9f1b",
+  "evidence_publication_sha": "PENDING",
+  "mission": "execute a safe read-only point revalidation of the product-critical BrasilAPI CNPJ path and reduce external certification uncertainty",
+  "live_run": {
+    "github_actions_run_id": 33507553399,
+    "python": "3.12.14",
+    "request_count": 1,
+    "request_class": "known public CNPJ point lookup",
+    "http_status": 200,
+    "captured_at": "2026-09-01T12:25:17.854642+00:00",
+    "content_digest": "sha256:f4c55ba5ba3910bfffe1c643250c527d0b3b17732153c9b4fc0962adbeccd909",
+    "source_id": "source:brasilapi:cnpj-v1",
+    "required_fields_present": true,
+    "observed_field_names": [
+      "business_registry_id",
+      "city",
+      "legal_name",
+      "primary_cnae_code",
+      "primary_cnae_description",
+      "registration_status",
+      "state",
+      "trade_name"
+    ],
+    "raw_payload_printed": false,
+    "result": "PASS"
+  },
+  "safety": {
+    "crawl": false,
+    "loop": false,
+    "campaign_execution": false,
+    "contact_send": false,
+    "raw_payload_published": false
+  },
+  "brasilapi_gate": {
+    "current_observation": "LIVE_PASS",
+    "source_contract": "PASS",
+    "freshness_policy": "REVALIDATE_BEFORE_USE",
+    "blanket_future_certification": false,
+    "required_action_before_any_approved_campaign": "repeat the same bounded revalidation immediately before use"
+  },
+  "serpro_gate": "NOT_REQUIRED_FOR_MINIMUM_COMMERCIAL_PATH",
+  "cfo_cro_gate": "CONDITIONAL_HUMAN_PERSON_SPECIFIC_VERIFICATION",
+  "external_certification_gate": "READY_WITH_LIMITATIONS",
+  "external_certification_limitations": [
+    "BrasilAPI certification is point-in-time and must be revalidated before approved use",
+    "CFO/CRO current status remains candidate-specific human evidence when the approved policy requires professional status"
+  ],
+  "commercial_pilot_gate": "BLOCKED_LEGAL",
+  "remaining_minimum_path": [
+    "LEGAL-001 designated human legal/compliance decision",
+    "conditional EXT-CFO-001 person-specific professional verification",
+    "AUTH-CAMPAIGN-001 campaign-owner authorization",
+    "repeat EXT-BRASILAPI-001 revalidation immediately before approved use"
+  ],
+  "ci": {
+    "status": "PASS",
+    "python_matrix": ["3.11", "3.12", "3.13"],
+    "live_probe_python_3_12": "PASS",
+    "full_regression_reference": "909 passed, 24 skipped, 1 xpassed"
+  },
+  "send_authorization": "NOT_GRANTED"
+}
