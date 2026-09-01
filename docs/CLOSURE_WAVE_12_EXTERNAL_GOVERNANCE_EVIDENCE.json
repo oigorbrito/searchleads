@@ -3,7 +3,7 @@
   "branch": "work/chassis-implementation-v1",
   "wave_start_sha": "8dc7b1b09204213fbf046c5d266b03d5a72fe49c",
   "tested_commit_sha": "1e56bf88eb9914b1944e0744e9e529ac7884d832",
-  "evidence_publication_sha": "PENDING",
+  "evidence_publication_sha": "1ee6623e20c09781afd94e6b9b3c00d9dcdc7663",
   "mission": "reduce the remaining external/human/legal critical path to explicit authority-owned gates without campaign execution",
   "official_source_observations": [
     {
@@ -55,50 +55,15 @@
     "module": "src/searchleads/external_governance.py",
     "tests": "tests/test_external_governance.py",
     "documentation": "docs/EXTERNAL_GOVERNANCE_REVIEW_PACKET_V1.md",
-    "authority_types": [
-      "ENGINEERING",
-      "EXTERNAL_SOURCE",
-      "HUMAN_REVIEW",
-      "LEGAL_REVIEW",
-      "CAMPAIGN_OWNER"
-    ],
-    "decision_types": [
-      "SATISFIED",
-      "REVIEW_REQUIRED",
-      "BLOCKED",
-      "NOT_REQUIRED"
-    ]
+    "authority_types": ["ENGINEERING", "EXTERNAL_SOURCE", "HUMAN_REVIEW", "LEGAL_REVIEW", "CAMPAIGN_OWNER"],
+    "decision_types": ["SATISFIED", "REVIEW_REQUIRED", "BLOCKED", "NOT_REQUIRED"]
   },
   "critical_path_decisions": [
-    {
-      "gate_id": "EXT-BRASILAPI-001",
-      "decision": "REVIEW_REQUIRED",
-      "reason": "fresh product-source revalidation remains required before approved campaign use"
-    },
-    {
-      "gate_id": "EXT-SERPRO-001",
-      "decision": "NOT_REQUIRED",
-      "reason": "SERPRO transparency enrichment is not on the minimum commercial critical path",
-      "does_not_claim": "certification or rejection of the separate official SERPRO Consulta CNPJ API"
-    },
-    {
-      "gate_id": "EXT-CFO-001",
-      "decision": "REVIEW_REQUIRED",
-      "authority": "HUMAN_REVIEW",
-      "reason": "person-specific current registration status must be captured when campaign policy depends on it"
-    },
-    {
-      "gate_id": "LEGAL-001",
-      "decision": "REVIEW_REQUIRED",
-      "authority": "LEGAL_REVIEW",
-      "reason": "controller legal-basis/campaign review cannot be self-approved by engineering"
-    },
-    {
-      "gate_id": "AUTH-CAMPAIGN-001",
-      "decision": "BLOCKED",
-      "authority": "CAMPAIGN_OWNER",
-      "reason": "campaign-specific manual authorization has not been granted"
-    }
+    {"gate_id": "EXT-BRASILAPI-001", "decision": "REVIEW_REQUIRED", "reason": "fresh product-source revalidation remains required before approved campaign use"},
+    {"gate_id": "EXT-SERPRO-001", "decision": "NOT_REQUIRED", "reason": "SERPRO transparency enrichment is not on the minimum commercial critical path", "does_not_claim": "certification or rejection of the separate official SERPRO Consulta CNPJ API"},
+    {"gate_id": "EXT-CFO-001", "decision": "REVIEW_REQUIRED", "authority": "HUMAN_REVIEW", "reason": "person-specific current registration status must be captured when campaign policy depends on it"},
+    {"gate_id": "LEGAL-001", "decision": "REVIEW_REQUIRED", "authority": "LEGAL_REVIEW", "reason": "controller legal-basis/campaign review cannot be self-approved by engineering"},
+    {"gate_id": "AUTH-CAMPAIGN-001", "decision": "BLOCKED", "authority": "CAMPAIGN_OWNER", "reason": "campaign-specific manual authorization has not been granted"}
   ],
   "legal_review_packet": {
     "status": "READY_FOR_HUMAN_REVIEW",
@@ -149,11 +114,7 @@
     "EXT-CFO-001 person-specific current status verification when policy requires it",
     "AUTH-CAMPAIGN-001 manual campaign authorization after prior gates close"
   ],
-  "removed_from_minimum_critical_path": [
-    "SERPRO transparency enrichment path",
-    "Crawlee optional breadth",
-    "additional ER challenger breadth"
-  ],
+  "removed_from_minimum_critical_path": ["SERPRO transparency enrichment path", "Crawlee optional breadth", "additional ER challenger breadth"],
   "campaign_execution": "NOT_EXECUTED",
   "send_authorization": "NOT_GRANTED"
 }
