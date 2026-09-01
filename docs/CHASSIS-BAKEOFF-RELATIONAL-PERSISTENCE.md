@@ -1,21 +1,26 @@
 # Chassis Bake-Off — Relational Persistence Candidate
 
-Status: `EXPERIMENTAL / NOT PRODUCTION AUTHORIZED`
+Status: `EXPERIMENTAL_PROTOCOL / NOT PRODUCTION AUTHORIZED`.
 
-## Question
+This study evaluates whether first-class Person↔Company relationship records can replace embedded organizational snapshots while preserving SearchLeads Evidence, persistence integrity, qualification semantics, and Person ER behavior.
 
-Can SearchLeads replace the embedded `Person.company_id` and `Company.person_ids` snapshot model with first-class relationship records while preserving Evidence, immutable persistence, qualification semantics, and Person ER behavior at lower long-term synchronization cost?
+The baseline is not protected, and the candidate is not presumed superior.
 
-The SearchLeads model is a baseline, not a protected design.
+## Research question
+
+Can a first-class relationship model satisfy the declared SearchLeads integrity and compatibility requirements without introducing unacceptable migration or synchronization cost?
+
+Claims about lower long-term cost, better maintainability, or superior representation require evidence appropriate to those constructs. Structural plausibility alone does not establish them.
 
 ## Evidence classification
 
-- `ENGINEERING_EVIDENCE`: FollowTheMoney models organizational relationships as first-class entities such as `Employment` and `Directorship` rather than embedding one organization in Person identity.
-- `ENGINEERING_EVIDENCE`: SearchLeads v3 persistence stores domain objects in a generic `(record_type, record_id, payload_json, digest)` table; organization/person fields are not physical columns.
-- `LOCAL_EXPERIMENT`: executable migration, persistence, compatibility, and fault probes in `tests/experimental/`.
-- `HYPOTHESIS`: first-class relationships will reduce synchronization burden and improve multi-organization representation without unacceptable complexity.
+Under the current harness methodology:
 
-No benchmark result is considered executed while GitHub Actions jobs terminate before checkout with `steps=null`.
+- external/library domain-model inspection is `STATIC_INSPECTION`;
+- migration, persistence, compatibility, and fault checks are `FUNCTIONAL_PROBE` when executed;
+- claims about time, code-change burden, or operational cost require a declared comparative method and may qualify as `CONTROLLED_BENCHMARK` only when the protocol supports that interpretation.
+
+Source-code occurrence counts are migration-surface observations, not quality metrics.
 
 ## Candidate domain split
 
@@ -41,115 +46,78 @@ ProfessionalRegistration
   evidence_ids
 ```
 
-The three concepts are independent. A CRO/CFO professional registration is not an organizational employment relationship, and absence of an end date is not proof of current active registration.
+A professional registration is not an organizational employment relationship. Absence of an end date is not proof of current active registration.
 
-## Migration rule
+## Migration invariant
 
-V1 migration is intentionally conservative:
+The migration protocol is intentionally conservative:
 
-1. each persisted V1 `Person` becomes one `PersonIdentity` with the same ID;
-2. its embedded company link becomes one relationship record;
-3. `relationship_evidence_ids` move to that relationship;
+1. each persisted legacy `Person` becomes one identity with the same ID;
+2. the embedded company link becomes a separate relationship record;
+3. relationship Evidence moves to that relationship;
 4. no cross-company Person IDs are merged during structural migration;
-5. only an explicit ER decision may later repoint multiple relationships to one canonical Person identity.
+5. only a separate explicit ER decision may later repoint multiple relationships to one canonical Person identity.
 
-This prevents a schema refactor from silently becoming an identity-resolution decision.
+A schema refactor must not silently become an identity-resolution decision.
 
 ## Persistence hypothesis
 
-The current physical `domain_records` table is generic. The executable probe extends the in-process record codec registry and semantic reference rules with experimental types while keeping schema version 3 and the same physical tables.
+SearchLeads v3 uses generic domain-record persistence rather than physical person/company columns. This supports a testable hypothesis that relationship and registration records can reuse the current physical storage shape.
 
-If the probe passes, adding relationship/registration domain records does **not** by itself require a new physical SQLite table or schema-version increment. Production adoption would still require:
+A successful round-trip probe may establish functional compatibility under its declared conditions. It does not establish that the model lowers production cost or is universally preferable.
 
-- public domain classes and exports;
-- codec registry entries;
-- stable ID-field entries;
-- semantic reference rules;
-- V1 data migration/compatibility logic;
-- discovery adapter changes;
-- qualification context adapter or API change;
-- Person ER observation-context adapter;
-- regression and migration tests.
-
-A future schema version could still be justified for indexes or performance, but it is not a semantic prerequisite for the first-class relation model.
+Production adoption would still require explicit public domain/API, codec, semantic-reference, migration, discovery, qualification-context, ER-context, and regression changes.
 
 ## Executable probes
 
 ### Relational persistence
 
-`test_chassis_bakeoff_relationship_persistence.py`
+`test_chassis_bakeoff_relationship_persistence.py` checks declared properties such as:
 
-Measures:
-
-- one Person identity with two company relationships;
-- zero Company snapshot mutation requirement;
-- no silent ER during lossless migration;
-- explicit ER convergence as a separate operation;
-- mandatory existing Evidence for relationship and registration;
-- professional registration independent of company relationship;
-- immutable stable-ID conflict behavior.
+- one Person identity with multiple company relationships;
+- no silent Person merge during structural migration;
+- Evidence references retained;
+- registration separated from company relationship;
+- stable-ID behavior retained.
 
 ### Generic domain-record reuse
 
-`test_chassis_bakeoff_generic_domain_record_reuse.py`
+`test_chassis_bakeoff_generic_domain_record_reuse.py` checks whether candidate record types can reuse current repository mechanics and integrity guards without a physical schema change under the tested scenario.
 
-Measures:
+### Migration surface
 
-- candidate identity/relationship/registration round-trip through current repository mechanics;
-- schema version before/after;
-- physical table set before/after;
-- reuse of existing MissingReference guards.
+`test_chassis_bakeoff_relationship_migration_cost.py` records code-surface observations such as occurrences/files containing embedded relationship references.
 
-### Migration code surface
+These counts can scope migration work. They do not, by themselves, establish maintainability or lower long-term cost.
 
-`test_chassis_bakeoff_relationship_migration_cost.py`
+## Acceptance criteria
 
-Reports actual source-code occurrence/file counts for:
+A bounded functional recommendation requires traceable evidence that, under the declared scenarios:
 
-- `person.company_id` access;
-- `Person(...)` construction;
-- `Company.person_ids` snapshots;
-- relationship Evidence references.
+1. legacy single-company semantics can round-trip losslessly;
+2. structural migration performs zero silent Person merges;
+3. one identity can hold multiple company relationships without rewriting identity snapshots;
+4. relationship and registration states retain explicit Evidence references;
+5. qualification behavior remains equivalent when given equivalent relationship context;
+6. Person ER can consume company context without embedding company identity inside canonical Person identity;
+7. stable-ID and reference-integrity guards remain effective.
 
-These are migration-surface measurements, not quality metrics.
-
-## Acceptance gates
-
-The relational model is a candidate for promotion only if executed tests show all of the following:
-
-1. `LOSSLESS_V1_ROUNDTRIP = PASS` for legacy single-company semantics.
-2. `SILENT_PERSON_MERGES = 0` during structural migration.
-3. one identity can hold multiple company relationships without rewriting identity or Company snapshots.
-4. every accepted relationship and professional-registration state retains explicit SearchLeads Evidence references.
-5. current qualification outcome and decision identity remain equivalent when supplied the same relationship context.
-6. Person ER retains company context as an observation/relationship feature without requiring it inside canonical Person identity.
-7. persistence stable-ID immutability remains enforced.
-8. current schema integrity/identity guards remain effective.
-9. migration code surface and custom adapter burden are materially smaller than retaining synchronized embedded references.
+A claim that the candidate reduces migration burden or long-term synchronization cost requires an additional measurement design appropriate to that claim. It must not be inferred from the functional probes alone.
 
 ## Rejection conditions
 
-Reject this candidate if any of the following is observed:
+Reject the candidate under the evaluated scope if reproducible execution shows:
 
-- loss of Evidence/raw reprocessing lineage;
-- implicit Person merges during migration;
+- loss of raw/Evidence lineage;
+- implicit Person merges;
 - ambiguous company context in qualification;
 - weaker corruption/reference detection;
-- substantial fork-specific persistence machinery merely to imitate first-class relations;
-- executed regression degradation that cannot be isolated and repaired cheaply.
+- functional incompatibility that violates the declared SearchLeads invariants.
 
-## Current provisional architectural direction
+Claims about maintenance burden or cost require separate acceptance/rejection criteria and observations.
 
-The strongest candidate is not pure FollowTheMoney and not the current SearchLeads model. It is a composition:
+## Decision state
 
-```text
-SearchLeads raw Evidence + integrity
-        ↓ explicit links
-FTM-style entity/relationship semantics
-        ↓
-Nomenklatura / measured ER
-        ↓
-SearchLeads qualification and commercial policy
-```
+Production adoption remains `DEFER` unless a current machine-readable claim bundle references the required evidence and its evidence state authorizes an active decision.
 
-Production adoption remains `UNDECIDED_PENDING_EXECUTED_TESTS`.
+The historical architectural preference for a composed first-class relationship model may be preserved as decision history, but it is not an empirical winner declaration.
