@@ -15,6 +15,7 @@ from crawlee.crawlers import BasicCrawler
 from crawlee.storage_clients import FileSystemStorageClient, MemoryStorageClient
 from crawlee.storages import RequestQueue
 
+from scripts.empirical_observation import write_observation
 from searchleads.gap_automation.execution import (
     ActionExecutionStatus,
     GapRuntimeState,
@@ -80,8 +81,6 @@ def test_searchleads_runtime_fault_injection_exposes_process_local_state() -> No
     assert failed[0].status is ActionExecutionStatus.FAILED
     assert failed[0].attempts == 3
 
-    # The same runtime remembers the last attempt and enforces the planner's
-    # minimum interval after an exhausted failure.
     scheduled = execute_gap_plan(
         plan,
         {ActionKind.BRASILAPI_POINT_LOOKUP: always_fail},
@@ -91,8 +90,6 @@ def test_searchleads_runtime_fault_injection_exposes_process_local_state() -> No
     assert scheduled[0].status is ActionExecutionStatus.SCHEDULED
     assert failed_calls == 3
 
-    # A fresh runtime models a process restart. Because operational state is
-    # currently in-memory only, the same action becomes immediately executable.
     restarted_runtime = GapRuntimeState()
     restarted_calls = 0
 
@@ -108,6 +105,26 @@ def test_searchleads_runtime_fault_injection_exposes_process_local_state() -> No
     )
     assert restarted[0].status is ActionExecutionStatus.SUCCEEDED
     assert restarted_calls == 1
+
+    write_observation(
+        observation_id="runtime-searchleads-process-state-v1",
+        research_question="Does the current SearchLeads runtime preserve retry/min-interval state across runtime re-instantiation?",
+        method="deterministic fault-injection functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "retry_max_attempts": 3,
+            "attempts_on_exhausted_failure": failed_calls,
+            "same_runtime_status_after_10_seconds": scheduled[0].status.value,
+            "fresh_runtime_status_after_10_seconds": restarted[0].status.value,
+            "fresh_runtime_handler_calls": restarted_calls,
+            "same_process_min_interval_enforced": True,
+            "restart_preserves_last_attempt": False,
+        },
+        validity_limits=[
+            "deterministic in-process probe",
+            "does not measure production recovery frequency or operational cost",
+        ],
+    )
 
     print("SEARCHLEADS_RUNTIME_RESTART_PROBE_V1")
     print("finite_retry=YES attempts_on_failure=3")
@@ -156,6 +173,25 @@ def test_crawlee_request_queue_has_dedupe_reclaim_and_handled_lifecycle() -> Non
     assert total == 1
     assert handled == 1
 
+    write_observation(
+        observation_id="runtime-crawlee-request-lifecycle-v1",
+        research_question="Does the pinned Crawlee request queue expose dedupe, reclaim, and handled lifecycle behavior under a controlled probe?",
+        method="deterministic request-queue functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "unique_key_dedupe": duplicate,
+            "same_key_after_reclaim": reclaimed,
+            "queue_finished": finished,
+            "total_request_count": total,
+            "handled_request_count": handled,
+            "storage_backend": "MemoryStorageClient",
+        },
+        validity_limits=[
+            "memory storage is not durability evidence",
+            "does not establish production reliability or throughput",
+        ],
+    )
+
     print("CRAWLEE_REQUEST_QUEUE_PROBE_V1")
     print("unique_key_dedupe=YES")
     print("failed_request_reclaim=YES")
@@ -175,9 +211,6 @@ async def _crawlee_filesystem_persistence_probe(storage_dir: str) -> tuple[int, 
     response = await first_client.add_batch_of_requests([request])
     assert len(response.processed_requests) == 1
 
-    # Re-instantiate the filesystem storage client against the same directory.
-    # This is an executable restart-like boundary without relying on a shared
-    # Python object or the RequestQueue in-process instance cache.
     second_storage = FileSystemStorageClient()
     second_client = await second_storage.create_rq_client(
         name="runtime-persistence-bakeoff",
@@ -201,6 +234,25 @@ def test_crawlee_filesystem_request_state_survives_storage_client_reinstantiatio
     assert total == 1
     assert handled == 1
     assert unique_key
+
+    write_observation(
+        observation_id="runtime-crawlee-filesystem-persistence-v1",
+        research_question="Does the pinned Crawlee filesystem request queue preserve a pending request across storage-client re-instantiation?",
+        method="controlled persistence functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "pending_request_recovered": True,
+            "request_handled_after_reinstantiation": True,
+            "total_request_count": total,
+            "handled_request_count": handled,
+            "unique_key_present": bool(unique_key),
+        },
+        validity_limits=[
+            "single-process filesystem backend",
+            "multi-process safety is not evaluated",
+            "process crash and host failure recovery are not evaluated",
+        ],
+    )
 
     print("CRAWLEE_FILESYSTEM_PERSISTENCE_PROBE_V1")
     print("storage_client_reinstantiation_preserves_pending_request=YES")
@@ -233,6 +285,23 @@ def test_crawlee_basic_crawler_retries_the_request_and_recovers() -> None:
     attempts = asyncio.run(_crawlee_retry_probe())
     assert attempts == 3
 
+    write_observation(
+        observation_id="runtime-crawlee-retry-v1",
+        research_question="Does the pinned Crawlee BasicCrawler recover from two deterministic handler failures within a two-retry budget?",
+        method="deterministic fault-injection functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "max_request_retries": 2,
+            "handler_attempts": attempts,
+            "recovered": True,
+            "network_navigation": False,
+        },
+        validity_limits=[
+            "handler-only probe without network navigation",
+            "does not measure blocked-session or proxy recovery cost",
+        ],
+    )
+
     print("CRAWLEE_RETRY_FAULT_INJECTION_V1")
     print("max_request_retries=2 total_handler_attempts=3 recovered=YES")
     print("network_navigation=NONE (BasicCrawler handler-only deterministic probe)")
@@ -256,8 +325,6 @@ def test_runtime_chassis_capability_scorecard_does_not_encode_a_winner() -> None
     }
     assert expected_external_options <= crawlee_options
 
-    # This is a capability-presence scorecard, not a product-quality score. The
-    # outcome benchmarks above and future durability/load tests decide adoption.
     capabilities = {
         "finite_retry": ("SEARCHLEADS_NATIVE", "CRAWLEE_NATIVE"),
         "per_action_or_request_retry_limit": ("SEARCHLEADS_NATIVE", "CRAWLEE_NATIVE"),
@@ -275,9 +342,27 @@ def test_runtime_chassis_capability_scorecard_does_not_encode_a_winner() -> None
         "searchleads_evidence_truth_boundary": ("SEARCHLEADS_NATIVE", "SEARCHLEADS_EXTENSION"),
     }
 
+    write_observation(
+        observation_id="runtime-capability-inspection-v1",
+        research_question="Which runtime capabilities are present in the current SearchLeads boundary and the pinned Crawlee API?",
+        method="API signature and capability inspection",
+        evidence_class="STATIC_INSPECTION",
+        payload={
+            "capabilities": {
+                capability: {"searchleads": searchleads, "crawlee": crawlee}
+                for capability, (searchleads, crawlee) in sorted(capabilities.items())
+            },
+            "expected_crawlee_options_present": True,
+        },
+        validity_limits=[
+            "capability presence is not demonstrated benefit",
+            "no product-quality ranking or winner is authorized by this observation",
+        ],
+    )
+
     print("RUNTIME_CHASSIS_CAPABILITY_SCORECARD_V1")
     for capability, (searchleads, crawlee) in capabilities.items():
         print(f"{capability} searchleads={searchleads} crawlee={crawlee}")
-    print("winner=UNDECIDED pending executed durability/load/operational-cost evidence")
+    print("decision_state=DEFER pending executed durability/load/operational-cost evidence")
 
     assert len(capabilities) == 14
