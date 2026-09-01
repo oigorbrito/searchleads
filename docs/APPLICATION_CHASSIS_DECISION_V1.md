@@ -1,101 +1,73 @@
 # APPLICATION_CHASSIS_DECISION_V1
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; the repository still has no executable GitHub Actions steps, so this is a structural chassis decision, not a benchmark PASS.
+Status: `HISTORICAL_DECISION_RECORD`.
+
+Historical decision label: `COMPOSE` around a thin custom FastAPI root chassis, with Yente retained only as an optional separate search/match service candidate.
+
+Current empirical reading: comparative superiority of that application chassis is `NOT_EVALUATED` unless a current canonical claim bundle supplies reproducible comparative evidence.
 
 ## Scope
 
-This decision covers the root application chassis, not the domain model or runtime adapter.
+This record covers the root application chassis, not the domain model or acquisition runtime adapter.
 
-It asks which shell should host the product surface: the current SearchLeads app, a thin custom FastAPI chassis, or Yente 5.5.0.
+The alternatives originally considered were:
 
-## Candidates
+- evolving the current SearchLeads application;
+- a thin custom FastAPI chassis;
+- Yente as the root chassis;
+- Yente as a separately deployed service for search/match only.
 
-### A. Current SearchLeads application evolved
+## Structural observations
 
-Pros:
+The original analysis identified product and dependency constraints:
 
-- preserves existing integration points;
-- minimal near-term churn;
-- already owns SearchLeads-specific policy.
+- SearchLeads requires product-specific qualification, Evidence, contact, and compliance semantics.
+- A thin FastAPI shell can host those SearchLeads-owned boundaries without requiring Elasticsearch/OpenSearch by default.
+- Yente provides an application/search chassis with search and matching capabilities.
+- Yente does not natively replace SearchLeads product-specific qualification, Evidence, acquisition policy, or compliance contracts.
+- Root adoption of Yente introduces search-service infrastructure that may be unnecessary if search is not the dominant workload.
 
-Cons:
+These statements are structural/capability observations. They do not establish lower latency, lower cost, greater reliability, or superior maintainability in production.
 
-- tends to accumulate custom application plumbing;
-- does not automatically solve search/index/operational surfaces;
-- risks keeping more bespoke app code than necessary.
+## Historical decision
 
-### B. Thin custom FastAPI chassis
+The project recorded the following application direction:
 
-Pros:
+```text
+thin SearchLeads-owned application shell
+    -> SearchLeads domain/policy components
+    -> optional external runtime/search services behind explicit adapters
+```
 
-- keeps SearchLeads domain/policy explicit;
-- can host the winning domain/runtime components without forcing their semantics into one upstream framework;
-- can add exactly the API, health, readiness, auth, telemetry, and deployment behavior SearchLeads needs;
-- avoids Elasticsearch/OpenSearch as a root requirement unless the product actually needs it.
+The historical action was to compose a thin custom FastAPI root and defer Yente-root adoption.
 
-Cons:
+Under the current methodology this is preserved as `decision_state=HISTORICAL_DECISION`; the historical label `COMPOSE` is decision provenance, not evidence state.
 
-- requires some application code to be built and maintained;
-- does not get a ready-made search platform for free.
+## Current claim states
 
-### C. Yente 5.5.0
+| Claim | Evidence class | Current evidence state | Allowed conclusion |
+|---|---|---|---|
+| Yente provides a real application/search chassis | `STATIC_INSPECTION` | `SUPPORTED` for capability presence | Yente exposes the inspected application/search capabilities |
+| SearchLeads has product-specific policy not natively supplied by Yente | `STATIC_INSPECTION` / product contract | `SUPPORTED` for boundary presence | an adapter or SearchLeads-owned layer remains necessary |
+| Thin FastAPI can host SearchLeads-owned components | `STATIC_INSPECTION` / bounded functional integration when executed | `PARTIALLY_SUPPORTED` until current artifacts are attached | structural feasibility only |
+| Thin FastAPI has lower operational cost than Yente-root | comparative operational study required | `NOT_EVALUATED` | no cost conclusion |
+| Thin FastAPI is more reliable or maintainable than Yente-root | controlled/longitudinal evidence required | `NOT_EVALUATED` | no comparative reliability/maintainability conclusion |
+| Yente should never be used | no supporting evidence | `NOT_SUPPORTED` | Yente remains evaluable for a scoped search/match service role |
 
-Pros:
+## Evidence required for a current active chassis recommendation
 
-- real application chassis;
-- already includes FastAPI, search, match, health, readiness, catalog, algorithm discovery, and operational middleware;
-- can host additive SearchLeads routes without an upstream patch.
+A current empirical recommendation would need a declared research question and reproducible artifacts appropriate to the claimed benefit. Depending on the claim, that may include:
 
-Cons:
+- equivalent functional workloads across candidate shells;
+- deployment/startup behavior;
+- resource use;
+- latency/throughput where relevant;
+- failure/recovery behavior;
+- operational dependency burden measured under a defined environment;
+- maintenance-change tasks if maintainability is the research question.
 
-- stable Yente pins older core dependencies than the current bake-off stack;
-- requires Elasticsearch/OpenSearch for normal search/match operation;
-- does not natively provide SearchLeads qualification, contact discovery, or commercial policy;
-- exposes no general authentication/access-control system as part of the service contract.
+Feature presence or dependency inspection is insufficient to establish comparative production benefit.
 
-## Structural conclusion
+## Current authority
 
-Yente is a good separate service candidate for search/match, but it is not the best root chassis for SearchLeads product logic.
-
-The reasons are structural, not popularity-based:
-
-- SearchLeads needs product-specific qualification and contact semantics that Yente does not provide natively.
-- Yente root adoption pulls in an external search-service burden that SearchLeads does not need to pay unless search becomes the dominant workload.
-- SearchLeads would still need a substantial custom boundary for Evidence, qualification, acquisition policy, and compliance.
-
-Therefore the best root chassis is a thin custom FastAPI shell that composes the winning domain/runtime components and leaves Yente as an optional separate service if search/match becomes worth isolating.
-
-## Decision matrix
-
-| Candidate | SearchLeads-owned code avoided | Adapter count | Upstream divergence | External service burden | Product fit | Decision |
-|---|---|---|---|---|---|---|
-| Current SearchLeads app evolved | low | low | none | low | medium | `DEFER` |
-| Thin FastAPI chassis | medium | medium | low | low | high | `COMPOSE` |
-| Yente root chassis | high on paper, but not on SearchLeads domain code | medium-high | medium-high | high | medium | `DEFER` |
-| Yente as separate service | medium-high for search/match only | medium | low | high, isolated | high for search only | `COMPOSE` |
-
-## Decision
-
-`Application chassis` = `COMPOSE`
-
-Concretely:
-
-- root the product in a thin custom FastAPI chassis;
-- compose the winning domain and runtime components there;
-- do not make Yente the repository root chassis;
-- allow Yente as a separately deployed service only if the search/match boundary later proves worth that operational cost.
-
-## Claims table
-
-| Claim | Evidence available | Execution required? | Decision possible now? | Confidence |
-|---|---|---|---|---|
-| Yente is a real chassis | static upstream inspection | no | yes | high |
-| Yente is the best SearchLeads root chassis | no benchmark evidence | yes | no | low |
-| Thin FastAPI can host the winning SearchLeads components | structural analysis | no | yes | medium |
-| Yente should remain a separate service option | static architecture analysis | no | yes | medium |
-
-## Implication for deployment
-
-Because the root chassis is thin rather than Yente-root, deployment should stay lightweight and avoid introducing Elasticsearch/OpenSearch as a default product dependency.
-
-That does not eliminate optional search infrastructure later. It only rejects making it the default chassis tax today.
+This document preserves why the historical engineering decision was made. It must not be cited as evidence that the selected chassis empirically outperforms alternatives.
