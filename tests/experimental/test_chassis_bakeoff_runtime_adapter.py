@@ -50,12 +50,14 @@ def _to_request(action: AutomationAction) -> Request:
     assert action.locator is not None
     assert action.cache_key is not None
 
-    # SearchLeads counts total attempts, while Crawlee config names retries after
-    # the initial attempt. Translate 3 total attempts -> maxRetries 2.
+    # SearchLeads counts total attempts, while Crawlee's public Request API
+    # exposes retries after the initial attempt. Translate 3 total attempts to
+    # max_retries=2 instead of writing Crawlee's internal user-data envelope.
     max_retries = max(0, action.retry_max_attempts - 1)
     return Request.from_url(
         action.locator,
         unique_key=action.cache_key,
+        max_retries=max_retries,
         user_data={
             "searchleads": {
                 "action_id": action.action_id,
@@ -64,7 +66,6 @@ def _to_request(action: AutomationAction) -> Request:
                 "cache_key": action.cache_key,
                 "min_interval_seconds": action.min_interval_seconds,
             },
-            "__crawlee": {"maxRetries": max_retries},
         },
     )
 
@@ -81,7 +82,6 @@ async def _adapter_probe(actions: tuple[AutomationAction, ...]) -> tuple[list[Ad
     @crawler.router.default_handler
     async def handler(context) -> None:
         metadata = context.request.user_data["searchleads"]
-        crawlee_metadata = context.request.user_data.get("__crawlee", {})
         observations.append(
             AdapterObservation(
                 action_id=metadata["action_id"],
@@ -89,7 +89,7 @@ async def _adapter_probe(actions: tuple[AutomationAction, ...]) -> tuple[list[Ad
                 action_kind=metadata["action_kind"],
                 locator=context.request.url,
                 request_unique_key=context.request.unique_key,
-                max_retries=crawlee_metadata.get("maxRetries"),
+                max_retries=context.request.max_retries,
             )
         )
 
@@ -129,6 +129,7 @@ def test_adapter_boundary_keeps_business_policy_outside_crawlee() -> None:
 
     assert metadata["gap_id"] == action.gap_id
     assert metadata["min_interval_seconds"] == 60
+    assert request.max_retries == action.retry_max_attempts - 1
     assert "effect" not in request.user_data
     assert "evidence" not in request.user_data
     assert "qualification" not in request.user_data
