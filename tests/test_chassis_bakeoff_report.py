@@ -9,13 +9,26 @@ from scripts.chassis_bakeoff_report import (
     build_report,
     load_claims,
     load_json_artifact,
+    load_observations,
     load_raw_artifact,
 )
+from scripts.empirical_observation import build_observation
 
 
 def _write_json(path: Path, payload: object) -> Path:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
     return path
+
+
+def _observation() -> dict[str, object]:
+    return build_observation(
+        observation_id="runtime-state-restored",
+        research_question="Does the runtime preserve request lifecycle state across re-instantiation?",
+        method="deterministic persistence functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={"request_state_restored": True},
+        validity_limits=["single controlled local environment"],
+    )
 
 
 def _claim(**overrides: object) -> dict[str, object]:
@@ -25,7 +38,7 @@ def _claim(**overrides: object) -> dict[str, object]:
         "method": "FUNCTIONAL_PROBE",
         "evidence_class": "FUNCTIONAL_PROBE",
         "input_artifacts": ["observations/runtime.json"],
-        "observations": ["request state restored"],
+        "observations": ["runtime-state-restored"],
         "analysis": "Observed state restoration under the declared probe conditions.",
         "validity_limits": ["single controlled local environment"],
         "supported_conclusion": "Persistence is demonstrated under the probe conditions.",
@@ -39,7 +52,7 @@ def _claim(**overrides: object) -> dict[str, object]:
 
 def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
     manifest_path = _write_json(tmp_path / "manifest.json", {"python": "3.12", "sha": "abc"})
-    observation_path = _write_json(tmp_path / "observation.json", {"attempts": [1, 2, 3]})
+    observation_path = _write_json(tmp_path / "observation.json", _observation())
     claim_path = _write_json(
         tmp_path / "claim.json",
         _claim(input_artifacts=[observation_path.as_posix()]),
@@ -49,7 +62,7 @@ def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
 
     manifest = load_json_artifact(manifest_path)
     junit = [load_raw_artifact(junit_path)]
-    observations = [load_json_artifact(observation_path)]
+    observations = load_observations([observation_path])
     claims = load_claims([claim_path])
 
     first = build_report(
@@ -70,8 +83,10 @@ def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
     assert first == second
     assert first["claims"][0]["evidence_state"] == "SUPPORTED"
     assert first["claims"][0]["traceability"]["all_inputs_present"] is True
+    assert first["claims"][0]["traceability"]["all_observations_present"] is True
     assert first["claims"][0]["decision_state"] == "DEFER"
     assert first["junit_summaries"][0]["passed"] == 1
+    assert first["observations"][0]["payload"]["observation_id"] == "runtime-state-restored"
     paths = {item["path"] for item in first["artifacts"]}
     assert manifest.path in paths
     assert junit[0].path in paths
@@ -96,7 +111,34 @@ def test_missing_claim_evidence_is_downgraded(tmp_path: Path) -> None:
     assert claim["declared_evidence_state"] == "SUPPORTED"
     assert claim["evidence_state"] == "INSUFFICIENT_EVIDENCE"
     assert claim["traceability"]["missing_input_artifacts"] == ["observations/runtime.json"]
+    assert claim["traceability"]["missing_observations"] == ["runtime-state-restored"]
     assert claim["decision_support"]["eligible_from_current_evidence"] is False
+
+
+def test_missing_observation_reference_downgrades_claim_even_when_file_is_present(tmp_path: Path) -> None:
+    manifest_path = _write_json(tmp_path / "manifest.json", {"python": "3.12"})
+    observation_path = _write_json(tmp_path / "observation.json", _observation())
+    claim_path = _write_json(
+        tmp_path / "claim.json",
+        _claim(
+            input_artifacts=[observation_path.as_posix()],
+            observations=["different-observation-id"],
+        ),
+    )
+
+    report = build_report(
+        study_id="study-missing-observation",
+        manifest=load_json_artifact(manifest_path),
+        junit=[],
+        observations=load_observations([observation_path]),
+        claims=load_claims([claim_path]),
+    )
+
+    claim = report["claims"][0]
+    assert claim["evidence_state"] == "INSUFFICIENT_EVIDENCE"
+    assert claim["traceability"]["all_inputs_present"] is True
+    assert claim["traceability"]["all_observations_present"] is False
+    assert claim["traceability"]["missing_observations"] == ["different-observation-id"]
 
 
 def test_claim_rejects_opaque_or_unknown_state(tmp_path: Path) -> None:
