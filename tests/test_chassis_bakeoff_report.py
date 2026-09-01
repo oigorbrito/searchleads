@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from scripts.chassis_bakeoff_report import (
-    ArtifactRecord,
     build_report,
     load_claims,
     load_json_artifact,
@@ -41,7 +40,10 @@ def _claim(**overrides: object) -> dict[str, object]:
 def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
     manifest_path = _write_json(tmp_path / "manifest.json", {"python": "3.12", "sha": "abc"})
     observation_path = _write_json(tmp_path / "observation.json", {"attempts": [1, 2, 3]})
-    claim_path = _write_json(tmp_path / "claim.json", _claim())
+    claim_path = _write_json(
+        tmp_path / "claim.json",
+        _claim(input_artifacts=[observation_path.as_posix()]),
+    )
     junit_path = tmp_path / "junit.xml"
     junit_path.write_text('<testsuite tests="1" failures="0" skipped="0"/>', encoding="utf-8")
 
@@ -67,7 +69,9 @@ def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
 
     assert first == second
     assert first["claims"][0]["evidence_state"] == "SUPPORTED"
+    assert first["claims"][0]["traceability"]["all_inputs_present"] is True
     assert first["claims"][0]["decision_state"] == "DEFER"
+    assert first["junit_summaries"][0]["passed"] == 1
     paths = {item["path"] for item in first["artifacts"]}
     assert manifest.path in paths
     assert junit[0].path in paths
@@ -76,13 +80,32 @@ def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
     assert len(first["report_sha256"]) == 64
 
 
+def test_missing_claim_evidence_is_downgraded(tmp_path: Path) -> None:
+    manifest_path = _write_json(tmp_path / "manifest.json", {"python": "3.12"})
+    claim_path = _write_json(tmp_path / "claim.json", _claim())
+
+    report = build_report(
+        study_id="study-missing-evidence",
+        manifest=load_json_artifact(manifest_path),
+        junit=[],
+        observations=[],
+        claims=load_claims([claim_path]),
+    )
+
+    claim = report["claims"][0]
+    assert claim["declared_evidence_state"] == "SUPPORTED"
+    assert claim["evidence_state"] == "INSUFFICIENT_EVIDENCE"
+    assert claim["traceability"]["missing_input_artifacts"] == ["observations/runtime.json"]
+    assert claim["decision_support"]["eligible_from_current_evidence"] is False
+
+
 def test_claim_rejects_opaque_or_unknown_state(tmp_path: Path) -> None:
     claim_path = _write_json(tmp_path / "claim.json", _claim(decision_state="WINNER"))
     with pytest.raises(ValueError, match="unsupported decision_state"):
         load_claims([claim_path])
 
 
-def test_missing_required_claim_field_is_insufficient_input(tmp_path: Path) -> None:
+def test_missing_required_claim_field_is_rejected(tmp_path: Path) -> None:
     claim = _claim()
     del claim["validity_limits"]
     claim_path = _write_json(tmp_path / "claim.json", claim)
