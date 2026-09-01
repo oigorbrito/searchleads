@@ -11,6 +11,7 @@ from crawlee import Request
 from crawlee.crawlers import BasicCrawler
 from crawlee.storage_clients import MemoryStorageClient
 
+from scripts.empirical_observation import write_observation
 from searchleads.gap_automation.planning import (
     ActionDisposition,
     ActionEffect,
@@ -50,9 +51,6 @@ def _to_request(action: AutomationAction) -> Request:
     assert action.locator is not None
     assert action.cache_key is not None
 
-    # SearchLeads counts total attempts, while Crawlee's public Request API
-    # exposes retries after the initial attempt. Translate 3 total attempts to
-    # max_retries=2 instead of writing Crawlee's internal user-data envelope.
     max_retries = max(0, action.retry_max_attempts - 1)
     return Request.from_url(
         action.locator,
@@ -89,7 +87,7 @@ async def _adapter_probe(actions: tuple[AutomationAction, ...]) -> tuple[list[Ad
                 action_kind=metadata["action_kind"],
                 locator=context.request.url,
                 request_unique_key=context.request.unique_key,
-                max_retries=context.request.max_retries,
+                max_retries=context.request.crawlee_data.max_retries,
             )
         )
 
@@ -114,6 +112,35 @@ def test_minimal_runtime_adapter_preserves_searchleads_action_identity() -> None
         assert observation.locator == action.locator
         assert observation.max_retries == action.retry_max_attempts - 1
 
+    write_observation(
+        observation_id="searchleads-crawlee-adapter-roundtrip-v1",
+        research_question="Can a thin Crawlee Request adapter preserve SearchLeads action identity, cache identity, locator, and retry semantics for the exercised requests?",
+        method="deterministic functional probe over three in-memory requests",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "actions": len(actions),
+            "requests_finished": stats.requests_finished,
+            "requests_failed": stats.requests_failed,
+            "observations": [
+                {
+                    "action_id": item.action_id,
+                    "cache_key": item.cache_key,
+                    "action_kind": item.action_kind,
+                    "locator": item.locator,
+                    "request_unique_key": item.request_unique_key,
+                    "max_retries": item.max_retries,
+                }
+                for item in sorted(observations, key=lambda value: value.action_id)
+            ],
+            "retry_translation": "searchleads_total_attempts_minus_initial",
+        },
+        validity_limits=[
+            "three deterministic synthetic requests",
+            "MemoryStorageClient does not establish persistence or production durability",
+            "probe establishes metadata roundtrip, not operational benefit",
+        ],
+    )
+
     print("SEARCHLEADS_CRAWLEE_ADAPTER_PROBE_V1")
     print("actions=3 identity_roundtrip=3/3")
     print("cache_key_to_request_unique_key=3/3")
@@ -129,10 +156,27 @@ def test_adapter_boundary_keeps_business_policy_outside_crawlee() -> None:
 
     assert metadata["gap_id"] == action.gap_id
     assert metadata["min_interval_seconds"] == 60
-    assert request.max_retries == action.retry_max_attempts - 1
+    assert request.crawlee_data.max_retries == action.retry_max_attempts - 1
     assert "effect" not in request.user_data
     assert "evidence" not in request.user_data
     assert "qualification" not in request.user_data
+
+    write_observation(
+        observation_id="searchleads-crawlee-adapter-boundary-v1",
+        research_question="Does the candidate request mapping keep SearchLeads business truth and qualification policy outside Crawlee user data?",
+        method="static mapping inspection plus deterministic request construction",
+        evidence_class="STATIC_INSPECTION",
+        payload={
+            "preserved_runtime_metadata": ["action_id", "gap_id", "action_kind", "cache_key", "min_interval_seconds"],
+            "excluded_policy_fields": ["effect", "evidence", "qualification"],
+            "max_retries": request.crawlee_data.max_retries,
+        },
+        validity_limits=[
+            "inspects the current candidate mapping only",
+            "does not establish that future adapters cannot leak domain policy",
+            "does not establish production suitability",
+        ],
+    )
 
     print("SEARCHLEADS_CRAWLEE_ADAPTER_BOUNDARY_V1")
     print("request_runtime_receives_action_identity_and_execution_metadata=YES")
