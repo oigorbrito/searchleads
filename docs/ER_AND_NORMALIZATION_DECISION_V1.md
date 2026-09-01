@@ -1,126 +1,93 @@
 # ER_AND_NORMALIZATION_DECISION_V1
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; GitHub-hosted runners still terminate with `steps=[]` / no usable logs, so quality numbers are not claimed as executed results.
+Status: `HISTORICAL_DECISION_RECORD`.
+
+This file preserves earlier engineering decisions for entity resolution, normalization, and identifier validation. It is not a canonical benchmark result under the current empirical harness methodology.
 
 ## Scope
 
-This decision covers company ER, person ER, normalization, identifier validation, and the benchmark harness quality checks that gate them.
+The historical record covers:
 
-## What was inspected
+- Company ER;
+- Person ER;
+- normalization;
+- CNPJ canonicalization/validation;
+- benchmark-harness quality constraints.
 
-The current harness already separates the relevant questions:
+## Methodological reading rule
 
-- `tests/experimental/test_chassis_bakeoff_matching.py`
-- `tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py`
-- `tests/experimental/test_chassis_bakeoff_external_canonical.py`
-- `tests/experimental/test_chassis_bakeoff_external_regression.py`
-- `tests/experimental/test_chassis_bakeoff_normalization.py`
-- `tests/experimental/test_chassis_bakeoff_normalization_er_impact.py`
-- `tests/experimental/test_chassis_bakeoff_cnpj.py`
-- `tests/experimental/test_chassis_bakeoff_dependency_contract.py`
+Legacy decision labels such as `COMPOSE`, `REPLACE`, and `PROVISIONAL_COMPOSE` are engineering decisions, not evidence states.
 
-Static audit findings:
+A current comparative ER or normalization claim must identify preserved input artifacts, a declared method, its validity limits, and an `evidence_state` under `EMPIRICAL-HARNESS-METHODOLOGY.md`.
 
-- Company ER and Person ER are kept separate in the harness, which is correct.
-- The holdout/calibration split is explicit in the company fixtures, which is correct.
-- The SearchLeads baseline is not treated as an untouchable winner in the assertions, which is correct.
-- The external canonical regression fixture is held out from the matcher inputs, which is correct.
-- The CNPJ probe already distinguishes canonicalization from validation, which is correct.
-- The normalization ablation holds the matcher constant and varies only name normalization, which is correct.
-- No runner-produced benchmark number is available yet, so no ER winner can be claimed.
+If the raw benchmark inputs/results needed for a legacy claim are not present in the current reproducible bundle, the current state is `INSUFFICIENT_EVIDENCE` or `NOT_EVALUATED` rather than an inferred winner.
 
-## Decision matrix
+## Historical decisions
 
-| Component | Current SearchLeads | Candidate | Decision | Why |
-|---|---|---|---|---|
-| Company ER | baseline matcher/feature fusion | Nomenklatura `LogicV2`, `RegressionV1`, `EntityResolveRegression` and challengers | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; external challengers remain partially blocked, so the conservative policy is adopted provisionally |
-| Person ER | baseline person resolution | separate Person ER benchmark with strict false-merge cost | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; the adopted policy is review-first with no general auto-match authority |
-| Normalization boundary | duplicated SearchLeads normalizers | Rigour-based normalization boundary with explicit legal-form policy | `COMPOSE` | the current duplicate boundary is unnecessary; one shared normalization layer is the right semantic split |
-| CNPJ validation | shape-only canonicalization in parts of the stack | formal validation using `python-stdnum` / official Receita-Serpro contract | `REPLACE` | shape-only acceptance is not validation and allows bad routing keys to reach acquisition |
+| Component | Historical decision | Current interpretation |
+|---|---|---|
+| Company ER | `PROVISIONAL_COMPOSE` | historical review-first composition; current comparative superiority requires traceable controlled evidence |
+| Person ER | `PROVISIONAL_COMPOSE` | historical review-first composition with no general auto-match authority; comparative quality requires traceable controlled evidence |
+| Normalization boundary | `COMPOSE` | raw values remain separate from normalization features and identity decisions; library superiority is a separate empirical question |
+| CNPJ validation | `REPLACE` for shape-only admission control | correctness distinction between canonicalization and formal validation is retained; comparative library superiority is not implied |
 
-## Normalization decision
+Under the current vocabulary these are preserved as historical decision provenance, not as `SUPPORTED` empirical claims by themselves.
 
-The winning architectural boundary is not "SearchLeads string munging everywhere" and it is not "normalization becomes identity".
+## Boundary invariants retained
 
-The correct split is:
+The following design constraints remain independently meaningful:
 
 ```text
 raw source value
-    -> normalization feature / canonical display key
-    -> ER feature input
-    -> entity identity decision (separate step)
+    -> explicit normalization/canonicalization
+    -> feature or validated identifier
+    -> entity-resolution or routing decision as a separate step
 ```
 
-That means:
+- raw source values and Evidence remain intact;
+- normalized strings do not authorize identity merge by themselves;
+- legal-form removal or other lossy transforms remain explicit policy choices;
+- Company ER and Person ER remain separate research/evaluation questions;
+- CNPJ canonicalization and CNPJ validity are distinct concepts;
+- invalid identifiers should not be admitted to network routing merely because their shape can be normalized.
 
-- SearchLeads should keep raw values and Evidence intact;
-- Rigour should own the explicit normalization contract where it is the better library;
-- legal-form stripping must remain a measured policy choice, not a blanket rule;
-- normalized strings must never authorize merge, qualification, or contact reuse by themselves.
+These are product/correctness boundaries. They do not establish that one candidate library is empirically better than another.
 
-This is a `COMPOSE` decision, not a blanket replacement of all SearchLeads text handling.
+## Harness properties worth preserving
 
-## CNPJ decision
+The original harness intentionally separated several sources of bias/confounding:
 
-The current `searchleads.gap_automation.planning._normalize_cnpj` behavior is only canonicalization. It does not reject invalid check digits.
+- Company and Person ER are evaluated separately;
+- calibration/training inputs are separated from held-out evaluation where the study defines those roles;
+- external canonical data is not silently fed into matcher features when it is intended as evaluation data;
+- normalization ablations hold non-normalization behavior fixed where possible;
+- identifier canonicalization is tested separately from validity.
 
-That is insufficient for planner/runtime admission control.
+These properties support a defensible protocol, but protocol quality does not imply a benchmark outcome.
 
-The right boundary is:
+## Current claim states
 
-- preserve and normalize the source value for auditability;
-- validate against the official CNPJ contract before dispatching network acquisition;
-- reject invalid CNPJ values early so the planner does not create avoidable requests;
-- keep raw Evidence separate from the validation result.
+| Claim | Required evidence | Current state absent a canonical artifact bundle |
+|---|---|---|
+| one Company ER candidate has better precision/recall or false-merge behavior | labeled ground truth + controlled comparable execution + raw observations | `NOT_EVALUATED` |
+| one Person ER candidate has better false-merge/false-split behavior | labeled ground truth + controlled comparable execution + raw observations | `NOT_EVALUATED` |
+| a normalization candidate improves downstream ER | controlled ablation with fixed matcher/workload + raw observations | `NOT_EVALUATED` |
+| shape-only CNPJ canonicalization is equivalent to formal validation | official validity contract contradicts equivalence | `NOT_SUPPORTED` |
+| formal validation can reject invalid identifiers that shape normalization accepts | functional/official-contract evidence | `SUPPORTED` as a correctness distinction, not a library winner |
 
-This is a `REPLACE` decision.
+## No opaque winner language
 
-## Harness quality checks
+The following are not authorized by this file alone:
 
-The harness is structurally acceptable because it already encodes the right separations:
+- `winner`;
+- `best matcher`;
+- `better normalization`;
+- `strong +` quality assertions;
+- production-accuracy claims;
+- universal ER superiority.
 
-- train/calibration/evaluation are not conflated;
-- SearchLeads baseline and challenger are compared on the same labeled pairs;
-- external canonical data is not fed to the matcher as a feature;
-- normalization ablation keeps non-name features fixed;
-- CNPJ canonicalization is tested against an official oracle and a routing-key scenario.
+A current claim may use a bounded comparative statement only when the canonical report points to the raw observations and validity limits that support it.
 
-What is missing is execution. Therefore:
+## Current authority
 
-- the harness can be trusted as a protocol;
-- the benchmark result cannot yet be trusted as an outcome;
-- company/person ER remain open until the runner returns.
-
-## Claims table
-
-| Claim | Evidence available | Execution required? | Decision possible now? | Confidence |
-|---|---|---|---|---|
-| SearchLeads normalization duplicates logic | static code/docs inspection | no | yes | high |
-| Rigour should be the shared normalization boundary | static code/docs inspection | no | yes | medium |
-| CNPJ shape-only acceptance is not validation | static code/docs inspection + official contract | no | yes | high |
-| SearchLeads normalization winner vs Rigour winner | benchmark harness only | yes | no | low |
-| SearchLeads company ER winner | benchmark harness only | yes | no | low |
-| SearchLeads person ER winner | benchmark harness only | yes | no | low |
-
-## Current decision
-
-- `Normalization` = `COMPOSE`
-- `Identifier validation` = `REPLACE`
-- `Company ER` = `PROVISIONAL_COMPOSE`
-- `Person ER` = `PROVISIONAL_COMPOSE`
-
-## Current verification note
-
-- local regression suite is green
-- `tests/test_selective_review.py`, `tests/test_dental_commercial_acceptance.py`, `tests/test_evidence_envelope_consistency.py`, and `tests/test_person_entity_resolution.py` remain PASS
-- the remaining ER decision gap is challenger breadth, not internal contract reconciliation
-- external challengers remain partially blocked by `pyicu`/ICU build requirements in the isolated Windows benchmark venv
-- `DEFER` is no longer the adopted state for Company ER or Person ER
-
-## Implication for implementation
-
-Do not start a new clean implementation line yet.
-
-The normalization and validation boundaries are closed enough to wire into the eventual implementation, but the ER quality choice that could still change the chassi remains benchmark-dependent and unexecuted.
-
-The next executable gate is the same harness on a working runner, starting with the company ER and person ER comparisons.
+Use this record to understand historical architecture choices and invariants. Use the empirical harness artifacts and machine-readable claim contract for current evidence authority.
