@@ -14,7 +14,7 @@ from fastapi import APIRouter
 from yente import settings
 from yente.app import create_app
 
-from scripts.empirical_observation import EmpiricalObservation, write_observation
+from scripts.empirical_observation import build_observation, write_observation
 
 
 YENTE_STABLE_DEPENDENCIES = {
@@ -40,19 +40,15 @@ def _record_observation(name: str, payload: dict[str, object]) -> None:
     if not observation_dir:
         return
     write_observation(
-        os.path.join(observation_dir, f"{name}.json"),
-        EmpiricalObservation(
-            schema_version="empirical_observation_v1",
-            observation_id=name,
-            research_question="What stable application surface and dependency pins does the isolated Yente chassis expose in the declared probe set?",
-            method="STATIC_INSPECTION",
-            evidence_class="STATIC_INSPECTION",
-            payload=payload,
-            validity_limits=(
-                "surface inventory only",
-                "not a benchmark or production claim",
-            ),
-        ),
+        observation_id=name,
+        research_question="What stable application surface and dependency pins does the isolated Yente chassis expose in the declared probe set?",
+        method="STATIC_INSPECTION",
+        evidence_class="STATIC_INSPECTION",
+        payload=payload,
+        validity_limits=[
+            "surface inventory only",
+            "not a benchmark or production claim",
+        ],
     )
 
 

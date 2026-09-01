@@ -14,7 +14,7 @@ from nomenklatura.db import close_db, make_session
 from nomenklatura.judgement import Judgement
 from nomenklatura.resolver import Resolver
 
-from scripts.empirical_observation import EmpiricalObservation, write_observation
+from scripts.empirical_observation import build_observation, write_observation
 from searchleads.domain.entities import ContactPoint, Person
 from searchleads.domain.enums import ContactKind
 from searchleads.domain.facts import CandidateFact
@@ -42,19 +42,15 @@ def _record_observation(name: str, payload: dict[str, object]) -> None:
     if not observation_dir:
         return
     write_observation(
-        os.path.join(observation_dir, f"{name}.json"),
-        EmpiricalObservation(
-            schema_version="empirical_observation_v1",
-            observation_id=name,
-            research_question="Which FTM/Nomenklatura capabilities are natively available versus SearchLeads-owned under the declared probe set?",
-            method="STATIC_INSPECTION",
-            evidence_class="STATIC_INSPECTION",
-            payload=payload,
-            validity_limits=(
-                "capability inventory only",
-                "not a benchmark or product-quality claim",
-            ),
-        ),
+        observation_id=name,
+        research_question="Which FTM/Nomenklatura capabilities are natively available versus SearchLeads-owned under the declared probe set?",
+        method="STATIC_INSPECTION",
+        evidence_class="STATIC_INSPECTION",
+        payload=payload,
+        validity_limits=[
+            "capability inventory only",
+            "not a benchmark or product-quality claim",
+        ],
     )
 
 

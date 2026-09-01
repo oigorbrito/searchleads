@@ -12,7 +12,7 @@ from crawlee import Request
 from crawlee.crawlers import BasicCrawler
 from crawlee.storage_clients import MemoryStorageClient
 
-from scripts.empirical_observation import EmpiricalObservation, write_observation
+from scripts.empirical_observation import build_observation, write_observation
 from searchleads.gap_automation.planning import (
     ActionDisposition,
     ActionEffect,
@@ -36,19 +36,15 @@ def _record_observation(name: str, payload: dict[str, object]) -> None:
     if not observation_dir:
         return
     write_observation(
-        os.path.join(observation_dir, f"{name}.json"),
-        EmpiricalObservation(
-            schema_version="empirical_observation_v1",
-            observation_id=name,
-            research_question="Does the adapter preserve SearchLeads request identity and runtime metadata?",
-            method="FUNCTIONAL_PROBE",
-            evidence_class="FUNCTIONAL_PROBE",
-            payload=payload,
-            validity_limits=(
-                "single-process local probe only",
-                "no operational superiority claim",
-            ),
-        ),
+        observation_id=name,
+        research_question="Does the adapter preserve SearchLeads request identity and runtime metadata?",
+        method="FUNCTIONAL_PROBE",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload=payload,
+        validity_limits=[
+            "single-process local probe only",
+            "no operational superiority claim",
+        ],
     )
 
 

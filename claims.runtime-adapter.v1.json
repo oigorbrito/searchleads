@@ -1,0 +1,51 @@
+[
+  {
+    "claim_id": "crawlee-roundtrip-v1",
+    "research_question": "Does the thin Crawlee adapter preserve the specified SearchLeads request identity and runtime metadata under the exercised deterministic probe?",
+    "method": "FUNCTIONAL_PROBE",
+    "evidence_class": "FUNCTIONAL_PROBE",
+    "input_artifacts": [
+      ".tmp-observations/runtime-adapter-roundtrip-v1.json"
+    ],
+    "observations": [
+      "runtime-adapter-roundtrip-v1"
+    ],
+    "analysis": "The executed probe preserved action_id, cache_key/unique_key, locator, action_kind, and retry translation across three in-memory requests.",
+    "validity_limits": [
+      "single-process in-memory probe",
+      "does not establish production suitability or general runtime superiority"
+    ],
+    "supported_conclusion": "Under the exercised deterministic probe, the thin adapter preserved the specified SearchLeads request identity/cache/retry metadata.",
+    "unsupported_conclusions": [
+      "Crawlee is a better runtime",
+      "Crawlee should replace the SearchLeads runtime",
+      "Crawlee is production-ready"
+    ],
+    "evidence_state": "SUPPORTED",
+    "decision_state": "DEFER"
+  },
+  {
+    "claim_id": "crawlee-filesystem-persistence-v1",
+    "research_question": "Does the single-process Crawlee filesystem reopen preserve the specified adapter metadata and per-request retry configuration under the exercised boundary?",
+    "method": "FUNCTIONAL_PROBE",
+    "evidence_class": "FUNCTIONAL_PROBE",
+    "input_artifacts": [
+      ".tmp-observations/runtime-adapter-persistence-v1.json"
+    ],
+    "observations": [
+      "runtime-adapter-persistence-v1"
+    ],
+    "analysis": "The executed restart-like probe recovered action_id, cache_key, unique_key, per-request max_retries, and handled count after reopening the filesystem queue.",
+    "validity_limits": [
+      "single-process filesystem backend",
+      "does not establish crash recovery, multi-process safety, throughput, or production durability"
+    ],
+    "supported_conclusion": "Under the exercised single-process filesystem reopen probe, the specified adapter metadata and per-request retry configuration were recovered.",
+    "unsupported_conclusions": [
+      "Crawlee provides production-grade crash recovery",
+      "filesystem reopen proves operational reliability in production"
+    ],
+    "evidence_state": "SUPPORTED",
+    "decision_state": "DEFER"
+  }
+]
