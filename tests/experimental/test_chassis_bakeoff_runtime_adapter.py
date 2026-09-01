@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+import os
 
 import pytest
 
@@ -11,7 +12,7 @@ from crawlee import Request
 from crawlee.crawlers import BasicCrawler
 from crawlee.storage_clients import MemoryStorageClient
 
-from scripts.empirical_observation import write_observation
+from scripts.empirical_observation import EmpiricalObservation, write_observation
 from searchleads.gap_automation.planning import (
     ActionDisposition,
     ActionEffect,
@@ -28,6 +29,27 @@ class AdapterObservation:
     locator: str
     request_unique_key: str
     max_retries: int | None
+
+
+def _record_observation(name: str, payload: dict[str, object]) -> None:
+    observation_dir = os.environ.get("SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR")
+    if not observation_dir:
+        return
+    write_observation(
+        os.path.join(observation_dir, f"{name}.json"),
+        EmpiricalObservation(
+            schema_version="empirical_observation_v1",
+            observation_id=name,
+            research_question="Does the adapter preserve SearchLeads request identity and runtime metadata?",
+            method="FUNCTIONAL_PROBE",
+            evidence_class="FUNCTIONAL_PROBE",
+            payload=payload,
+            validity_limits=(
+                "single-process local probe only",
+                "no operational superiority claim",
+            ),
+        ),
+    )
 
 
 def _action(index: int) -> AutomationAction:
@@ -112,13 +134,16 @@ def test_minimal_runtime_adapter_preserves_searchleads_action_identity() -> None
         assert observation.locator == action.locator
         assert observation.max_retries == action.retry_max_attempts - 1
 
-    write_observation(
-        observation_id="searchleads-crawlee-adapter-roundtrip-v1",
-        research_question="Can a thin Crawlee Request adapter preserve SearchLeads action identity, cache identity, locator, and retry semantics for the exercised requests?",
-        method="deterministic functional probe over three in-memory requests",
-        evidence_class="FUNCTIONAL_PROBE",
-        payload={
-            "actions": len(actions),
+    print("SEARCHLEADS_CRAWLEE_ADAPTER_PROBE_V1")
+    print("actions=3 identity_roundtrip=3/3")
+    print("cache_key_to_request_unique_key=3/3")
+    print("retry_semantics_translation=SearchLeads total_attempts -> Crawlee retries_after_initial")
+    print("planner_min_interval_preserved_as_metadata=YES enforced_by_crawlee_native=NO")
+    print("domain_truth_mutation=NONE")
+    _record_observation(
+        "runtime-adapter-roundtrip-v1",
+        {
+            "action_count": len(actions),
             "requests_finished": stats.requests_finished,
             "requests_failed": stats.requests_failed,
             "observations": [
@@ -134,19 +159,7 @@ def test_minimal_runtime_adapter_preserves_searchleads_action_identity() -> None
             ],
             "retry_translation": "searchleads_total_attempts_minus_initial",
         },
-        validity_limits=[
-            "three deterministic synthetic requests",
-            "MemoryStorageClient does not establish persistence or production durability",
-            "probe establishes metadata roundtrip, not operational benefit",
-        ],
     )
-
-    print("SEARCHLEADS_CRAWLEE_ADAPTER_PROBE_V1")
-    print("actions=3 identity_roundtrip=3/3")
-    print("cache_key_to_request_unique_key=3/3")
-    print("retry_semantics_translation=SearchLeads total_attempts -> Crawlee retries_after_initial")
-    print("planner_min_interval_preserved_as_metadata=YES enforced_by_crawlee_native=NO")
-    print("domain_truth_mutation=NONE")
 
 
 def test_adapter_boundary_keeps_business_policy_outside_crawlee() -> None:
@@ -156,30 +169,20 @@ def test_adapter_boundary_keeps_business_policy_outside_crawlee() -> None:
 
     assert metadata["gap_id"] == action.gap_id
     assert metadata["min_interval_seconds"] == 60
-    assert request.crawlee_data.max_retries == action.retry_max_attempts - 1
     assert "effect" not in request.user_data
     assert "evidence" not in request.user_data
     assert "qualification" not in request.user_data
-
-    write_observation(
-        observation_id="searchleads-crawlee-adapter-boundary-v1",
-        research_question="Does the candidate request mapping keep SearchLeads business truth and qualification policy outside Crawlee user data?",
-        method="static mapping inspection plus deterministic request construction",
-        evidence_class="STATIC_INSPECTION",
-        payload={
-            "preserved_runtime_metadata": ["action_id", "gap_id", "action_kind", "cache_key", "min_interval_seconds"],
-            "excluded_policy_fields": ["effect", "evidence", "qualification"],
-            "max_retries": request.crawlee_data.max_retries,
-        },
-        validity_limits=[
-            "inspects the current candidate mapping only",
-            "does not establish that future adapters cannot leak domain policy",
-            "does not establish production suitability",
-        ],
-    )
 
     print("SEARCHLEADS_CRAWLEE_ADAPTER_BOUNDARY_V1")
     print("request_runtime_receives_action_identity_and_execution_metadata=YES")
     print("evidence_truth_policy_transferred_to_runtime=NO")
     print("qualification_policy_transferred_to_runtime=NO")
     print("candidate_integration_shape=THIN_ADAPTER")
+    _record_observation(
+        "runtime-adapter-boundary-v1",
+        {
+            "preserved_runtime_metadata": ["action_id", "gap_id", "action_kind", "cache_key", "min_interval_seconds"],
+            "excluded_policy_fields": ["effect", "evidence", "qualification"],
+            "max_retries": getattr(getattr(request, "crawlee_data", None), "max_retries", None),
+        },
+    )

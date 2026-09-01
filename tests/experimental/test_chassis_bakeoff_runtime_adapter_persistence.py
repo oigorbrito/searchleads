@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ from crawlee import Request
 from crawlee.configuration import Configuration
 from crawlee.storage_clients import FileSystemStorageClient
 
-from scripts.empirical_observation import write_observation
+from scripts.empirical_observation import EmpiricalObservation, write_observation
 from searchleads.gap_automation.planning import (
     ActionDisposition,
     ActionEffect,
@@ -42,7 +43,7 @@ def _request_from_action(action: AutomationAction) -> Request:
     return Request.from_url(
         action.locator,
         unique_key=action.cache_key,
-        max_retries=max(0, action.retry_max_attempts - 1),
+        max_retries=action.retry_max_attempts - 1,
         user_data={
             "searchleads": {
                 "action_id": action.action_id,
@@ -55,7 +56,28 @@ def _request_from_action(action: AutomationAction) -> Request:
     )
 
 
-async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int | None, int]:
+def _record_observation(name: str, payload: dict[str, object]) -> None:
+    observation_dir = os.environ.get("SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR")
+    if not observation_dir:
+        return
+    write_observation(
+        Path(observation_dir) / f"{name}.json",
+        EmpiricalObservation(
+            schema_version="empirical_observation_v1",
+            observation_id=name,
+            research_question="Does filesystem reopen preserve Crawlee request metadata?",
+            method="FUNCTIONAL_PROBE",
+            evidence_class="FUNCTIONAL_PROBE",
+            payload=payload,
+            validity_limits=(
+                "single-process filesystem backend",
+                "no external operational claim",
+            ),
+        ),
+    )
+
+
+async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int, int]:
     action = _action()
     configuration = Configuration(storage_dir=storage_dir, purge_on_start=False)
 
@@ -76,7 +98,7 @@ async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int | Non
         recovered = await second_queue.fetch_next_request()
         assert recovered is not None
         metadata = recovered.user_data["searchleads"]
-        max_retries = recovered.crawlee_data.max_retries
+        max_retries = getattr(getattr(recovered, "crawlee_data", None), "max_retries", None)
         await second_queue.mark_request_as_handled(recovered)
         queue_metadata = await second_queue.get_metadata()
         return (
@@ -101,28 +123,20 @@ def test_searchleads_action_metadata_survives_crawlee_filesystem_reopen(tmp_path
     assert max_retries == 2
     assert handled == 1
 
-    write_observation(
-        observation_id="searchleads-crawlee-adapter-persistence-v1",
-        research_question="Does SearchLeads adapter metadata and per-request retry configuration survive reopening Crawlee filesystem request storage under the exercised restart-like boundary?",
-        method="deterministic filesystem request-queue reopen functional probe",
-        evidence_class="FUNCTIONAL_PROBE",
-        payload={
+    _record_observation(
+        "runtime-adapter-persistence-v1",
+        {
             "action_id": action_id,
             "cache_key": cache_key,
             "unique_key": unique_key,
             "max_retries": max_retries,
-            "handled_request_count": handled,
+            "handled_after_reopen": handled,
         },
-        validity_limits=[
-            "single request and single filesystem storage directory",
-            "storage client re-instantiation occurs within one process",
-            "does not establish multi-process safety, throughput, or production recovery guarantees",
-        ],
     )
 
     print("SEARCHLEADS_CRAWLEE_PERSISTED_ADAPTER_V1")
-    print("restart_like_action_identity_roundtrip=YES")
-    print("cache_key_unique_key_roundtrip=YES")
-    print("request_retry_metadata_roundtrip=YES")
+    print("restart_like_action_identity_roundtrip=PASS_EXPECTED")
+    print("cache_key_unique_key_roundtrip=PASS_EXPECTED")
+    print("request_retry_metadata_roundtrip=PASS_EXPECTED")
     print("handled_after_reopen=YES")
-    print("scope=single-process filesystem backend")
+    print("scope=single-process filesystem backend; execution pending CI runner")

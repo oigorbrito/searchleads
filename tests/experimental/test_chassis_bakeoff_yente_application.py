@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from importlib.metadata import PackageNotFoundError, requires, version
 
 import pytest
@@ -12,6 +13,8 @@ except PackageNotFoundError:
 from fastapi import APIRouter
 from yente import settings
 from yente.app import create_app
+
+from scripts.empirical_observation import EmpiricalObservation, write_observation
 
 
 YENTE_STABLE_DEPENDENCIES = {
@@ -32,6 +35,27 @@ def _paths() -> set[str]:
     return {route.path for route in app.routes}
 
 
+def _record_observation(name: str, payload: dict[str, object]) -> None:
+    observation_dir = os.environ.get("SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR")
+    if not observation_dir:
+        return
+    write_observation(
+        os.path.join(observation_dir, f"{name}.json"),
+        EmpiricalObservation(
+            schema_version="empirical_observation_v1",
+            observation_id=name,
+            research_question="What stable application surface and dependency pins does the isolated Yente chassis expose in the declared probe set?",
+            method="STATIC_INSPECTION",
+            evidence_class="STATIC_INSPECTION",
+            payload=payload,
+            validity_limits=(
+                "surface inventory only",
+                "not a benchmark or production claim",
+            ),
+        ),
+    )
+
+
 def test_yente_stable_application_dependency_generation_is_explicit() -> None:
     installed = {package: version(package) for package in YENTE_STABLE_DEPENDENCIES}
     assert installed == YENTE_STABLE_DEPENDENCIES
@@ -41,6 +65,14 @@ def test_yente_stable_application_dependency_generation_is_explicit() -> None:
         print(f"{package}={installed_version}")
     print("latest_core_bakeoff_stack_is_intentionally_separate=YES")
     print("reason=yente_5_5_0_pins_older_ftm_nomenklatura_rigour")
+    _record_observation(
+        "yente-stable-dependency-inventory-v1",
+        {
+            "installed": dict(sorted(installed.items())),
+            "declared": dict(sorted(YENTE_STABLE_DEPENDENCIES.items())),
+            "core_bakeoff": dict(sorted(CURRENT_CORE_BAKEOFF.items())),
+        },
+    )
 
 
 def test_yente_exact_pins_prevent_silent_upgrade_to_current_core_bakeoff() -> None:
@@ -80,6 +112,15 @@ def test_yente_exposes_a_real_application_chassis_without_starting_external_serv
         print(f"required_route={path} present=YES")
     print("external_index_connection_started=NO")
     print("lifespan_started=NO")
+    _record_observation(
+        "yente-application-surface-v1",
+        {
+            "routes_total": len(paths),
+            "required_routes": sorted(required),
+            "external_index_connection_started": False,
+            "lifespan_started": False,
+        },
+    )
 
 
 def test_yente_has_bounded_match_and_api_limits_as_native_configuration() -> None:

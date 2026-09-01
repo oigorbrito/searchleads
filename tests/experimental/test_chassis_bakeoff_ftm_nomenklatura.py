@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import pytest
 
 pytest.importorskip("followthemoney")
@@ -12,6 +14,7 @@ from nomenklatura.db import close_db, make_session
 from nomenklatura.judgement import Judgement
 from nomenklatura.resolver import Resolver
 
+from scripts.empirical_observation import EmpiricalObservation, write_observation
 from searchleads.domain.entities import ContactPoint, Person
 from searchleads.domain.enums import ContactKind
 from searchleads.domain.facts import CandidateFact
@@ -32,6 +35,27 @@ def resolver():
         close_db()
         settings.TESTING = previous_testing
         settings.DB_URL = previous_db_url
+
+
+def _record_observation(name: str, payload: dict[str, object]) -> None:
+    observation_dir = os.environ.get("SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR")
+    if not observation_dir:
+        return
+    write_observation(
+        os.path.join(observation_dir, f"{name}.json"),
+        EmpiricalObservation(
+            schema_version="empirical_observation_v1",
+            observation_id=name,
+            research_question="Which FTM/Nomenklatura capabilities are natively available versus SearchLeads-owned under the declared probe set?",
+            method="STATIC_INSPECTION",
+            evidence_class="STATIC_INSPECTION",
+            payload=payload,
+            validity_limits=(
+                "capability inventory only",
+                "not a benchmark or product-quality claim",
+            ),
+        ),
+    )
 
 
 def test_ftm_natively_models_company_and_person_identity_fields() -> None:
@@ -99,9 +123,7 @@ def test_ftm_statement_layer_preserves_per_fact_dataset_and_origin() -> None:
         "https://brasilapi.com.br/api/cnpj/v1/12345678000190",
         "https://clinic-a.example.org/",
     }
-    # This probe tests preservation, not ordering. FollowTheMoney does not need
-    # to preserve the input list order for the evidence claim being evaluated.
-    assert set(entity.get("name")) == {"Clinica Facial A Ltda", "Clinica Facial A"}
+    assert entity.get("name") == ["Clinica Facial A Ltda", "Clinica Facial A"]
 
 
 def test_person_company_relationship_is_a_modeling_choice_not_a_searchleads_advantage() -> None:
@@ -133,7 +155,7 @@ def test_person_company_relationship_is_a_modeling_choice_not_a_searchleads_adva
     print("PERSON_COMPANY_MODEL_CHOICE_V1")
     print("ftm_person_identity_can_exist_without_company_context=YES")
     print("searchleads_person_embeds_company_context=YES")
-    print("which_model_is_better=MEASURED_SEPARATELY_NOT_ASSUMED")
+    print("model_comparison_state=MEASURED_SEPARATELY_NOT_ASSUMED")
 
 
 def test_searchleads_candidate_fact_requires_evidence_while_ftm_statement_does_not() -> None:
@@ -221,3 +243,13 @@ def test_chassis_bakeoff_capability_scorecard() -> None:
     for capability, classification in capabilities.items():
         print(f"{capability}={classification}")
     print("capability_count_is_not_winner_score=YES")
+    _record_observation(
+        "ftm-nomenklatura-capability-inventory-v1",
+        {
+            "capability_count": len(capabilities),
+            "external_native": external_native,
+            "searchleads_native": searchleads_native,
+            "capabilities": dict(sorted(capabilities.items())),
+            "interpretation": "inventory counts only",
+        },
+    )
