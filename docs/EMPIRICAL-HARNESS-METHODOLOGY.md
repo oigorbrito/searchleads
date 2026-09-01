@@ -55,7 +55,7 @@ Historical architecture documents may retain their recorded engineering decision
 
 Experimental measurements that are needed to interpret a research question must be persisted as structured JSON rather than existing only in stdout or a human scorecard.
 
-The current observation envelope is `searchleads_empirical_observation_v1` and contains:
+The machine-readable contract is `docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json`. The current observation envelope is `searchleads_empirical_observation_v1` and contains:
 
 - `observation_id`: stable identifier for the observation artifact;
 - `research_question`: the question the observation addresses;
@@ -104,15 +104,17 @@ Machine-readable claims use `EMPIRICAL_CLAIM_CONTRACT_V1.json` and contain, at m
 - `evidence_state`
 - `decision_state`
 
+`observations` is a list of stable `observation_id` values required by the claim, not free-form prose.
+
 A claim cannot use `winner`, `better`, popularity, feature count, or a composite opaque score as evidence.
 
 ## Traceability rule
 
-Every file named by `input_artifacts` must be present in the artifact bundle used to build the canonical study report.
+Every file named by `input_artifacts` must be present in the artifact bundle used to build the canonical study report. Every `observation_id` named by a claim must also be present in the validated observation bundle.
 
-If a required artifact is missing, `scripts/chassis_bakeoff_report.py` materializes the effective evidence state as `INSUFFICIENT_EVIDENCE`. It preserves the declared state separately as `declared_evidence_state` for auditability.
+If either a required input artifact or a required observation is missing, `scripts/chassis_bakeoff_report.py` materializes the effective evidence state as `INSUFFICIENT_EVIDENCE`. It preserves the declared state separately as `declared_evidence_state` for auditability.
 
-The report also records whether the current evidence is eligible to support an active decision. Missing inputs or an evidence state weaker than `SUPPORTED` never authorize an active architecture decision from the harness.
+The report also records whether the current evidence is eligible to support an active decision. Missing inputs, missing observations, or an evidence state weaker than `SUPPORTED` never authorize an active architecture decision from the harness.
 
 ## Raw evidence retention
 
@@ -133,6 +135,8 @@ A summary does not replace raw observations.
 ## Benchmark discipline
 
 A benchmark must identify its research question, baseline, challenger, workload, environment, metrics, procedure, repetitions or justification for limited executions, analysis method, limitations, and threats to validity.
+
+A deterministic benchmark may justify not repeating byte-identical computations when repeated executions would not estimate stochastic variance, but it must retain the individual case/pair outcomes needed to recompute its aggregate metrics.
 
 A functional probe must not be relabeled as a benchmark merely because it produces a number.
 
