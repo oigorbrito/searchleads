@@ -1,53 +1,56 @@
 # SEARCHLEADS_CHASSIS_SCORECARD_V1
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`.
+Status: `HISTORICAL_DECISION_RECORD`.
 
-Live authority as of 2026-08-30:
+This document preserves architecture decisions recorded during the original chassis bake-off. It is not the canonical empirical evidence report for the current harness.
 
-- PR #113 is open on `work/chassis-bakeoff-v1` against `work/persistence-load-identity-invariants-v1`.
-- The latest GitHub Actions runs for the PR complete with `failure`, but job payloads expose `steps: []` and no logs, so there is still no executable benchmark evidence to interpret.
-- Therefore all scorecard decisions below are architecture decisions, not PASS claims.
+The canonical methodology is `EMPIRICAL-HARNESS-METHODOLOGY.md`. New empirical claims must be represented through the machine-readable claim contract and the canonical study report.
 
 ## Reading rule
 
-`KEEP` means the current SearchLeads implementation already fits the product requirement well enough that replacement is not justified by the current evidence.
+The legacy labels `KEEP`, `REPLACE`, `COMPOSE`, and `PROVISIONAL_COMPOSE` are historical engineering decision labels. They are not evidence states and they do not establish comparative superiority.
 
-`REPLACE` means the current implementation/model is structurally wrong or too costly and should be displaced by the challenger.
+For this historical record:
 
-`COMPOSE` means the right answer is a composition of SearchLeads and external components.
+- `KEEP` means the project chose to retain the current boundary at that point in time;
+- `REPLACE` means the project chose to displace that boundary at that point in time;
+- `COMPOSE` means the project chose a composed boundary;
+- `PROVISIONAL_COMPOSE` means the project chose a composed boundary while explicitly retaining an unresolved evaluation dependency.
 
-`DEFER` means the claim is still benchmark-dependent or the runner has not yet produced usable evidence.
+Under the current methodology, these map to `decision_state=HISTORICAL_DECISION` plus the recorded legacy label. They must not be interpreted as `evidence_state=SUPPORTED` unless a current claim bundle independently establishes that state.
 
-## Scorecard
+The previous scorecard also used qualitative columns such as `strong +`, `medium +`, and confidence labels. Those values were engineering assessments, not reproducible empirical measurements. They are therefore removed from the canonical reading of this document.
 
-| Component | Current SearchLeads | Best challenger | Decision | Evidence class | Quality delta | False-positive/merge delta | Operational delta | Custom-code delta | Migration cost | Upstream divergence | Confidence |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| Entity model | `Person` embeds `company_id`; `Company.person_ids` is a snapshot | FTM `Person` + first-class relationship entities | `REPLACE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
-| Relationship model | person/company coupling inside identity | `PersonCompanyRelationship` / FTM `Directorship` / `Employment` | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
-| Professional registration | mixed with person/role evidence | person-scoped registration entity | `REPLACE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | + | + | - | medium | low | high |
-| Evidence store | SearchLeads raw Evidence with digest/integrity | no better challenger found yet | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | 0 | low | 0 | high |
-| Facts/statements | `CandidateFact`/`CanonicalFact`/`Conflict` overlap semantics | FTM `Statement` + explicit Evidence bridge | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
-| Provenance | parallel SearchLeads lineage objects | FTM statement metadata + SearchLeads Evidence identity | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
-| Conflict handling | persisted conflict records and derived workflow state | derive by default; persist only adjudication or irreducible cache state | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium + | + | - | low | low | medium |
-| Company ER | current company matcher / field fusion | Nomenklatura `LogicV2` / `RegressionV1` / `EntityResolveRegression` + Rigour normalization | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | medium + | review-first | medium | low | low | medium |
-| Person ER | current person resolution | Nomenklatura / Splink / Dedupe challengers | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | strong + | review-first | medium | low | low | medium |
-| Normalization | duplicated SearchLeads name normalization | Rigour + `python-stdnum` + official CNPJ oracle | `COMPOSE` | `OFFICIAL_SPEC` + `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium risk | + | - | medium | low | medium |
-| Identifier validation | shape-only CNPJ canonicalization in parts of the stack | `python-stdnum` / official Receita-Serpro CNPJ contract | `REPLACE` | `OFFICIAL_SPEC` + `ENGINEERING_EVIDENCE` | strong + | strong + | + | - | low | low | high |
-| Acquisition runtime | `gap_automation.execution` | Crawlee request queue / retry / sessions / stats | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | low | medium |
-| Planner | SearchLeads business planner and qualification policy | no challenger yet | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | 0 | 0 | + | 0 | low | 0 | high |
-| API/app chassis | thin SearchLeads app layer with growing custom ops code | thin FastAPI chassis; Yente only as separate service if needed | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | medium | medium |
-| Persistence | generic immutable `domain_records` + `evidence_records` + v3 integrity | keep storage shape; extend codecs and semantic checks | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | + | + | + | 0 | low | 0 | high |
-| Contact discovery | person-owned corporate contact discovery | relationship-scoped contact links | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
-| Contact validation | person/company-scoped validation state | relationship-scoped validation gate | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
-| Qualification | SearchLeads commercial policy | keep policy; feed it relationship-scoped inputs | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | 0 | 0 | + | 0 | low | 0 | high |
-| Selective review | SearchLeads review workflow | derived conflict + evidence queue composition | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium + | + | - | medium | low | medium |
-| Observability | current SearchLeads telemetry / measurement | Crawlee stats + SearchLeads business telemetry | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | 0 | strong + | - | low | low | medium |
-| Telemetry | domain telemetry split from acquisition telemetry | explicit adapter boundary | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | 0 | strong + | - | low | low | medium |
-| Deployment | current lightweight SearchLeads deployment path | thin FastAPI app + optional external search/service split | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | medium | medium |
+## Historical component decisions
 
-## Consolidated architecture
+| Component | SearchLeads boundary at the time | Challenger or alternative considered | Historical decision | Current empirical interpretation |
+|---|---|---|---|---|
+| Entity model | `Person` embeds `company_id`; `Company.person_ids` snapshot | FTM person plus first-class relationship entities | `REPLACE` | structural/product reasoning recorded; comparative superiority must be re-established through explicit claims if needed |
+| Relationship model | person/company coupling inside identity | explicit relationship entities | `COMPOSE` | structural/product reasoning recorded; not a benchmark result |
+| Professional registration | mixed with person/role evidence | person-scoped registration entity | `REPLACE` | structural/product reasoning recorded; not a benchmark result |
+| Evidence store | SearchLeads raw Evidence with digest/integrity | external statement/evidence approaches | `KEEP` | retention decision; integrity behavior is separately testable |
+| Facts/statements | Candidate/Canonical/Conflict model | FTM statements plus Evidence bridge | `COMPOSE` | composition decision; requires claim-level evidence for any comparative benefit assertion |
+| Provenance | SearchLeads lineage objects | statement metadata plus SearchLeads Evidence identity | `COMPOSE` | composition decision; not a universal superiority claim |
+| Conflict handling | persisted conflict records | derive by default and persist adjudication/cache state | `COMPOSE` | engineering design choice; empirical effect remains workload-dependent |
+| Company ER | SearchLeads company matcher/field fusion | Nomenklatura and normalization challengers | `PROVISIONAL_COMPOSE` | historical local evaluation existed, but current canonical support requires preserved raw artifacts and claim traceability |
+| Person ER | SearchLeads person resolution | Nomenklatura/Splink/Dedupe challengers | `PROVISIONAL_COMPOSE` | historical review-first decision; no general auto-match authority follows from this record |
+| Normalization | SearchLeads normalization | Rigour and `python-stdnum` boundaries | `COMPOSE` | boundary decision; specific normalization effects require controlled evidence |
+| Identifier validation | shape-only CNPJ handling in some paths | formal CNPJ validation | `REPLACE` | correctness distinction between canonicalization and validation is separate from library superiority |
+| Acquisition runtime | `gap_automation.execution` | Crawlee request/runtime machinery | `COMPOSE` | historical composition decision; throughput/recovery benefit remains an empirical question |
+| Planner | SearchLeads business planner | no equivalent challenger selected | `KEEP` | product authority retained; not a benchmark win |
+| API/app chassis | SearchLeads app shell | thin FastAPI shell; Yente as optional separate service | `COMPOSE` | historical application decision; comparative operational benefit not established by this label |
+| Persistence | generic immutable domain/evidence records | retained shape with additional checks/codecs | `KEEP` | retention decision; correctness and recovery are tested independently |
+| Contact discovery | person/company-owned contact discovery | relationship-scoped contact links | `COMPOSE` | structural decision; production-quality benefit requires separate evidence |
+| Contact validation | person/company-scoped validation | relationship-scoped validation gate | `COMPOSE` | structural decision; production-quality benefit requires separate evidence |
+| Qualification | SearchLeads commercial policy | relationship-scoped inputs | `KEEP` | product-policy authority retained; not an empirical challenger result |
+| Selective review | SearchLeads review workflow | derived conflict/evidence queue composition | `COMPOSE` | workflow decision; human-review outcome quality is a separate study question |
+| Observability | SearchLeads telemetry | Crawlee request stats plus SearchLeads business telemetry | `COMPOSE` | capability composition; operational benefit requires empirical evaluation |
+| Telemetry | domain telemetry mixed with acquisition concerns | explicit adapter boundary | `COMPOSE` | structural decision; not a performance result |
+| Deployment | lightweight SearchLeads deployment | thin FastAPI plus optional isolated search service | `COMPOSE` | historical engineering decision; deployment cost remains context-dependent |
 
-The leading shape after the current bake-off is:
+## Historical architecture interpretation
+
+The bake-off produced the following historical design direction:
 
 ```text
 SearchLeads commercial policy
@@ -56,37 +59,40 @@ SearchLeads commercial policy
 PersonIdentity + PersonCompanyRelationship + ProfessionalRegistration
     |
     v
-FTM semantic statements
-    |
-    v
-explicit StatementEvidenceLink many-to-many bridge
+semantic statements / explicit evidence linkage
     |
     v
 SearchLeads raw Evidence + integrity + replay
     |
     v
-thin FastAPI chassis
+thin application chassis
     |
     v
-Crawlee acquisition runtime adapter
+acquisition runtime adapter
 ```
 
-The current SearchLeads person model does not survive unchanged. The raw Evidence store does.
+This diagram records a chosen architecture direction. It does not constitute evidence that each selected component is empirically superior to every alternative.
 
-The strongest provisional decisions are:
+## Claims that require current traceable evidence before reuse
 
-- `Person.company_id` must not remain part of canonical identity.
-- relationship scope must own company-dependent role/contact facts.
-- raw Evidence identity must remain distinct from statement identity.
-- commercial qualification must stay separate from entity identity.
-- Crawlee is a strong acquisition-runtime challenger, but only as an adapter.
-- Yente is useful as a separate search/match service candidate, not as the root chassis.
-- conflict handling should derive by default and persist only adjudication or irreducible cache state.
+The following legacy statements must not be reused as current empirical conclusions unless represented by a canonical claim bundle with preserved inputs:
 
-## Residual gaps
+- one ER implementation is more accurate than another;
+- one normalization boundary improves entity resolution generally;
+- Crawlee improves throughput, recovery cost, or production reliability;
+- a thin FastAPI shell has lower operational cost than Yente or another service chassis;
+- derived conflict handling improves quality or cost;
+- any qualitative `strong +` or `medium +` assessment represents a measured effect.
 
-- Company ER and Person ER now have executed local benchmark policies, but external challenger breadth remains partially blocked.
-- execution of the benchmark harness is still blocked for some challengers by Windows build/runtime dependencies.
-- deployment cost, throughput and recovery are still benchmark-dependent.
+When the required evidence is absent, the appropriate current state is `NOT_EVALUATED` or `INSUFFICIENT_EVIDENCE`, not an inferred winner.
 
-Until runners produce real step logs, those gaps remain `DEFER` and must not be narrated as PASS.
+## Current authority
+
+Use this file for historical decision provenance only.
+
+Use the following for current empirical authority:
+
+1. `EMPIRICAL-HARNESS-METHODOLOGY.md` for method and vocabulary;
+2. raw manifests/JUnit/observation artifacts for execution evidence;
+3. `EMPIRICAL_CLAIM_CONTRACT_V1.json` for claim structure;
+4. `scripts/chassis_bakeoff_report.py` output for deterministic claim/evidence aggregation.
