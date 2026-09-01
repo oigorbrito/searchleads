@@ -1,63 +1,53 @@
-"""Evidence-backed person/role discovery for PERSON_AND_ROLE_DISCOVERY_V1."""
 from __future__ import annotations
 
+import hashlib
+import html
 from dataclasses import dataclass
 from html.parser import HTMLParser
-import hashlib
 import re
 from typing import Iterable
-from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
+from urllib.parse import urljoin
 
-from searchleads.contact_discovery import HTTPPageObservation, http_get
 from searchleads.domain import (
     CandidateFact,
-    Company,
-    ContactKind,
-    ContactPoint,
-    ContactStatus,
     DecisionClass,
     Evidence,
     Person,
     Provenance,
     Source,
 )
-from searchleads.persistence import SQLiteRepository
+from searchleads.normalization import normalize_text
+from searchleads.sources.brasilapi import HTTPObservation, http_get
 
-AGENT = "searchleads.person_discovery.company_people.v1"
-NAME_FIELD = "person_name"
-ROLE_FIELD = "professional_role_title"
-_ROLE_RE = re.compile(
-    r"^(?:diretor(?:a)?(?:-presidente)?\b|presidente\b|vice-presidente\b|ceo\b|cfo\b|cto\b|coo\b|"
-    r"chief\b|gerente\b|superintendente\b|head\b|s[oó]ci[oa]\b|partner\b|"
-    r"conselheir[oa]\b|secret[áa]ri[oa]\b|auditor(?:a)?\b|ouvidor(?:a)?\b|corregedor(?:a)?\b)",
-    re.I,
+
+AGENT = "company-people-discovery:v1"
+_ROLE_TERMS = (
+    "administrador",
+    "administradora",
+    "cirurgiao dentista",
+    "cirurgiã dentista",
+    "dentista",
+    "diretor",
+    "diretora",
+    "responsavel tecnico",
+    "responsável técnico",
+    "responsavel tecnica",
+    "responsável técnica",
+    "socio",
+    "sócio",
+    "socia",
+    "sócia",
+    "titular",
 )
-_EMAIL_RE = re.compile(r"(?<![\w.+-])([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})(?![\w.-])", re.I)
-_PHONE_RE = re.compile(r"(?:telefone|fone|tel\.?|phone)\s*:?\s*(\+?[\d(][\d\s()./-]{5,}\d)", re.I)
-_IGNORED = {"script", "style", "noscript", "template"}
-_PARTICLES = {"de", "da", "do", "das", "dos", "e", "del", "van", "von"}
-
-
-class PersonDiscoveryError(RuntimeError):
-    """Base error for person/role discovery."""
-
-
-class PersonPageResponseError(PersonDiscoveryError):
-    """Non-success response persisted before person extraction."""
-
-    def __init__(self, status_code: int, evidence_id: str) -> None:
-        self.status_code = status_code
-        self.evidence_id = evidence_id
-        super().__init__(f"people page returned HTTP {status_code}; evidence={evidence_id}")
-
-
-class PersonAcquisitionError(PersonDiscoveryError):
-    """Transport observation is not usable for the requested people page."""
+_EMAIL_RE = re.compile(r"(?i)(?<![A-Z0-9._%+\-])[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}(?![A-Z0-9._%+\-])")
+_PHONE_RE = re.compile(r"(?<!\d)(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?(?:9\s*)?\d{4}[\s.\-]?\d{4}(?!\d)")
+_CRO_RE = re.compile(r"(?i)\bCRO\s*[-/:]?\s*([A-Z]{2})?\s*[-/:]?\s*(\d{2,8})\b")
+_TAG_WS_RE = re.compile(r"\s+")
 
 
 @dataclass(frozen=True, slots=True)
-class PersonContactObservation:
-    kind: ContactKind
+class PageEvent:
+    kind: str
     value: str
 
 
@@ -65,176 +55,146 @@ class PersonContactObservation:
 class PersonRoleObservation:
     ordinal: int
     name: str
-    title: str
-    contacts: tuple[PersonContactObservation, ...] = ()
-
-    def __post_init__(self) -> None:
-        if self.ordinal < 1:
-            raise ValueError("ordinal must be positive")
-        if not self.name.strip() or not self.title.strip():
-            raise ValueError("name and title must not be blank")
+    role: str
+    contacts: tuple[tuple[str, str], ...]
 
 
 @dataclass(frozen=True, slots=True)
-class PersonDiscoveryResult:
-    company: Company
+class PersonRoleDiscoveryResult:
     source: Source
     evidence: Evidence
-    observations: tuple[PersonRoleObservation, ...]
     people: tuple[Person, ...]
+    facts: tuple[CandidateFact, ...]
     provenances: tuple[Provenance, ...]
-    candidate_facts: tuple[CandidateFact, ...]
-    contacts: tuple[ContactPoint, ...]
-    evidence_was_new: bool
 
 
-@dataclass(frozen=True, slots=True)
-class _Event:
-    kind: str
-    value: str
-
-
-class _EventParser(HTMLParser):
+class _PeopleHTMLParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.events: list[_Event] = []
-        self._ignored_depth = 0
+        self.events: list[PageEvent] = []
+        self._skip_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        tag = tag.casefold()
-        if tag in _IGNORED:
-            self._ignored_depth += 1
+        tag = tag.lower()
+        if tag in {"script", "style", "svg", "noscript"}:
+            self._skip_depth += 1
             return
-        if self._ignored_depth:
+        if self._skip_depth:
             return
-        if tag == "a":
-            data = {key.casefold(): value for key, value in attrs if key}
-            href = data.get("href")
-            if href:
-                self.events.append(_Event("href", href.strip()))
+        attributes = {str(key).lower(): value or "" for key, value in attrs}
+        if tag == "a" and attributes.get("href"):
+            self.events.append(PageEvent("href", html.unescape(attributes["href"])))
+        if tag in {"br", "hr", "li", "p", "div", "section", "article", "tr", "td", "th", "h1", "h2", "h3", "h4", "h5", "h6"}:
+            self.events.append(PageEvent("boundary", tag))
 
     def handle_endtag(self, tag: str) -> None:
-        if tag.casefold() in _IGNORED and self._ignored_depth:
-            self._ignored_depth -= 1
+        tag = tag.lower()
+        if tag in {"script", "style", "svg", "noscript"}:
+            if self._skip_depth:
+                self._skip_depth -= 1
+            return
+        if not self._skip_depth and tag in {"li", "p", "div", "section", "article", "tr", "td", "th", "h1", "h2", "h3", "h4", "h5", "h6"}:
+            self.events.append(PageEvent("boundary", tag))
 
     def handle_data(self, data: str) -> None:
-        if self._ignored_depth:
+        if self._skip_depth:
             return
-        text = " ".join(data.split())
+        text = _clean_text(data)
         if text:
-            self.events.append(_Event("text", text))
+            self.events.append(PageEvent("text", text))
 
 
-def _is_role(text: str) -> bool:
-    return bool(_ROLE_RE.match(text.strip()))
+def _clean_text(value: str) -> str:
+    return _TAG_WS_RE.sub(" ", html.unescape(value)).strip()
 
 
-def _is_name(text: str) -> bool:
-    value = " ".join(text.split())
-    if not 2 <= len(value.split()) <= 10 or any(ch.isdigit() for ch in value) or any(x in value for x in "@:/"):
+def _normal(value: str) -> str:
+    return normalize_text(value).lower()
+
+
+def _is_role(value: str) -> bool:
+    normalized = _normal(value)
+    return any(term in normalized for term in _ROLE_TERMS)
+
+
+def _is_name(value: str) -> bool:
+    cleaned = _clean_text(value)
+    if len(cleaned) < 3 or len(cleaned) > 120:
         return False
-    words = value.split()
-    for word in words:
-        bare = word.strip(".,;()[]{}'’-")
-        if not bare:
-            return False
-        if bare.casefold() in _PARTICLES:
-            continue
-        letters = [ch for ch in bare if ch.isalpha()]
-        if not letters:
-            return False
-        first = letters[0]
-        if not (first.isupper() or bare.isupper()):
-            return False
-    lowered = value.casefold()
-    blocked = ("telefone", "email", "e-mail", "contato", "diretoria", "empresa", "serpro sede")
-    return not any(term in lowered for term in blocked)
-
-
-def _valid_email(value: str) -> bool:
-    if len(value) > 254 or value.count("@") != 1:
+    if "@" in cleaned or _PHONE_RE.search(cleaned) or _CRO_RE.search(cleaned):
         return False
-    local, domain = value.rsplit("@", 1)
-    if not local or len(local) > 64 or not domain or "." not in domain:
+    words = re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ'’-]+", cleaned)
+    if len(words) < 2 or len(words) > 8:
         return False
-    if re.fullmatch(r"[A-Z0-9._%+-]+", local, re.I) is None or re.fullmatch(r"[A-Z0-9.-]+", domain, re.I) is None:
+    if any(character.isdigit() for character in cleaned):
         return False
-    labels = domain.split(".")
-    return len(domain) <= 253 and all(1 <= len(label) <= 63 and not label.startswith("-") and not label.endswith("-") for label in labels)
+    normalized = _normal(cleaned)
+    if _is_role(normalized):
+        return False
+    stop_phrases = (
+        "entre em contato",
+        "fale conosco",
+        "nossa equipe",
+        "quem somos",
+        "saiba mais",
+        "todos os direitos",
+    )
+    return not any(phrase in normalized for phrase in stop_phrases)
 
 
-def _clean_phone(value: str) -> str | None:
-    cleaned = " ".join(unquote(value).split()).strip(" ,;.")
-    digits = re.sub(r"\D", "", cleaned)
-    return cleaned if 7 <= len(digits) <= 15 else None
+def _normalize_email(value: str) -> str:
+    return value.strip().lower().strip(".,;:()[]{}<>")
 
 
-def _profile_url(base_url: str, href: str) -> str | None:
-    try:
-        parsed = urlsplit(urljoin(base_url, href))
-    except ValueError:
+def _normalize_phone(value: str) -> str | None:
+    digits = "".join(character for character in value if character.isdigit())
+    if digits.startswith("55") and len(digits) in {12, 13}:
+        digits = digits[2:]
+    if len(digits) not in {10, 11}:
         return None
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
-        return None
-    host = parsed.hostname.casefold().rstrip(".")
-    if host != "linkedin.com" and not host.endswith(".linkedin.com"):
-        return None
-    segments = [part for part in parsed.path.split("/") if part]
-    if len(segments) != 2 or segments[0].casefold() != "in":
-        return None
-    return urlunsplit((parsed.scheme.lower(), host, f"/in/{segments[1]}", "", ""))
+    return digits
 
 
-def _contact_key(item: PersonContactObservation) -> tuple[str, str]:
-    if item.kind is ContactKind.EMAIL:
-        value = item.value.casefold()
-    elif item.kind is ContactKind.PHONE:
-        value = re.sub(r"\D", "", item.value)
-    else:
-        value = item.value.rstrip("/").casefold()
-    return item.kind.value, value
+def _contacts_from_value(url: str, value: str) -> tuple[tuple[str, str], ...]:
+    contacts: set[tuple[str, str]] = set()
+    lower = value.lower()
+    if lower.startswith("mailto:"):
+        email = _normalize_email(value[7:].split("?", 1)[0])
+        if email and _EMAIL_RE.fullmatch(email):
+            contacts.add(("email", email))
+    elif lower.startswith("tel:"):
+        phone = _normalize_phone(value[4:].split("?", 1)[0])
+        if phone:
+            contacts.add(("phone", phone))
+    elif lower.startswith("http://") or lower.startswith("https://"):
+        absolute = urljoin(url, value)
+        if "wa.me/" in absolute.lower() or "whatsapp" in absolute.lower():
+            phone = _normalize_phone(absolute)
+            if phone:
+                contacts.add(("phone", phone))
+    for email_match in _EMAIL_RE.findall(value):
+        contacts.add(("email", _normalize_email(email_match)))
+    for phone_match in _PHONE_RE.findall(value):
+        phone = _normalize_phone(phone_match)
+        if phone:
+            contacts.add(("phone", phone))
+    for state, number in _CRO_RE.findall(value):
+        registry = f"CRO-{state.upper()}-{number}" if state else f"CRO-{number}"
+        contacts.add(("professional_registration", registry))
+    return tuple(sorted(contacts))
 
 
-def _contacts_in_window(base_url: str, events: list[_Event]) -> tuple[PersonContactObservation, ...]:
-    found: list[PersonContactObservation] = []
+def _contacts_in_window(url: str, events: Iterable[PageEvent]) -> tuple[tuple[str, str], ...]:
+    contacts: set[tuple[str, str]] = set()
     for event in events:
-        if event.kind == "href":
-            lower = event.value.casefold()
-            if lower.startswith("mailto:"):
-                email = unquote(event.value.split(":", 1)[1].split("?", 1)[0]).strip()
-                if _valid_email(email):
-                    found.append(PersonContactObservation(ContactKind.EMAIL, email))
-                continue
-            if lower.startswith("tel:"):
-                value = event.value.split(":", 1)[1].split("?", 1)[0].split(";", 1)[0]
-                if phone := _clean_phone(value):
-                    found.append(PersonContactObservation(ContactKind.PHONE, phone))
-                continue
-            if profile := _profile_url(base_url, event.value):
-                found.append(PersonContactObservation(ContactKind.PROFESSIONAL_PROFILE, profile))
-        else:
-            for match in _EMAIL_RE.finditer(event.value):
-                email = match.group(1)
-                if _valid_email(email):
-                    found.append(PersonContactObservation(ContactKind.EMAIL, email))
-            for match in _PHONE_RE.finditer(event.value):
-                if phone := _clean_phone(match.group(1)):
-                    found.append(PersonContactObservation(ContactKind.PHONE, phone))
-    deduped: dict[tuple[str, str], PersonContactObservation] = {}
-    for item in found:
-        deduped.setdefault(_contact_key(item), item)
-    return tuple(sorted(deduped.values(), key=lambda item: (item.kind.value, _contact_key(item)[1])))
+        if event.kind in {"text", "href"}:
+            contacts.update(_contacts_from_value(url, event.value))
+    return tuple(sorted(contacts))
 
 
-def discover_person_roles_from_html(url: str, html: str, *, contact_window_events: int = 12) -> tuple[PersonRoleObservation, ...]:
-    parsed = urlsplit(url)
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
-        raise ValueError("url must be an absolute http/https URL")
-    if not isinstance(html, str):
-        raise TypeError("html must be text")
-    if contact_window_events < 1:
-        raise ValueError("contact_window_events must be positive")
-    parser = _EventParser(); parser.feed(html)
+def _extract_observations(url: str, raw_html: str, *, contact_window_events: int = 12) -> tuple[PersonRoleObservation, ...]:
+    parser = _PeopleHTMLParser()
+    parser.feed(raw_html)
     events = parser.events
     results: list[PersonRoleObservation] = []
     ordinal = 0
@@ -243,7 +203,8 @@ def discover_person_roles_from_html(url: str, html: str, *, contact_window_event
             continue
         name_index: int | None = None
         text_seen = 0
-        for idx in range(role_index + 1, min(len(events), role_index + 12)):
+        lower_bound = max(-1, role_index - 8)
+        for idx in range(role_index - 1, lower_bound, -1):
             candidate = events[idx]
             if candidate.kind != "text":
                 continue
@@ -273,8 +234,11 @@ def _digest(value: str) -> str:
 
 
 def _fact_and_provenance(person_id: str, field_name: str, value: str, evidence: Evidence, suffix: str) -> tuple[Provenance, CandidateFact]:
-    provenance_id = f"provenance:person-discovery:{suffix}:{_digest(person_id + '\0' + evidence.evidence_id)[:24]}"
-    fact_id = f"fact:person-discovery:{suffix}:{_digest(person_id + '\0' + value + '\0' + evidence.evidence_id)[:24]}"
+    separator = "\0"
+    provenance_material = person_id + separator + evidence.evidence_id
+    fact_material = person_id + separator + value + separator + evidence.evidence_id
+    provenance_id = f"provenance:person-discovery:{suffix}:{_digest(provenance_material)[:24]}"
+    fact_id = f"fact:person-discovery:{suffix}:{_digest(fact_material)[:24]}"
     provenance = Provenance(
         provenance_id, person_id, field_name, (evidence.evidence_id,),
         "discover-person-role-from-company-page-v1", evidence.captured_at, AGENT,
@@ -290,59 +254,68 @@ class CompanyPeopleSource:
     def __init__(self, transport=http_get) -> None:
         self._transport = transport
 
-    def ingest(self, company_id: str, url: str, repository: SQLiteRepository) -> PersonDiscoveryResult:
-        company = repository.load(Company, company_id)
-        if company is None:
-            raise ValueError(f"company must already be persisted: {company_id}")
-        observation: HTTPPageObservation = self._transport(url)
-        if observation.url != url:
-            raise PersonAcquisitionError("transport returned an observation for a different URL")
-        source_id = f"source:company-people-page:{_digest(url)[:24]}"
-        source = Source(source_id, "company-people-page", url, "Company people page")
-        repository.save(source)
-        observation_id = _digest(f"{url}\0{observation.status_code}\0{observation.raw_html}")
-        evidence_id = f"evidence:company-people-page:{observation_id}"
-        existing = repository.load(Evidence, evidence_id)
-        if existing is None:
-            evidence = Evidence(
-                evidence_id, source_id, url, observation.captured_at, observation.raw_html,
-                f"sha256:{_digest(observation.raw_html)}",
-                {"http_status": observation.status_code, "headers": dict(observation.headers), "transport": "http"},
-            )
-            repository.save(evidence); evidence_was_new = True
+    def fetch(
+        self,
+        source: Source,
+        company_id: str,
+        url: str,
+        *,
+        fetched_at=None,
+        body: str | None = None,
+    ) -> PersonRoleDiscoveryResult:
+        if body is None:
+            observation = self._transport(url)
+            raw_payload = observation.raw_payload
+            captured_at = fetched_at or observation.captured_at
+            locator = observation.url
         else:
-            if existing.locator != url or existing.raw_payload != observation.raw_html:
-                raise PersonAcquisitionError("content-addressed evidence ID collision")
-            evidence = existing; evidence_was_new = False
-        if observation.status_code != 200:
-            raise PersonPageResponseError(observation.status_code, evidence.evidence_id)
-
-        observations = discover_person_roles_from_html(url, observation.raw_html)
-        people: list[Person] = []; provenances: list[Provenance] = []; facts: list[CandidateFact] = []; contacts: list[ContactPoint] = []
-        for item in observations:
-            normalized_name = " ".join(item.name.split()).casefold()
-            normalized_role = " ".join(item.title.split()).casefold()
-            person_id = "person:observation:" + _digest(
-                f"{company_id}\0{evidence.evidence_id}\0{item.ordinal}\0{normalized_name}\0{normalized_role}"
+            raw_payload = body
+            captured_at = fetched_at
+            locator = url
+        if captured_at is None:
+            raise ValueError("fetched_at is required when body is supplied")
+        evidence_id = f"evidence:person-discovery:{_digest(locator + '\0' + captured_at.isoformat())[:24]}"
+        evidence = Evidence(
+            evidence_id,
+            source.source_id,
+            locator,
+            captured_at,
+            raw_payload,
+            metadata={"purpose": "person-role-discovery"},
+        )
+        observations = _extract_observations(locator, raw_payload)
+        people: list[Person] = []
+        facts: list[CandidateFact] = []
+        provenances: list[Provenance] = []
+        for observation in observations:
+            person_id = f"person:discovery:{_digest(company_id + '\0' + observation.name)[:24]}"
+            role_provenance, role_fact = _fact_and_provenance(
+                person_id, "role", observation.role, evidence, "role"
             )
-            name_prov, name_fact = _fact_and_provenance(person_id, NAME_FIELD, item.name, evidence, "name")
-            role_prov, role_fact = _fact_and_provenance(person_id, ROLE_FIELD, item.title, evidence, "role")
-            person_contacts: list[ContactPoint] = []
-            for observed_contact in item.contacts:
-                contact_id = "contact:person-discovered:" + _digest(
-                    f"{person_id}\0{observed_contact.kind.value}\0{_contact_key(observed_contact)[1]}\0{evidence.evidence_id}"
+            name_provenance, name_fact = _fact_and_provenance(
+                person_id, "name", observation.name, evidence, "name"
+            )
+            provenances.extend((name_provenance, role_provenance))
+            facts.extend((name_fact, role_fact))
+            people.append(
+                Person(
+                    person_id,
+                    company_id,
+                    relationship_evidence_ids=(evidence.evidence_id,),
+                    candidate_fact_ids=(name_fact.fact_id, role_fact.fact_id),
                 )
-                person_contacts.append(ContactPoint(
-                    contact_id, person_id, observed_contact.kind, observed_contact.value,
-                    (evidence.evidence_id,), ContactStatus.DISCOVERED, evidence.captured_at,
-                ))
-            person = Person(
-                person_id, company_id, (evidence.evidence_id,),
-                (name_fact.fact_id, role_fact.fact_id), (), tuple(c.contact_id for c in person_contacts),
             )
-            repository.save(person)
-            for provenance in (name_prov, role_prov): repository.save(provenance)
-            for fact in (name_fact, role_fact): repository.save(fact)
-            for contact in person_contacts: repository.save(contact)
-            people.append(person); provenances.extend((name_prov, role_prov)); facts.extend((name_fact, role_fact)); contacts.extend(person_contacts)
-        return PersonDiscoveryResult(company, source, evidence, observations, tuple(people), tuple(provenances), tuple(facts), tuple(contacts), evidence_was_new)
+        return PersonRoleDiscoveryResult(
+            source,
+            evidence,
+            tuple(people),
+            tuple(facts),
+            tuple(provenances),
+        )
+
+
+__all__ = [
+    "CompanyPeopleSource",
+    "PersonRoleDiscoveryResult",
+    "PersonRoleObservation",
+]
