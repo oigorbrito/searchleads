@@ -11,6 +11,7 @@ from scripts.chassis_bakeoff_report import (
     load_json_artifact,
     load_observations,
     load_raw_artifact,
+    main as report_main,
 )
 from scripts.empirical_observation import build_observation
 
@@ -93,6 +94,36 @@ def test_report_is_deterministic_and_traceable(tmp_path: Path) -> None:
     assert observations[0].path in paths
     assert claims[0].path in paths
     assert len(first["report_sha256"]) == 64
+
+
+def test_cli_builds_partial_report_when_only_manifest_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    manifest_path = _write_json(tmp_path / "manifest.json", {"python": "3.12", "sha": "partial"})
+    output_path = tmp_path / "study-report.json"
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "chassis_bakeoff_report.py",
+            "--study-id",
+            "partial-study",
+            "--manifest",
+            str(manifest_path),
+            "--junit",
+            "--output",
+            str(output_path),
+        ],
+    )
+
+    assert report_main() == 0
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["study_id"] == "partial-study"
+    assert payload["junit_summaries"] == []
+    assert payload["observations"] == []
+    assert payload["claims"] == []
+    assert [item["path"] for item in payload["artifacts"]] == [manifest_path.as_posix()]
+    assert len(payload["report_sha256"]) == 64
 
 
 def test_missing_claim_evidence_is_downgraded(tmp_path: Path) -> None:
