@@ -51,6 +51,42 @@ A decision label is not evidence. In particular, `ADOPT`, `COMPOSE`, `RETAIN`, a
 
 Historical architecture documents may retain their recorded engineering decisions while explicitly distinguishing those decisions from the evidence available at the time.
 
+## Structured observation contract
+
+Experimental measurements that are needed to interpret a research question must be persisted as structured JSON rather than existing only in stdout or a human scorecard.
+
+The current observation envelope is `searchleads_empirical_observation_v1` and contains:
+
+- `observation_id`: stable identifier for the observation artifact;
+- `research_question`: the question the observation addresses;
+- `method`: the concrete procedure class used to obtain it;
+- `evidence_class`: one value from the evidence taxonomy above;
+- `payload`: raw structured outcomes and measurements needed for later analysis;
+- `validity_limits`: study-specific limits on what may be inferred.
+
+`scripts/empirical_observation.py` writes these files only when `SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR` is configured. Local tests therefore remain executable without manufacturing an evidence bundle.
+
+Observation files are deterministic with respect to their supplied content: no current timestamp or random report identifier is inserted. Reusing an `observation_id` with different content in one output directory is rejected.
+
+An observation is not a claim and is not a decision. The observation layer must not assign empirical `SUPPORTED` merely because a test assertion passed. Evidence state belongs to a claim after the required observations, execution artifacts, analysis, and validity limits are available.
+
+## Initial structured-observation scope
+
+Structured output is initially enabled only where the current tests already contain a concrete empirical or functional research question and non-JUnit measurements:
+
+- runtime retry/state/recovery probes;
+- runtime capability inspection, explicitly classified as `STATIC_INSPECTION`;
+- company-name normalization comparison on the frozen adversarial corpus;
+- legal-form collision guard ablation;
+- downstream company-ER normalization ablation;
+- registry-conflict invariant under aggressive name normalization;
+- CNPJ comparison with the declared Receita/Serpro oracle;
+- checksum-invalid CNPJ planner-admission probe.
+
+This list is not a requirement to convert every experimental test. Tests whose only purpose is validating the measurement implementation itself are not promoted into empirical observations.
+
+Additional tests should emit structured observations only when their research question requires measurements that are not adequately represented by preserved execution-state artifacts.
+
 ## Claim contract
 
 Machine-readable claims use `EMPIRICAL_CLAIM_CONTRACT_V1.json` and contain, at minimum:
@@ -106,12 +142,15 @@ Metrics that require ground truth are `UNAVAILABLE(reason)` when defensible grou
 
 ## Analysis discipline
 
-`scripts/chassis_bakeoff_report.py` performs deterministic evidence aggregation. It does not:
+`scripts/chassis_bakeoff_report.py` performs deterministic evidence aggregation. It validates the structured-observation envelope, rejects duplicate `observation_id` values, hashes each observation artifact, and preserves the observation payload in the canonical report.
+
+It does not:
 
 - compute a winner score;
 - apply arbitrary weights;
 - promote a feature-presence observation into production benefit;
 - convert a synthetic benchmark into a universal conclusion;
+- convert a passing functional probe directly into an active architecture decision;
 - promote experimental output into production authority.
 
 It may summarize JUnit execution states and preserve structured observations, but interpretation belongs in explicit claims with validity limits.
