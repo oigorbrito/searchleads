@@ -10,10 +10,12 @@ on:
       - 'tests/experimental/**'
       - 'tests/fixtures/**'
       - 'tests/test_chassis_bakeoff_report.py'
+      - 'tests/test_empirical_observation.py'
       - 'src/searchleads/entity_resolution/**'
       - 'src/searchleads/gap_automation/**'
       - 'src/searchleads/normalization.py'
       - 'scripts/chassis_bakeoff_*.py'
+      - 'scripts/empirical_observation.py'
       - 'docs/EMPIRICAL-HARNESS-METHODOLOGY.md'
       - 'docs/EMPIRICAL_CLAIM_CONTRACT_V1.json'
       - 'docs/REPRODUCIBILITY.md'
@@ -66,6 +68,8 @@ jobs:
           python -m pytest -q -W error::ResourceWarning
           --junitxml=.artifacts/core-${{ matrix.python-version }}/regression-junit.xml
       - name: Run all core chassis probes and comparative scorecards
+        env:
+          SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR: .artifacts/core-${{ matrix.python-version }}/observations
         run: >-
           python -m pytest -q -s tests/experimental
           -W error::ResourceWarning
@@ -78,6 +82,7 @@ jobs:
           --junit
           .artifacts/core-${{ matrix.python-version }}/regression-junit.xml
           .artifacts/core-${{ matrix.python-version }}/experimental-junit.xml
+          --observation-dir .artifacts/core-${{ matrix.python-version }}/observations
           --output .artifacts/core-${{ matrix.python-version }}/study-report.json
       - name: Upload raw empirical artifacts
         if: always()
