@@ -75,10 +75,10 @@ Compile the repository:
 python -m compileall -q src scripts
 ```
 
-Run the normal regression suite and preserve JUnit XML:
+Run the normal regression suite and preserve JUnit XML. The regression run explicitly excludes `tests/experimental` so regression correctness and experimental outcomes are separate artifacts:
 
 ```text
-python -m pytest -q -W error::ResourceWarning --junitxml=tmp/regression-junit.xml
+python -m pytest -q tests --ignore=tests/experimental -W error::ResourceWarning --junitxml=tmp/regression-junit.xml
 ```
 
 To preserve structured empirical observations, configure an output directory only for the experimental execution.
@@ -100,6 +100,24 @@ python -m pytest -q -s tests/experimental -W error::ResourceWarning --junitxml=t
 When the environment variable is absent, the tests still execute but no structured observation bundle is materialized. Absence of that bundle must not be silently treated as equivalent evidence.
 
 The regression suite and the experimental suite are separate artifacts. A regression result must not be interpreted as a benchmark result.
+
+## Failure collection and blocker discipline
+
+The CI workflow is designed to collect as much independent evidence as possible before enforcing the final job result.
+
+For steps whose failure does not make later evidence collection meaningless, the workflow records the step outcome and continues. Regression, experimental probes, canonical report construction, and artifact upload therefore do not automatically disappear merely because an earlier independent block failed.
+
+The final enforcement step still returns a failing job when any required block failed. `continue-on-error` is used for evidence collection, not for converting failure into success.
+
+Examples:
+
+- a failed regression does not suppress experimental JUnit/observation collection;
+- a failed experimental probe does not suppress available report/artifact collection;
+- a missing or failed external dataset checkout does not prevent independent SearchLeads regression from executing;
+- an install/runtime blocker is recorded by the final gate rather than being narrated as a favorable benchmark result;
+- artifact upload uses `if: always()` so partial evidence is retained.
+
+A blocker in one block does not authorize conclusions about another block. The final job status and the per-step outcomes must both be consulted when interpreting a run.
 
 ## Structured observations
 
@@ -161,16 +179,16 @@ These counts establish what executed and its test-run state. They do not by them
 
 Each bake-off job uploads its `.artifacts/<job>-<python>/` directory with `if: always()`.
 
-This is intended to preserve available evidence even when a later test step fails. A missing file is not silently reconstructed by the analysis layer.
+This is intended to preserve available evidence even when another test or analysis block fails. A missing file is not silently reconstructed by the analysis layer.
 
-A successful core job may include:
+A core job may include:
 
 - `manifest.json`;
 - regression and experimental JUnit XML;
 - `observations/*.json` for experiments that emit structured observations;
 - `study-report.json` containing the validated observation bundle.
 
-A failed job may contain only the artifacts produced before failure. Interpret absent downstream artifacts as absent evidence.
+A failed job may still contain all of those artifacts if the failure occurred in a block that did not prevent evidence collection. Conversely, an early runtime/setup failure may leave only partial artifacts. Interpret absent downstream artifacts as absent evidence.
 
 ## Verification criteria
 
@@ -180,13 +198,15 @@ A reproduction attempt should verify at least:
 2. Python/runtime environment is recorded;
 3. required dependencies are present at the intended versions;
 4. external dataset commit/hash identity is preserved;
-5. JUnit artifacts are retained;
-6. structured observations needed by the research question are retained and schema-valid;
-7. deterministic benchmark observations retain individual outcomes or an equivalent recomputable raw representation;
-8. canonical report hashes point to the actual input bytes;
-9. duplicate observation identifiers are rejected rather than silently overwritten;
-10. claims reference present artifacts and observation IDs or are downgraded to `INSUFFICIENT_EVIDENCE`;
-11. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
+5. regression JUnit excludes the experimental directory;
+6. experimental JUnit is retained separately;
+7. structured observations needed by the research question are retained and schema-valid;
+8. deterministic benchmark observations retain individual outcomes or an equivalent recomputable raw representation;
+9. canonical report hashes point to the actual input bytes;
+10. duplicate observation identifiers are rejected rather than silently overwritten;
+11. claims reference present artifacts and observation IDs or are downgraded to `INSUFFICIENT_EVIDENCE`;
+12. final workflow failure is not hidden by intermediate evidence-collection continuation;
+13. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
 
 ## Reproduction terminology
 
