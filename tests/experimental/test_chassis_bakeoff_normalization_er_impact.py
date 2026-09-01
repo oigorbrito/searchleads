@@ -14,6 +14,7 @@ pytest.importorskip("rigour")
 from rigour.names import normalize_name, remove_org_types
 from rigour.text.normalize import Normalize, normalize
 
+from scripts.empirical_observation import write_observation
 from searchleads.entity_resolution import CompanyRecord, LabeledPair
 from searchleads.entity_resolution import company as company_er
 
@@ -162,6 +163,7 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
         "rigour_nfkd_casefold_name_strip_org_type_2_3_1": _rigour_strip_org,
     }
 
+    structured_results: dict[str, object] = {}
     print("NORMALIZATION_ER_ABLATION_V1")
     print("all_non_name_features_weights_and_rules=UNCHANGED")
     print("holdout=36 calibration=18 baseline_independence=NOT_CERTIFIED")
@@ -170,6 +172,13 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
         fixed = _metrics(holdout, threshold=0.78, key_fn=key_fn)
         tuned_threshold, calibration_metrics = _select_threshold(calibration, key_fn)
         tuned = _metrics(holdout, threshold=tuned_threshold, key_fn=key_fn)
+        structured_results[name] = {
+            "fixed_threshold": 0.78,
+            "fixed_holdout_metrics": fixed,
+            "calibrated_threshold": tuned_threshold,
+            "calibration_metrics": calibration_metrics,
+            "tuned_holdout_metrics": tuned,
+        }
         print(f"strategy={name} fixed_0.78 {_fmt(fixed)}")
         print(
             f"strategy={name} calibrated_threshold={tuned_threshold:.2f} "
@@ -177,7 +186,29 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
         )
         print(f"strategy={name} tuned_holdout {_fmt(tuned)}")
 
-    print("winner=UNDECIDED; name normalization must improve downstream ER without forbidden false-merge regression")
+    write_observation(
+        observation_id="normalization-er-ablation-v1",
+        research_question="How does changing only company-name normalization affect the existing company ER benchmark under fixed and calibration-selected thresholds?",
+        method="controlled feature ablation with calibration/holdout separation",
+        evidence_class="CONTROLLED_BENCHMARK",
+        payload={
+            "fixture": FIXTURE.as_posix(),
+            "total_pairs": len(pairs),
+            "calibration_pairs": len(calibration),
+            "holdout_pairs": len(holdout),
+            "non_name_features_held_constant": True,
+            "threshold_candidates": list(THRESHOLDS),
+            "strategies": structured_results,
+            "decision_state": "DEFER",
+        },
+        validity_limits=[
+            "fixture predates this experiment but baseline independence is not certified",
+            "holdout is an internal curated benchmark rather than market-representative data",
+            "results do not authorize a production ER replacement without broader validity evidence",
+        ],
+    )
+
+    print("decision_state=DEFER; normalization effect must be interpreted with false-merge constraints")
 
 
 def test_normalization_ablation_keeps_registry_conflict_as_hard_negative() -> None:
@@ -190,6 +221,23 @@ def test_normalization_ablation_keeps_registry_conflict_as_hard_negative() -> No
 
     for pair in conflict_pairs:
         assert _predict(pair, threshold=0.50, key_fn=_rigour_strip_org) is False
+
+    write_observation(
+        observation_id="normalization-er-registry-conflict-guard-v1",
+        research_question="Can aggressive name normalization override an explicit registry conflict in the current ER rule set?",
+        method="deterministic invariant functional probe",
+        evidence_class="FUNCTIONAL_PROBE",
+        payload={
+            "registry_conflict_pair_count": len(conflict_pairs),
+            "threshold": 0.50,
+            "strategy": "rigour_nfkd_casefold_name_strip_org_type_2_3_1",
+            "registry_conflict_overridden": False,
+        },
+        validity_limits=[
+            "valid only for the current rule set and frozen fixture",
+            "does not estimate registry-data quality in production",
+        ],
+    )
 
     print("NORMALIZATION_ER_REGISTRY_GUARD_V1")
     print(f"registry_conflict_pairs={len(conflict_pairs)}")
