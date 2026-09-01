@@ -1,0 +1,188 @@
+{
+  "wave": 11,
+  "branch": "work/chassis-implementation-v1",
+  "wave_start_sha": "eca800f290e6084da5d725dfa50b2d8c1600d922",
+  "tested_commit_sha": "2c178c3f2868b8b12dd32ef086758d673e19dc09",
+  "wave_final_commit_sha": "2c178c3f2868b8b12dd32ef086758d673e19dc09",
+  "evidence_publication_sha": "PENDING",
+  "wave_10_status": "SKIPPED_BY_OWNER_DEFERRED",
+  "local_execution": {
+    "status": "LOCAL_NETWORK_BLOCKED",
+    "detail": "the assistant container could not resolve github.com for a direct clone; GitHub connector and GitHub Actions were used for repository writes and execution",
+    "release_blocker": false
+  },
+  "installability": {
+    "status": "PASS",
+    "ci_run_id": 33471375669,
+    "checks": [
+      "python -m pip install .",
+      "installed import of searchleads",
+      "python -m compileall -q src"
+    ],
+    "python_matrix": ["3.11", "3.12", "3.13"]
+  },
+  "runtime_versions": {
+    "declared_python": ">=3.11",
+    "ci_matrix": ["3.11", "3.12", "3.13"],
+    "reference_runner": "Ubuntu 24.04",
+    "reference_python": "3.12.14"
+  },
+  "dependency_classification": {
+    "production_declared": [],
+    "test": ["pytest"],
+    "experimental_or_breadth": ["FollowTheMoney", "Nomenklatura", "Rigour", "Crawlee", "Yente"],
+    "experimental_workflow_isolated_from_implementation_pr": true
+  },
+  "ci_status": {
+    "status": "PASS",
+    "run_id": 33471375669,
+    "python_3_11": "PASS",
+    "python_3_12": "PASS",
+    "python_3_13": "PASS",
+    "package_install": "PASS",
+    "installed_import": "PASS",
+    "rc_hygiene_preflight": "RC_HYGIENE_READY",
+    "compile": "PASS"
+  },
+  "tests_targeted": {
+    "command": "python -m pytest -q tests/test_release_candidate.py tests/test_release_hygiene.py tests/test_operational_readiness.py tests/test_operational_canonical_integration.py tests/test_persistence_migrations.py tests/test_persistence.py tests/test_domain_canonical_model.py",
+    "result": "91 passed",
+    "reference_python": "3.12.14"
+  },
+  "tests_full": {
+    "command": "python -m pytest -q",
+    "result": "894 passed, 24 skipped, 1 xpassed",
+    "duration_seconds_reference": 4.07,
+    "reference_python": "3.12.14"
+  },
+  "skip_xfail_inventory": {
+    "skipped": 24,
+    "classification": "experimental/external dependency isolation",
+    "xfailed": 0,
+    "xpassed": 1,
+    "xpass": "tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing",
+    "xpass_classification": "TEST_OBSOLETE: superseded by aggregate qualification analysis"
+  },
+  "compat_adapters": [
+    {
+      "name": "searchleads.domain.migration.project_legacy_person",
+      "status": "OPEN_EXPLICIT",
+      "role": "migration-only legacy person snapshot bridge",
+      "release_blocker": false
+    },
+    {
+      "name": "searchleads.selective_review.routing.review_qualification_decision",
+      "status": "OPEN_EXPLICIT",
+      "role": "review-routing compatibility bridge over canonical QualificationDecision",
+      "release_blocker": false
+    }
+  ],
+  "migration_rehearsal": {
+    "status": "PASS",
+    "coverage": [
+      "v1 migration preserves records and raw Evidence",
+      "migration idempotency",
+      "repair of incomplete v2 ledger state",
+      "future schema rejection",
+      "schema/ledger disagreement fail-closed",
+      "domain payload tamper rejection"
+    ]
+  },
+  "backup_restore": {
+    "status": "PASS",
+    "coverage": "SQLite backup/restore round-trip preserves canonical objects and raw Evidence bytes"
+  },
+  "fault_injection": {
+    "status": "PASS",
+    "coverage": [
+      "corrupted active database restored from verified backup",
+      "future schema rejected",
+      "ledger disagreement rejected",
+      "domain payload tamper rejected"
+    ]
+  },
+  "security_scan": {
+    "status": "PASS_WITH_SCOPE",
+    "preflight": "scripts/check_internal_rc.py",
+    "checks": [
+      "forbidden tracked local database/environment/coverage artifacts",
+      "high-confidence private-key/token patterns",
+      "direct-send imports/calls in production Python source",
+      "experimental chassis imports in production Python source"
+    ],
+    "limitation": "not an exhaustive git-history secret scan or DLP product"
+  },
+  "pii_redaction": {
+    "status": "BASIC_PASS",
+    "evidence": "structured operational event regression verifies scalar details and excludes raw_payload",
+    "limitation": "not an exhaustive DLP certification"
+  },
+  "config_contract": {
+    "status": "PASS",
+    "detail": "configuration requires absolute repository/backup paths or :memory:, remains fail-closed, and the regression was made cross-platform without relaxing production validation"
+  },
+  "send_boundary": {
+    "status": "PASS_WITH_SCOPE",
+    "static_preflight": "no direct SMTP/SendGrid/Mailgun/AWS SES send path detected in production Python source",
+    "dynamic_contract": "SEND_READY/compliance/suppression/manual-authorization regressions remain fail-closed",
+    "campaign_execution": "NOT_EXECUTED"
+  },
+  "observability": {
+    "status": "MINIMAL_OPERABLE",
+    "evidence": "startup/readiness and structured operational-event contracts remain covered"
+  },
+  "performance_smoke": {
+    "status": "PASS_SMOKE",
+    "reference": "full offline regression 4.07 seconds on Python 3.12.14 GitHub-hosted Ubuntu runner",
+    "slo_claimed": false
+  },
+  "pr_diff_audit": {
+    "status": "LARGE_BUT_CLASSIFIED",
+    "tested_head_vs_main_ahead_by": 186,
+    "behind_by": 0,
+    "merge_base": "4c3d5ad6dcc4d57dad1995ef7aa6a952a0012b2e",
+    "risk": "reviewability/volume rather than ancestry divergence",
+    "artifact_hygiene_gate": "PASS"
+  },
+  "main_divergence": {
+    "status": "NO_COMMIT_DIVERGENCE",
+    "base_is_merge_base": true,
+    "behind_by": 0,
+    "note": "no destructive rebase, retarget or merge was performed"
+  },
+  "rc_preflight": {
+    "status": "PASS",
+    "code_contract": "searchleads.release_candidate.evaluate_internal_release_candidate",
+    "repository_hygiene": "RC_HYGIENE_READY",
+    "commercial_gate_separation_tested": true
+  },
+  "documentation": {
+    "release_candidate_internal": "SYNCED",
+    "release_readiness": "SYNCED",
+    "completion_plan": "UNCHANGED_CAPABILITY_PATH_REMAINS_ACCURATE",
+    "wave_10_defer_recorded": true
+  },
+  "internal_release_candidate_gate": "READY",
+  "external_certification_gate": "PARTIAL",
+  "commercial_pilot_gate": "BLOCKED_LEGAL",
+  "blockers": {
+    "INTERNAL": [],
+    "LOCAL_ENVIRONMENT": [
+      "assistant container direct GitHub clone DNS resolution unavailable; non-release blocker"
+    ],
+    "LEGAL": [
+      "LEGAL-001 legal/compliance sign-off for outbound campaign/contact class"
+    ],
+    "HUMAN": [
+      "campaign-specific manual authorization",
+      "CFO/CRO professional-registration verification when campaign policy requires it"
+    ],
+    "EXTERNAL": [
+      "SERPRO criticality/path confirmation if still required",
+      "remaining BrasilAPI certification limitation if applicable"
+    ],
+    "OPTIONAL_BREADTH": [
+      "Crawlee and additional ER challenger breadth"
+    ]
+  }
+}
