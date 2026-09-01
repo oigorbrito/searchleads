@@ -3,7 +3,7 @@
   "branch": "work/chassis-implementation-v1",
   "wave_start_sha": "b38ce75e6d8c09ac3ba8965dec65d5f0dd8056aa",
   "tested_commit_sha": "d2ce7ba1203c07551c0fa36fc06ceebb9abf9f1b",
-  "evidence_publication_sha": "PENDING",
+  "evidence_publication_sha": "2a8630f673a7553d20494bda3c3696ba9d0c6656",
   "mission": "execute a safe read-only point revalidation of the product-critical BrasilAPI CNPJ path and reduce external certification uncertainty",
   "live_run": {
     "github_actions_run_id": 33507553399,
@@ -15,16 +15,7 @@
     "content_digest": "sha256:f4c55ba5ba3910bfffe1c643250c527d0b3b17732153c9b4fc0962adbeccd909",
     "source_id": "source:brasilapi:cnpj-v1",
     "required_fields_present": true,
-    "observed_field_names": [
-      "business_registry_id",
-      "city",
-      "legal_name",
-      "primary_cnae_code",
-      "primary_cnae_description",
-      "registration_status",
-      "state",
-      "trade_name"
-    ],
+    "observed_field_names": ["business_registry_id", "city", "legal_name", "primary_cnae_code", "primary_cnae_description", "registration_status", "state", "trade_name"],
     "raw_payload_printed": false,
     "result": "PASS"
   },
