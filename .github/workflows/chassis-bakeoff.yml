@@ -18,6 +18,7 @@ on:
       - 'scripts/empirical_observation.py'
       - 'docs/EMPIRICAL-HARNESS-METHODOLOGY.md'
       - 'docs/EMPIRICAL_CLAIM_CONTRACT_V1.json'
+      - 'docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json'
       - 'docs/REPRODUCIBILITY.md'
       - '.github/workflows/chassis-bakeoff.yml'
 
