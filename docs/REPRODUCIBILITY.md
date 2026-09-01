@@ -15,6 +15,7 @@ Core harness artifacts:
 - `scripts/empirical_observation.py`: opt-in deterministic structured-observation writer;
 - `scripts/chassis_bakeoff_report.py`: deterministic evidence aggregator;
 - `docs/EMPIRICAL-HARNESS-METHODOLOGY.md`: methodology contract;
+- `docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json`: machine-readable observation contract;
 - `docs/EMPIRICAL_CLAIM_CONTRACT_V1.json`: machine-readable claim contract.
 
 External pinned artifact currently used by the workflow:
@@ -102,7 +103,7 @@ The regression suite and the experimental suite are separate artifacts. A regres
 
 ## Structured observations
 
-Each emitted observation JSON uses schema version `searchleads_empirical_observation_v1` and records:
+Each emitted observation JSON conforms to `docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json`, uses schema version `searchleads_empirical_observation_v1`, and records:
 
 - stable `observation_id`;
 - research question;
@@ -112,6 +113,8 @@ Each emitted observation JSON uses schema version `searchleads_empirical_observa
 - study-specific validity limits.
 
 Observation JSON is raw study output for analysis purposes. It is not a claim and carries no automatic `SUPPORTED` state.
+
+For deterministic benchmarks, the observation should retain individual case/pair outcomes and document why repeated identical executions are not being used to estimate stochastic variance. Aggregate metrics must remain recomputable from the retained outcomes where applicable.
 
 The current initial observation-producing modules cover runtime/recovery, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
 
@@ -136,9 +139,9 @@ The report validates observation schema/evidence class, rejects duplicate observ
 
 ## Claim traceability
 
-Every path listed in a claim's `input_artifacts` must be present in the input bundle passed to the report generator.
+Every path listed in a claim's `input_artifacts` must be present in the input bundle passed to the report generator. Every stable `observation_id` listed in the claim's `observations` must also be present in the validated observation bundle.
 
-If an input is missing, the report preserves the claim's declared evidence state as `declared_evidence_state` and materializes the effective `evidence_state` as `INSUFFICIENT_EVIDENCE`.
+If either a required artifact or a required observation is missing, the report preserves the claim's declared evidence state as `declared_evidence_state` and materializes the effective `evidence_state` as `INSUFFICIENT_EVIDENCE`.
 
 This behavior prevents a documentation claim from remaining empirically supported after its required evidence has been removed from the reproducible bundle.
 
@@ -179,10 +182,11 @@ A reproduction attempt should verify at least:
 4. external dataset commit/hash identity is preserved;
 5. JUnit artifacts are retained;
 6. structured observations needed by the research question are retained and schema-valid;
-7. canonical report hashes point to the actual input bytes;
-8. duplicate observation identifiers are rejected rather than silently overwritten;
-9. claims reference present artifacts or are downgraded to `INSUFFICIENT_EVIDENCE`;
-10. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
+7. deterministic benchmark observations retain individual outcomes or an equivalent recomputable raw representation;
+8. canonical report hashes point to the actual input bytes;
+9. duplicate observation identifiers are rejected rather than silently overwritten;
+10. claims reference present artifacts and observation IDs or are downgraded to `INSUFFICIENT_EVIDENCE`;
+11. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
 
 ## Reproduction terminology
 
