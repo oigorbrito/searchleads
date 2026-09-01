@@ -137,29 +137,44 @@ def _junit_summary(record: ArtifactRecord) -> dict[str, Any]:
     }
 
 
+def _decision_support(effective_state: str, decision_state: str, missing: list[str]) -> dict[str, Any]:
+    if missing:
+        return {
+            "eligible_from_current_evidence": False,
+            "reason": "MISSING_INPUT_ARTIFACTS",
+        }
+    if decision_state in {"DEFER", "HISTORICAL_DECISION"}:
+        return {
+            "eligible_from_current_evidence": False,
+            "reason": "NON_ACTIVE_DECISION_STATE",
+        }
+    if effective_state != "SUPPORTED":
+        return {
+            "eligible_from_current_evidence": False,
+            "reason": "EVIDENCE_STATE_DOES_NOT_AUTHORIZE_ACTIVE_DECISION",
+        }
+    return {
+        "eligible_from_current_evidence": True,
+        "reason": "SUPPORTED_EVIDENCE_AND_COMPLETE_INPUTS",
+    }
+
+
 def _materialize_claim(claim: dict[str, Any], available_paths: set[str]) -> dict[str, Any]:
     materialized = dict(claim)
     referenced = [str(value) for value in claim["input_artifacts"]]
     missing = sorted(path for path in referenced if path not in available_paths)
     declared_state = str(claim["evidence_state"])
     effective_state = "INSUFFICIENT_EVIDENCE" if missing else declared_state
+    decision_state = str(claim["decision_state"])
     materialized["declared_evidence_state"] = declared_state
     materialized["evidence_state"] = effective_state
     materialized["traceability"] = {
         "all_inputs_present": not missing,
         "missing_input_artifacts": missing,
     }
-    decision_state = str(claim["decision_state"])
-    materialized["decision_support"] = {
-        "eligible_from_current_evidence": (
-            effective_state == "SUPPORTED" and decision_state not in {"DEFER", "HISTORICAL_DECISION"}
-        ),
-        "reason": (
-            "SUPPORTED_EVIDENCE_AND_COMPLETE_INPUTS"
-            if effective_state == "SUPPORTED" and not missing
-            else "DECISION_NOT_AUTHORIZED_BY_CURRENT_EVIDENCE"
-        ),
-    }
+    materialized["decision_support"] = _decision_support(
+        effective_state, decision_state, missing
+    )
     return materialized
 
 
