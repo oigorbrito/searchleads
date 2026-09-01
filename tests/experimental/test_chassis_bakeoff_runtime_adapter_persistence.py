@@ -41,6 +41,7 @@ def _request_from_action(action: AutomationAction) -> Request:
     return Request.from_url(
         action.locator,
         unique_key=action.cache_key,
+        max_retries=max(0, action.retry_max_attempts - 1),
         user_data={
             "searchleads": {
                 "action_id": action.action_id,
@@ -49,12 +50,11 @@ def _request_from_action(action: AutomationAction) -> Request:
                 "cache_key": action.cache_key,
                 "min_interval_seconds": action.min_interval_seconds,
             },
-            "__crawlee": {"maxRetries": action.retry_max_attempts - 1},
         },
     )
 
 
-async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int, int]:
+async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int | None, int]:
     action = _action()
     configuration = Configuration(storage_dir=storage_dir, purge_on_start=False)
 
@@ -77,7 +77,7 @@ async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int, int]
         recovered = await second_queue.fetch_next_request()
         assert recovered is not None
         metadata = recovered.user_data["searchleads"]
-        max_retries = recovered.user_data["__crawlee"]["maxRetries"]
+        max_retries = recovered.max_retries
         await second_queue.mark_request_as_handled(recovered)
         queue_metadata = await second_queue.get_metadata()
         return (
