@@ -3,7 +3,7 @@
   "branch": "work/chassis-implementation-v1",
   "wave_start_sha": "286d5926b6c5546062a76005acfc49cb6626e03d",
   "tested_commit_sha": null,
-  "evidence_publication_sha": "PENDING",
+  "evidence_publication_sha": "327b1f594d694051c72810639ce0070b4e1fe16d",
   "mission": "make the final human/source handoff explicit and machine-readable without executing outreach or inventing approvals",
   "implemented": {
     "module": "src/searchleads/pilot_release.py",
