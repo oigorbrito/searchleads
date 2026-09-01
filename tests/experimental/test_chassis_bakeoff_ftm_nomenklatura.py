@@ -99,7 +99,9 @@ def test_ftm_statement_layer_preserves_per_fact_dataset_and_origin() -> None:
         "https://brasilapi.com.br/api/cnpj/v1/12345678000190",
         "https://clinic-a.example.org/",
     }
-    assert entity.get("name") == ["Clinica Facial A Ltda", "Clinica Facial A"]
+    # This probe tests preservation, not ordering. FollowTheMoney does not need
+    # to preserve the input list order for the evidence claim being evaluated.
+    assert set(entity.get("name")) == {"Clinica Facial A Ltda", "Clinica Facial A"}
 
 
 def test_person_company_relationship_is_a_modeling_choice_not_a_searchleads_advantage() -> None:
