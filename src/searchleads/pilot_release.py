@@ -30,7 +30,7 @@ class RequiredExternalAction:
 class PilotReleaseDecision:
     state: PilotReleaseState
     required_actions: tuple[RequiredExternalAction, ...]
-    send_authorized: bool = False
+    authority_chain_valid: bool = False
 
     @property
     def ready(self) -> bool:
@@ -59,12 +59,12 @@ _ACTIONS: dict[str, tuple[ActionOwner, str]] = {
 
 def evaluate_pilot_release(preflight: CampaignPreflightResult) -> PilotReleaseDecision:
     if preflight.state is CampaignPreflightState.READY_FOR_AUTHORIZED_EXECUTION:
-        # A green preflight means the recorded authority chain is valid. It does
-        # not itself execute or dispatch a campaign.
+        # A green preflight means only that the recorded authority chain is valid
+        # for this exact scope. This function cannot execute or dispatch a campaign.
         return PilotReleaseDecision(
             PilotReleaseState.READY_FOR_AUTHORIZED_EXECUTION,
             (),
-            send_authorized=True,
+            authority_chain_valid=True,
         )
 
     actions: list[RequiredExternalAction] = []
@@ -77,7 +77,7 @@ def evaluate_pilot_release(preflight: CampaignPreflightResult) -> PilotReleaseDe
     return PilotReleaseDecision(
         PilotReleaseState.BLOCKED_EXTERNAL_DECISION,
         tuple(actions),
-        send_authorized=False,
+        authority_chain_valid=False,
     )
 
 
