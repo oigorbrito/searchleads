@@ -11,7 +11,7 @@ def test_blocked_release_maps_each_gate_to_human_or_source_owner():
     result = evaluate_pilot_release(preflight)
 
     assert result.state is PilotReleaseState.BLOCKED_EXTERNAL_DECISION
-    assert result.send_authorized is False
+    assert result.authority_chain_valid is False
     assert [(item.gate_id, item.owner) for item in result.required_actions] == [
         ("LEGAL-001", ActionOwner.LEGAL_COMPLIANCE),
         ("EXT-CFO-001", ActionOwner.PROFESSIONAL_REVIEWER),
@@ -26,7 +26,7 @@ def test_unknown_gate_stays_explicit_and_fail_closed():
     )
 
     assert result.state is PilotReleaseState.BLOCKED_EXTERNAL_DECISION
-    assert result.send_authorized is False
+    assert result.authority_chain_valid is False
     assert result.required_actions[0].gate_id == "EXT-UNKNOWN-001"
     assert result.required_actions[0].owner is ActionOwner.NONE
 
@@ -38,4 +38,4 @@ def test_green_preflight_only_reports_release_authority_state():
 
     assert result.state is PilotReleaseState.READY_FOR_AUTHORIZED_EXECUTION
     assert result.required_actions == ()
-    assert result.send_authorized is True
+    assert result.authority_chain_valid is True
