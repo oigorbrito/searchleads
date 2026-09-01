@@ -38,7 +38,12 @@
       "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
     },
-    "observations": {"type": "array"},
+    "observations": {
+      "description": "Stable observation_id values required by this claim.",
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
     "analysis": {},
     "validity_limits": {"type": "array"},
     "supported_conclusion": {},
