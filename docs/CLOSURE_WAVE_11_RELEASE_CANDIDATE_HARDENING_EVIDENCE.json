@@ -4,7 +4,7 @@
   "wave_start_sha": "eca800f290e6084da5d725dfa50b2d8c1600d922",
   "tested_commit_sha": "2c178c3f2868b8b12dd32ef086758d673e19dc09",
   "wave_final_commit_sha": "2c178c3f2868b8b12dd32ef086758d673e19dc09",
-  "evidence_publication_sha": "PENDING",
+  "evidence_publication_sha": "e555e7666028c034c820e8f74c9494744a0feaa2",
   "wave_10_status": "SKIPPED_BY_OWNER_DEFERRED",
   "local_execution": {
     "status": "LOCAL_NETWORK_BLOCKED",
