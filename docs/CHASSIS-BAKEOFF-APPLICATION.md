@@ -1,162 +1,99 @@
 # Chassis Bake-Off — Application V1
 
-## Question
+Status: `EXPERIMENTAL_PROTOCOL / NOT PRODUCTION AUTHORIZED`.
 
-This experiment tests the user's stronger chassis hypothesis: not merely whether an external matcher improves one SearchLeads subsystem, but whether a mature application chassis can absorb the best SearchLeads ideas with less custom infrastructure and less upstream modification.
+This study evaluates application-chassis alternatives without treating SearchLeads or an external repository as a protected or preferred architecture.
 
-SearchLeads remains a baseline, not a protected architecture. Yente is a challenger, not an assumed winner.
+The canonical methodology is `EMPIRICAL-HARNESS-METHODOLOGY.md`.
 
-## Challenger
+## Research questions
 
-Pinned stable application release:
+1. Which application capabilities are present in the pinned chassis candidates?
+2. Can a candidate host the required SearchLeads HTTP/application boundary without upstream source modification under the declared probe?
+3. What additional infrastructure or adapters are required by each candidate?
+4. Under a future controlled study, how do candidates compare on explicitly defined operational or maintenance constructs?
+
+Capability presence, code volume, or repository maturity is not comparative production evidence.
+
+## Isolated challenger environment
+
+The Yente application probe pins:
 
 ```text
 yente == 5.5.0
 ```
 
-The Yente job is intentionally isolated from the core chassis job.
+The Yente job remains isolated from the core bake-off because its stable dependency generation differs from the separately pinned core challenger environment. Isolation prevents dependency resolution from contaminating the comparison.
 
-Yente 5.5.0 pins:
+## Static capability observations
 
-```text
-followthemoney == 4.9.2
-nomenklatura == 4.10.0
-rigour == 2.1.2
-```
+Inspection of the pinned Yente release identifies application/search capabilities such as FastAPI assembly, search/match routes, health/readiness endpoints, catalog/algorithm surfaces, index lifecycle, middleware, bounds, and observability/integrity features.
 
-The current core bake-off independently pins newer releases:
+These are `STATIC_INSPECTION` observations. They establish capability presence in the inspected version only. They do not establish lower SearchLeads maintenance cost, better reliability, lower latency, or lower total infrastructure cost.
 
-```text
-followthemoney == 4.10.2
-nomenklatura == 4.14.0
-rigour == 2.3.1
-python-stdnum == 2.2
-```
+## Constraints requiring explicit treatment
 
-Installing both generations into one environment would force dependency resolution to choose one generation and would contaminate the comparison. Separate jobs make the trade-off explicit.
+### External search/index service
 
-## Engineering evidence in Yente 5.5.0
+Normal Yente search/match operation uses an external Elasticsearch/OpenSearch service. SearchLeads' current lightweight persistence path has a different infrastructure footprint.
 
-Yente is a genuine application chassis, not only a matching library. Its stable release provides:
+Any claim about total operational cost or burden must measure a declared deployment context. It must not be inferred from component count alone.
 
-- FastAPI application assembly;
-- `/match/{dataset}` query-by-example matching;
-- `/search/{dataset}` entity search;
-- OpenRefine reconciliation API;
-- entity/data access endpoints;
-- `/healthz` liveness;
-- `/readyz` index readiness;
-- `/catalog` data/index metadata;
-- `/algorithms` matcher discovery;
-- background catalog refresh/reindex lifecycle;
-- Elasticsearch/OpenSearch provider abstraction;
-- request logging and trace-context middleware;
-- CORS and gzip middleware;
-- maximum URL length enforcement;
-- bounded batch, result and match-candidate settings;
-- downloaded entity-data checksum verification;
-- OpenTelemetry instrumentation/freshness metrics in the stable release;
-- container signing/SBOM release hardening.
+### Authentication/access control
 
-These capabilities are relevant because building them ourselves would add non-domain code and maintenance burden.
+If a candidate does not provide the SearchLeads-required authentication/access-control boundary, that remains an explicit integration requirement. Feature absence is a product-fit observation, not automatically a benchmark loss.
 
-## Important constraints
+### Product-specific semantics
 
-### External search service
+The application chassis must not silently replace or bypass SearchLeads requirements around Evidence, qualification, contact lifecycle, campaign readiness, compliance, and source/acquisition policy unless an explicit evaluated alternative replaces those requirements.
 
-Yente 5.5.0 requires an external Elasticsearch 9.x or supported OpenSearch service for its normal search/match operation. SearchLeads' current development persistence is much lighter-weight. Therefore Yente can reduce application code while increasing infrastructure footprint and operating cost.
+## Executable probe boundary
 
-That trade-off must be measured rather than assumed to be favorable.
+`test_chassis_bakeoff_yente_application.py` is a bounded functional probe. It may establish, under the declared environment, properties such as:
 
-### Authentication
+- dependency generation;
+- application construction without starting external services;
+- route presence;
+- configured bounds;
+- checksum-verification defaults;
+- ability to mount an additive SearchLeads router without modifying upstream source;
+- explicit external-index/domain/auth constraints.
 
-The Yente service contract explicitly states that the API does not provide general authentication or access control. The administrative reindex endpoint has a dedicated update token, but this is not a general application authorization system.
+The additive-router probe demonstrates only the exercised integration property. It does not establish that SearchLeads persistence, Evidence, qualification, acquisition, or compliance semantics fit cleanly inside the candidate chassis.
 
-If SearchLeads becomes multi-user or internet-facing, authentication remains SearchLeads work or another infrastructure responsibility.
+## Architecture hypotheses
 
-### Product domain
+The study may evaluate alternatives such as:
 
-Yente's native product domain is entity search/screening/matching. It does not natively implement SearchLeads concepts such as:
+- retaining the current SearchLeads application shell;
+- a thin SearchLeads-owned FastAPI shell composing selected domain/runtime components;
+- Yente as a root application/search chassis;
+- Yente as a separate search/match service behind a SearchLeads-owned product boundary.
 
-- lead qualification policy;
-- contact discovery/validation lifecycle;
-- commercial intent;
-- campaign readiness;
-- legal/compliance gates for outreach;
-- source-specific acquisition planning;
-- SearchLeads Evidence/truth promotion policy.
+These are alternatives to evaluate, not a ranking.
 
-Those concepts are replaceable if better alternatives are found, but Yente 5.5.0 does not itself supply direct replacements for them.
+## Measurement discipline for future comparative claims
 
-## Executable probes
+Different claims require different operational definitions.
 
-`test_chassis_bakeoff_yente_application.py` runs in a clean Yente 5.5.0 environment and tests:
+Examples:
 
-1. exact dependency generation;
-2. application construction without starting external services;
-3. presence of match/search/health/readiness/catalog/algorithm routes;
-4. native bounds for batch, matches, candidates, page and URL length;
-5. default checksum-verification setting;
-6. ability to add a SearchLeads FastAPI router without modifying Yente source;
-7. explicit reporting of external-index and domain/auth constraints.
+- latency/throughput: controlled comparable request workload and repeated observations;
+- resource footprint: defined deployment topology plus CPU/memory/storage observations;
+- recovery: fault model, recovery procedure, and observable outcome;
+- infrastructure cost: declared deployment assumptions and measured/quoted resource inputs;
+- change effort: predeclared comparable engineering tasks and a defensible effort measure;
+- upstream divergence: explicit diff/patch/adaptation observations;
+- product-fit correctness: functional acceptance cases for required SearchLeads behavior.
 
-The additive-router probe is intentionally narrow. It proves that Yente can host additional SearchLeads HTTP surfaces without an upstream patch. It does **not** prove that SearchLeads persistence, Evidence, qualification or acquisition semantics fit cleanly inside Yente.
+Do not combine these dimensions into an opaque weighted winner score.
 
-## Current architectural hypothesis
+Counts such as owned LOC, adapter count, or deployment-component count are descriptive observations. They are not maintainability or cost metrics unless the study defines and justifies that construct.
 
-Three architectures remain live candidates:
+## Decision semantics
 
-### A — SearchLeads chassis
+An application chassis may receive an engineering decision for product reasons, but that decision remains separate from empirical support.
 
-Keep current SearchLeads application/core and adopt only external algorithms/libraries that win their subsystem benchmarks.
+Historical decisions are preserved in `APPLICATION_CHASSIS_DECISION_V1.md`. Current comparative claims require machine-readable claim files and a canonical study report referencing the preserved artifacts.
 
-### B — Hybrid specialized chassis
-
-```text
-SearchLeads domain/policy
-    + FollowTheMoney/Nomenklatura/Rigour where they win
-    + Crawlee acquisition runtime where it wins
-    + a thin SearchLeads API/application layer
-```
-
-### C — Yente application chassis
-
-```text
-Yente FastAPI/search/index/operational chassis
-    + newer core components if compatibility work is justified
-    + SearchLeads commercial/acquisition extensions
-```
-
-A fourth possibility is also valid: use Yente as a separately deployed search/match service rather than forking it or making it the repository root. This can retain upstream upgradeability while SearchLeads owns commercial workflow and acquisition.
-
-## Decision metrics
-
-A full-chassis decision must include more than matching accuracy:
-
-- code owned by SearchLeads;
-- upstream code modified/forked;
-- number and complexity of adapters;
-- dependency divergence from upstream;
-- ER precision/recall/F0.5/false-merge rate;
-- request throughput and latency;
-- index/storage footprint;
-- recovery behavior;
-- observability coverage;
-- deployment components required;
-- estimated infrastructure cost;
-- time to add a source;
-- time to add/modify a qualification policy;
-- ability to preserve raw Evidence/provenance/integrity;
-- ability to upgrade upstream without repeated conflict resolution.
-
-## Adoption rule
-
-A mature repository does not win merely because it contains more code.
-
-Yente becomes the preferred application chassis only if the experiment shows that its ready-made operational capabilities reduce total SearchLeads-owned complexity and maintenance enough to justify its external-index footprint, older stable dependency generation, and extension work.
-
-Conversely, SearchLeads does not win because its current domain model is ours. If Yente or another chassis can express the required product behavior more simply and more robustly, the existing design is replaceable.
-
-## Current execution gate
-
-GitHub-hosted jobs in this repository still terminate before the first checkout/setup step. Therefore this document distinguishes inspected upstream engineering evidence from local executed evidence. No Yente probe PASS/FAIL or cost/latency result is claimed yet.
+Missing required evidence becomes `INSUFFICIENT_EVIDENCE`. Unexecuted or skipped probes remain `NOT_EVALUATED` for the behaviors they did not exercise.
