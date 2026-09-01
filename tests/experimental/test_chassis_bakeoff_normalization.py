@@ -12,6 +12,7 @@ pytest.importorskip("rigour")
 from rigour.names import normalize_name, remove_org_types
 from rigour.text.normalize import Normalize, normalize
 
+from scripts.empirical_observation import write_observation
 from searchleads.domain import CandidateFact
 from searchleads.normalization import normalize_candidate_fact
 
@@ -131,10 +132,19 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
         "rigour_nfkd_casefold_name_strip_org_type_2_3_1": _rigour_folded_without_org_type_key,
     }
 
+    structured_results: dict[str, object] = {}
     print("COMPANY_NAME_NORMALIZATION_BAKEOFF_V1")
     print("corpus=44 positive=20 negative=24 curated_adversarial=YES")
     for name, key_fn in strategies.items():
         metrics = _metrics(cases, key_fn)
+        category_errors = _category_errors(cases, key_fn)
+        structured_results[name] = {
+            "metrics": metrics,
+            "category_errors": {
+                category: {"total": total, "errors": wrong}
+                for category, (total, wrong) in category_errors.items()
+            },
+        }
         print(
             f"strategy={name} tp={metrics['tp']} fp={metrics['fp']} "
             f"tn={metrics['tn']} fn={metrics['fn']} "
@@ -142,10 +152,33 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
             f"f0.5={metrics['f0_5']:.6f} false_collision_rate={metrics['false_collision_rate']:.6f} "
             f"mcc={metrics['mcc']:.6f}"
         )
-        for category, (total, wrong) in _category_errors(cases, key_fn).items():
+        for category, (total, wrong) in category_errors.items():
             print(f"category strategy={name} category={category} total={total} errors={wrong}")
 
-    print("winner=UNDECIDED; outcome must be interpreted with collision cost and downstream ER")
+    write_observation(
+        observation_id="normalization-key-comparison-v1",
+        research_question="How do the declared company-name normalization strategies behave on the frozen adversarial equivalence/collision corpus?",
+        method="controlled benchmark on a frozen curated adversarial corpus",
+        evidence_class="CONTROLLED_BENCHMARK",
+        payload={
+            "corpus": {
+                "path": FIXTURE.as_posix(),
+                "cases": len(cases),
+                "positive": sum(bool(case["same"]) for case in cases),
+                "negative": sum(not bool(case["same"]) for case in cases),
+                "curated_adversarial": True,
+            },
+            "strategies": structured_results,
+            "decision_state": "DEFER",
+        },
+        validity_limits=[
+            "curated corpus is not a market-representative sample",
+            "normalized-key equality is a feature comparison, not entity identity",
+            "baseline independence is not established by this corpus alone",
+        ],
+    )
+
+    print("decision_state=DEFER; outcome must be interpreted with collision cost and downstream ER")
     print("normalized_string_equality_is_not_entity_identity=YES")
 
 
@@ -157,12 +190,27 @@ def test_legal_form_removal_is_measured_as_a_collision_tradeoff() -> None:
     folded = _metrics(cases, _rigour_folded_key)
     stripped = _metrics(cases, _rigour_folded_without_org_type_key)
 
+    write_observation(
+        observation_id="normalization-legal-form-collision-guard-v1",
+        research_question="Does organization-type removal change false collisions on the frozen legal-form collision guards?",
+        method="controlled feature-ablation benchmark",
+        evidence_class="CONTROLLED_BENCHMARK",
+        payload={
+            "case_count": len(cases),
+            "all_cases_are_negative_controls": True,
+            "rigour_folded_false_collisions": int(folded["fp"]),
+            "rigour_strip_org_type_false_collisions": int(stripped["fp"]),
+        },
+        validity_limits=[
+            "four curated collision guards only",
+            "does not estimate production false-merge rate",
+        ],
+    )
+
     print("LEGAL_FORM_REMOVAL_COLLISION_GUARD_V1")
     print(f"rigour_folded_false_collisions={folded['fp']}/4")
     print(f"rigour_strip_org_type_false_collisions={stripped['fp']}/4")
     print("interpretation=legal-form stripping is optional feature engineering, never merge authority")
 
-    # The benchmark records the trade-off; it deliberately does not require the
-    # stripped strategy to be better than the non-stripped strategy.
     assert 0 <= int(folded["fp"]) <= 4
     assert 0 <= int(stripped["fp"]) <= 4
