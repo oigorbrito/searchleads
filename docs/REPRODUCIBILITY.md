@@ -16,7 +16,8 @@ Core harness artifacts:
 - `scripts/chassis_bakeoff_report.py`: deterministic evidence aggregator;
 - `docs/EMPIRICAL-HARNESS-METHODOLOGY.md`: methodology contract;
 - `docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json`: machine-readable observation contract;
-- `docs/EMPIRICAL_CLAIM_CONTRACT_V1.json`: machine-readable claim contract.
+- `docs/EMPIRICAL_CLAIM_CONTRACT_V1.json`: machine-readable claim contract;
+- `docs/EMPIRICAL_HARNESS_BLOCKER_REGISTER.md`: blocker ledger that scopes external/runtime blockers without terminating independent work.
 
 External pinned artifact currently used by the workflow:
 
@@ -119,6 +120,8 @@ Examples:
 
 A blocker in one block does not authorize conclusions about another block. The final job status and the per-step outcomes must both be consulted when interpreting a run.
 
+Concrete blockers are recorded in `docs/EMPIRICAL_HARNESS_BLOCKER_REGISTER.md`. Each row identifies the smallest affected block, evidence, impact, independent work that may continue, and its unblock condition. Runner failure, missing credentials, an external service, or an absent optional runtime is therefore a blocker-register entry, not an automatic end to the closing wave.
+
 ## Structured observations
 
 Each emitted observation JSON conforms to `docs/EMPIRICAL_OBSERVATION_CONTRACT_V1.json`, uses schema version `searchleads_empirical_observation_v1`, and records:
@@ -134,7 +137,7 @@ Observation JSON is raw study output for analysis purposes. It is not a claim an
 
 For deterministic benchmarks, the observation should retain individual case/pair outcomes and document why repeated identical executions are not being used to estimate stochastic variance. Aggregate metrics must remain recomputable from the retained outcomes where applicable.
 
-The current initial observation-producing modules cover runtime/recovery, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
+The current initial observation-producing modules cover runtime/recovery, runtime adapter identity/persistence, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
 
 ## Canonical study report
 
@@ -206,7 +209,8 @@ A reproduction attempt should verify at least:
 10. duplicate observation identifiers are rejected rather than silently overwritten;
 11. claims reference present artifacts and observation IDs or are downgraded to `INSUFFICIENT_EVIDENCE`;
 12. final workflow failure is not hidden by intermediate evidence-collection continuation;
-13. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
+13. blockers are scoped in the blocker register rather than terminating independent work;
+14. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
 
 ## Reproduction terminology
 
