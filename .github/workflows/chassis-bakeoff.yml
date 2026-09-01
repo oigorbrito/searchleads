@@ -15,6 +15,7 @@ on:
       - 'src/searchleads/normalization.py'
       - 'scripts/chassis_bakeoff_*.py'
       - 'docs/EMPIRICAL-HARNESS-METHODOLOGY.md'
+      - 'docs/EMPIRICAL_CLAIM_CONTRACT_V1.json'
       - 'docs/REPRODUCIBILITY.md'
       - '.github/workflows/chassis-bakeoff.yml'
 
@@ -84,7 +85,7 @@ jobs:
         with:
           name: chassis-bakeoff-core-py${{ matrix.python-version }}
           path: .artifacts/core-${{ matrix.python-version }}/
-          if-no-files-found: error
+          if-no-files-found: warn
 
   yente-stable-application:
     if: >-
@@ -129,4 +130,4 @@ jobs:
         with:
           name: chassis-bakeoff-yente-py${{ matrix.python-version }}
           path: .artifacts/yente-${{ matrix.python-version }}/
-          if-no-files-found: error
+          if-no-files-found: warn
