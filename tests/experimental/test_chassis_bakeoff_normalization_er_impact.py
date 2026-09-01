@@ -81,20 +81,36 @@ def _split(pairs: tuple[LabeledPair, ...]) -> tuple[tuple[LabeledPair, ...], tup
     return calibration, holdout
 
 
-def _predict(pair: LabeledPair, *, threshold: float, key_fn: NameKey | None) -> bool:
+def _features(pair: LabeledPair, key_fn: NameKey | None):
     features = company_er.compare_features(pair.left, pair.right)
-    if features.registry_conflict:
-        return False
-    if features.registry_exact is True:
-        return True
-
     if key_fn is not None:
         features = replace(
             features,
             name_similarity=_similarity_from_key(pair.left.name, pair.right.name, key_fn),
         )
-    score = company_er._weighted(features)
-    return score >= threshold
+    return features
+
+
+def _pair_signal(pair: LabeledPair, key_fn: NameKey | None) -> dict[str, object]:
+    features = _features(pair, key_fn)
+    return {
+        "pair_id": pair.pair_id,
+        "category": pair.category,
+        "expected_duplicate": pair.is_duplicate,
+        "registry_conflict": bool(features.registry_conflict),
+        "registry_exact": features.registry_exact,
+        "name_similarity": features.name_similarity,
+        "weighted_score": company_er._weighted(features),
+    }
+
+
+def _predict(pair: LabeledPair, *, threshold: float, key_fn: NameKey | None) -> bool:
+    features = _features(pair, key_fn)
+    if features.registry_conflict:
+        return False
+    if features.registry_exact is True:
+        return True
+    return company_er._weighted(features) >= threshold
 
 
 def _metrics(pairs: tuple[LabeledPair, ...], *, threshold: float, key_fn: NameKey | None) -> dict[str, float | int]:
@@ -172,11 +188,18 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
         fixed = _metrics(holdout, threshold=0.78, key_fn=key_fn)
         tuned_threshold, calibration_metrics = _select_threshold(calibration, key_fn)
         tuned = _metrics(holdout, threshold=tuned_threshold, key_fn=key_fn)
+        threshold_metrics = {
+            f"{threshold:.2f}": _metrics(calibration, threshold=threshold, key_fn=key_fn)
+            for threshold in THRESHOLDS
+        }
         structured_results[name] = {
+            "calibration_pair_signals": [_pair_signal(pair, key_fn) for pair in calibration],
+            "holdout_pair_signals": [_pair_signal(pair, key_fn) for pair in holdout],
             "fixed_threshold": 0.78,
             "fixed_holdout_metrics": fixed,
+            "calibration_metrics_by_threshold": threshold_metrics,
             "calibrated_threshold": tuned_threshold,
-            "calibration_metrics": calibration_metrics,
+            "calibration_metrics_at_selected_threshold": calibration_metrics,
             "tuned_holdout_metrics": tuned,
         }
         print(f"strategy={name} fixed_0.78 {_fmt(fixed)}")
@@ -189,7 +212,7 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
     write_observation(
         observation_id="normalization-er-ablation-v1",
         research_question="How does changing only company-name normalization affect the existing company ER benchmark under fixed and calibration-selected thresholds?",
-        method="controlled feature ablation with calibration/holdout separation",
+        method="controlled deterministic feature ablation with calibration/holdout separation",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
             "fixture": FIXTURE.as_posix(),
@@ -198,6 +221,7 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
             "holdout_pairs": len(holdout),
             "non_name_features_held_constant": True,
             "threshold_candidates": list(THRESHOLDS),
+            "repetition_justification": "The matcher, fixtures, thresholds, and normalization functions are deterministic; raw per-pair signals are retained instead of using repeated identical runs to estimate nonexistent stochastic variance.",
             "strategies": structured_results,
             "decision_state": "DEFER",
         },
@@ -219,8 +243,17 @@ def test_normalization_ablation_keeps_registry_conflict_as_hard_negative() -> No
     ]
     assert conflict_pairs
 
+    pair_outcomes: list[dict[str, object]] = []
     for pair in conflict_pairs:
-        assert _predict(pair, threshold=0.50, key_fn=_rigour_strip_org) is False
+        predicted = _predict(pair, threshold=0.50, key_fn=_rigour_strip_org)
+        assert predicted is False
+        pair_outcomes.append(
+            {
+                **_pair_signal(pair, _rigour_strip_org),
+                "threshold": 0.50,
+                "predicted_duplicate": predicted,
+            }
+        )
 
     write_observation(
         observation_id="normalization-er-registry-conflict-guard-v1",
@@ -232,6 +265,7 @@ def test_normalization_ablation_keeps_registry_conflict_as_hard_negative() -> No
             "threshold": 0.50,
             "strategy": "rigour_nfkd_casefold_name_strip_org_type_2_3_1",
             "registry_conflict_overridden": False,
+            "pair_outcomes": pair_outcomes,
         },
         validity_limits=[
             "valid only for the current rule set and frozen fixture",
