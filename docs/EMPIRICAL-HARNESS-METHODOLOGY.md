@@ -75,7 +75,9 @@ An observation is not a claim and is not a decision. The observation layer must 
 Structured output is initially enabled only where the current tests already contain a concrete empirical or functional research question and non-JUnit measurements:
 
 - runtime retry/state/recovery probes;
+- runtime adapter identity, retry mapping, and filesystem persistence probes;
 - runtime capability inspection, explicitly classified as `STATIC_INSPECTION`;
+- FollowTheMoney↔SearchLeads Evidence bridge cardinality, identifier-overload negative control, and lineage-responsibility probes;
 - company-name normalization comparison on the frozen adversarial corpus;
 - legal-form collision guard ablation;
 - downstream company-ER normalization ablation;
