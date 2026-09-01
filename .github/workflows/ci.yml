@@ -44,11 +44,12 @@ jobs:
           tests/test_persistence_migrations.py
           tests/test_persistence.py
           tests/test_domain_canonical_model.py
-      - name: Run external governance contract regression
+      - name: Run external governance and pilot-release regression
         run: >-
           python -m pytest -q
           tests/test_external_governance.py
           tests/test_campaign_preflight.py
+          tests/test_pilot_release.py
           tests/test_operational_readiness.py
       - name: Run opt-in BrasilAPI live revalidation
         if: github.event_name == 'push' && contains(github.event.head_commit.message, '[live-brasilapi]') && matrix.python-version == '3.12'
