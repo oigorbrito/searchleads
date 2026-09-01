@@ -12,6 +12,7 @@ Core harness artifacts:
 - `tests/experimental/**`: functional probes and comparative experiments;
 - `tests/fixtures/**`: curated regression/benchmark fixtures used by those experiments;
 - `scripts/chassis_bakeoff_manifest.py`: environment manifest generator;
+- `scripts/empirical_observation.py`: opt-in deterministic structured-observation writer;
 - `scripts/chassis_bakeoff_report.py`: deterministic evidence aggregator;
 - `docs/EMPIRICAL-HARNESS-METHODOLOGY.md`: methodology contract;
 - `docs/EMPIRICAL_CLAIM_CONTRACT_V1.json`: machine-readable claim contract.
@@ -79,13 +80,40 @@ Run the normal regression suite and preserve JUnit XML:
 python -m pytest -q -W error::ResourceWarning --junitxml=tmp/regression-junit.xml
 ```
 
-Run the experimental suite and preserve JUnit XML:
+To preserve structured empirical observations, configure an output directory only for the experimental execution.
+
+PowerShell:
 
 ```text
+$env:SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR = "tmp/observations"
 python -m pytest -q -s tests/experimental -W error::ResourceWarning --junitxml=tmp/experimental-junit.xml
 ```
 
+POSIX shell:
+
+```text
+SEARCHLEADS_EMPIRICAL_OBSERVATION_DIR=tmp/observations \
+python -m pytest -q -s tests/experimental -W error::ResourceWarning --junitxml=tmp/experimental-junit.xml
+```
+
+When the environment variable is absent, the tests still execute but no structured observation bundle is materialized. Absence of that bundle must not be silently treated as equivalent evidence.
+
 The regression suite and the experimental suite are separate artifacts. A regression result must not be interpreted as a benchmark result.
+
+## Structured observations
+
+Each emitted observation JSON uses schema version `searchleads_empirical_observation_v1` and records:
+
+- stable `observation_id`;
+- research question;
+- method;
+- evidence class;
+- structured payload;
+- study-specific validity limits.
+
+Observation JSON is raw study output for analysis purposes. It is not a claim and carries no automatic `SUPPORTED` state.
+
+The current initial observation-producing modules cover runtime/recovery, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
 
 ## Canonical study report
 
@@ -96,14 +124,15 @@ python scripts/chassis_bakeoff_report.py \
   --study-id local-core-bakeoff \
   --manifest tmp/chassis-manifest.json \
   --junit tmp/regression-junit.xml tmp/experimental-junit.xml \
+  --observation-dir tmp/observations \
   --output tmp/study-report.json
 ```
 
-Optional structured observation JSON files may be supplied with repeated values after `--observation`.
+Individual structured observation JSON files may alternatively be supplied after `--observation`. `--observation-dir` loads the JSON files directly inside the named directory in deterministic path order.
 
 Optional claim files conforming to `docs/EMPIRICAL_CLAIM_CONTRACT_V1.json` may be supplied with repeated values after `--claim`.
 
-The report includes SHA-256 hashes for every input artifact. Re-running the report generator over byte-identical inputs with the same `study_id` must produce semantically identical JSON and the same `report_sha256`.
+The report validates observation schema/evidence class, rejects duplicate observation IDs, and includes SHA-256 hashes for every input artifact. Re-running the report generator over byte-identical inputs with the same `study_id` must produce semantically identical JSON and the same `report_sha256`.
 
 ## Claim traceability
 
@@ -131,11 +160,12 @@ Each bake-off job uploads its `.artifacts/<job>-<python>/` directory with `if: a
 
 This is intended to preserve available evidence even when a later test step fails. A missing file is not silently reconstructed by the analysis layer.
 
-A successful job may include:
+A successful core job may include:
 
 - `manifest.json`;
-- regression and/or experimental JUnit XML;
-- `study-report.json`.
+- regression and experimental JUnit XML;
+- `observations/*.json` for experiments that emit structured observations;
+- `study-report.json` containing the validated observation bundle.
 
 A failed job may contain only the artifacts produced before failure. Interpret absent downstream artifacts as absent evidence.
 
@@ -148,9 +178,11 @@ A reproduction attempt should verify at least:
 3. required dependencies are present at the intended versions;
 4. external dataset commit/hash identity is preserved;
 5. JUnit artifacts are retained;
-6. canonical report hashes point to the actual input bytes;
-7. claims reference present artifacts or are downgraded to `INSUFFICIENT_EVIDENCE`;
-8. no active decision is inferred solely from missing, skipped, or static evidence.
+6. structured observations needed by the research question are retained and schema-valid;
+7. canonical report hashes point to the actual input bytes;
+8. duplicate observation identifiers are rejected rather than silently overwritten;
+9. claims reference present artifacts or are downgraded to `INSUFFICIENT_EVIDENCE`;
+10. no active decision is inferred solely from missing, skipped, static, or passing-probe evidence.
 
 ## Reproduction terminology
 
@@ -162,5 +194,6 @@ When reporting reproduction, identify whether it is internal or external and des
 
 - GitHub-hosted execution and local execution can differ in hardware, scheduling, and installed-package resolution metadata.
 - JUnit captures execution status, not all raw benchmark measurements.
-- Individual experimental modules must emit structured observation artifacts when their scientific claim depends on measurements not represented by JUnit.
+- Structured observation coverage is intentionally incremental and currently limited to experiments with already-defined research questions and non-JUnit measurements.
+- Current observation files preserve measured outcomes, but do not yet encode a universal statistical-analysis layer; analysis remains claim-specific.
 - Live operational evidence may require network access or credentials and must be reported separately from offline controlled evidence.
