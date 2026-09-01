@@ -6,8 +6,8 @@ This register records blockers that affect one block of an empirical-harness clo
 
 | Blocker ID | Block | State | Evidence | Impact | Independent work that remains allowed | Unblock condition |
 |---|---|---|---|---|---|---|
-| `HARNESS-CI-001` | GitHub-hosted verification of current head | `EXTERNAL_INFRASTRUCTURE_BLOCKER` | On head `2cad405972bd6aace96280a0c54661313337cb8f`, CI run `33518528677` and bake-off run `33518528553` completed as failure with job payloads exposing `steps: null`, so no executable step-level failure is available from those runs. | Those runs cannot verify or falsify the current implementation. | Code review, deterministic test repair from earlier actionable runs, documentation, observation contracts, report contracts, and blocker analysis. | A current-head GitHub Actions run must expose executable steps/logs and complete the relevant jobs. |
-| `HARNESS-RUNTIME-001` | Crawlee adapter retry metadata | `FIXED_PENDING_VERIFICATION` | Earlier actionable bake-off run `33515293119` showed adapter probes reading retry metadata through unstable/internal representation: processed requests exposed `max_retries=None`, and persisted user data no longer supported direct `__crawlee` indexing. Crawlee 1.9 public API exposes retry configuration through `Request.crawlee_data.max_retries`. | Core runtime-adapter probes previously failed and prevented those observations from being accepted. | All non-dependent harness/report/documentation blocks. | Execute current adapter probes on Python 3.11 and 3.12 and obtain successful JUnit plus structured observations. |
+| `HARNESS-CI-001` | GitHub-hosted verification of current head | `EXTERNAL_INFRASTRUCTURE_BLOCKER` | CI run `33518974697` and bake-off run `33518974633` on head `47fb3dfc895dbd8e001853c86310c4394182f53b` completed as failure with every matrix job exposing `steps: null`; no checkout/setup/test step was materialized. This reproduced the same pre-step hosted-runner failure already observed on preceding heads. | These runs cannot verify or falsify the implementation. Newer harness-only commits therefore remain `NOT_EVALUATED` until a runner actually executes steps. | Code review, deterministic repair from earlier actionable runs, observation-contract completion, report/claim contract work, documentation, and blocker analysis. | A current-head GitHub Actions run must expose executable steps/logs and complete the relevant jobs. |
+| `HARNESS-RUNTIME-001` | Crawlee adapter retry metadata | `FIXED_PENDING_VERIFICATION` | Earlier actionable bake-off run `33515293119` showed adapter probes reading retry metadata through unstable/internal representation: processed requests exposed `max_retries=None`, and persisted user data no longer supported direct `__crawlee` indexing. The repaired probes construct requests with `Request.from_url(max_retries=...)` and read request-specific retry configuration through `Request.crawlee_data.max_retries`. | Core runtime-adapter probes previously failed and prevented those observations from being accepted. | All non-dependent harness/report/documentation blocks. | Execute current adapter probes on Python 3.11 and 3.12 and obtain successful JUnit plus structured observations. |
 | `HARNESS-EXTERNAL-DATA-001` | Pinned external canonical dataset checkout | `CONDITIONAL_EXTERNAL_BLOCKER` | Workflow checkout is pinned to `dedupeio/dedupe@3f61e79102910bd355e920a2df7e44c14c9cb247` and is collected as an explicit step outcome. | If checkout fails, experiments requiring those files are not evaluated; independent regression/probes may still execute. | SearchLeads regression and experimental blocks that do not consume that dataset, report construction from available artifacts, documentation. | Successful checkout at the pinned commit with expected sparse files available. |
 
 ## Register rules
@@ -18,6 +18,7 @@ This register records blockers that affect one block of an empirical-harness clo
 4. A blocker may be `FIXED_PENDING_VERIFICATION` after a local correction, but it is not `CLOSED` until the relevant verification executes.
 5. External runner state, credentials, network access, or optional runtimes never authorize an architecture conclusion.
 6. When a blocker closes, retain the row for auditability and change its state to `CLOSED`, adding the verification evidence.
+7. Repeated pre-step runner failures with `steps: null` are one continuing infrastructure blocker, not new independent implementation failures.
 
 ## Current critical path
 
@@ -25,4 +26,6 @@ The current critical path for the empirical-harness reporting wave is:
 
 `current-head executable runner -> regression/non-experimental PASS -> runtime adapter probes PASS -> structured observation bundle -> canonical study report -> bounded claims`
 
-Yente application probes are not on this critical path for repairing the Crawlee adapter contract and must not prevent that repair from proceeding.
+FTM evidence-bridge observations can be prepared independently because their research question and deterministic probe already exist, but they remain `NOT_EVALUATED` until executed in the pinned environment.
+
+Yente application probes are not on the critical path for repairing the Crawlee adapter contract and must not prevent that repair from proceeding.
