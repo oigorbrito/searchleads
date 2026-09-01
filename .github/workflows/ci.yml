@@ -30,6 +30,8 @@ jobs:
           python -m pip install pytest
       - name: Verify installed import
         run: python -c "import searchleads; print(searchleads.__name__)"
+      - name: Run internal RC hygiene preflight
+        run: python scripts/check_internal_rc.py
       - name: Compile package
         run: python -m compileall -q src
       - name: Run offline regression
