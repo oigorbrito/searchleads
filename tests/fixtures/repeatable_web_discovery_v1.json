@@ -1,0 +1,91 @@
+{
+  "benchmark": [
+    {
+      "id": "four-offices",
+      "html": "<h3>Fortaleza</h3><p>Fortaleza/Ceará</p><p>CNPJ: 33.683.111/0004-41</p><h3>Porto Alegre</h3><p>Porto Alegre/Rio Grande do Sul</p><p>CNPJ: 33.683.111/0011-70</p><h3>Recife</h3><p>Recife/Pernambuco</p><p>CNPJ:33.683.111/0005-22</p><h3>Brasília</h3><p>Brasília/Distrito Federal</p><p>CNPJ: 33.683.111/0002-80</p>",
+      "expected": [
+        "33683111000441",
+        "33683111001170",
+        "33683111000522",
+        "33683111000280"
+      ]
+    },
+    {
+      "id": "duplicate-same-block",
+      "html": "<h3>Brasília</h3><p>Brasília/Distrito Federal</p><p>CNPJ: 33.683.111/0002-80</p><p>CNPJ:33.683.111/0002-80</p>",
+      "expected": [
+        "33683111000280"
+      ]
+    },
+    {
+      "id": "duplicate-cross-block",
+      "html": "<h3>A</h3><p>Acre/Acre</p><p>CNPJ: 33.683.111/0002-80</p><h3>B</h3><p>Bahia/Bahia</p><p>CNPJ:33.683.111/0002-80</p>",
+      "expected": [
+        "33683111000280"
+      ]
+    },
+    {
+      "id": "malformed",
+      "html": "<h3>Bad</h3><p>Bad/State</p><p>CNPJ: 33.683.111/0002-8</p>",
+      "expected": []
+    },
+    {
+      "id": "hidden",
+      "html": "<template><h3>Fake</h3><p>Fake/ZZ</p><p>CNPJ: 11.111.111/1111-11</p></template><script>CNPJ: 22.222.222/2222-22</script><h3>Real</h3><p>Real/Estado</p><p>CNPJ: 33.683.111/0002-80</p>",
+      "expected": [
+        "33683111000280"
+      ]
+    },
+    {
+      "id": "unlabeled",
+      "html": "<h3>Text</h3><p>Fortaleza/Ceará</p><p>33.683.111/0004-41</p>",
+      "expected": []
+    },
+    {
+      "id": "ambiguous-block",
+      "html": "<h3>Ambiguous</h3><p>City/State</p><p>CNPJ: 33.683.111/0004-41</p><p>CNPJ: 33.683.111/0005-22</p>",
+      "expected": []
+    },
+    {
+      "id": "alphanumeric",
+      "html": "<h3>Future</h3><p>São Paulo/São Paulo</p><p>CNPJ: 12.ABC.345/01DE-67</p>",
+      "expected": [
+        "12ABC34501DE67"
+      ]
+    },
+    {
+      "id": "no-location-still-seed",
+      "html": "<h3>Office</h3><p>CNPJ: 33.683.111/0004-41</p>",
+      "expected": [
+        "33683111000441"
+      ]
+    },
+    {
+      "id": "noise-before-heading",
+      "html": "<p>CNPJ: 00.000.000/0000-00</p><h3>Office</h3><p>Office/State</p><p>CNPJ: 33.683.111/0004-41</p>",
+      "expected": [
+        "00000000000000",
+        "33683111000441"
+      ]
+    }
+  ],
+  "current_calibration": {
+    "checked_on": "2026-08-25",
+    "source_updated_on": "2026-01-22",
+    "html": "<h3>Nossa Sede</h3><p>Brasília/Distrito Federal</p><p>CNPJ: 33.683.111/0001-07</p><h3>Belo Horizonte</h3><p>Belo Horizonte/Minas Gerais</p><p>CNPJ: 33.683.111/0007-94</p><h3>Belém</h3><p>Belém/Pará</p><p>CNPJ: 33.683.111/0003-60</p><h3>Curitiba</h3><p>Curitiba/Paraná</p><p>CNPJ: 33.683.111/0010-90</p><h3>Florianópolis</h3><p>Florianópolis/Santa Catarina</p><p>CNPJ: 33.683.111/0019-28</p><h3>Fortaleza</h3><p>Fortaleza/Ceará</p><p>CNPJ: 33.683.111/0004-41</p><h3>Porto Alegre</h3><p>Porto Alegre/Rio Grande do Sul</p><p>CNPJ: 33.683.111/0011-70</p><h3>Recife</h3><p>Recife/Pernambuco</p><p>CNPJ: 33.683.111/0005-22</p><h3>Salvador</h3><p>Salvador/Bahia</p><p>CNPJ: 33.683.111/0006-03</p><h3>Brasília</h3><p>Brasília/Distrito Federal</p><p>CNPJ: 33.683.111/0002-80</p><h3>Rio de Janeiro</h3><p>Rio de Janeiro/RJ</p><p>CNPJ: 33.683.111/0008-75</p><h3>São Paulo</h3><p>São Paulo/SP</p><p>CNPJ: 33.683.111/0009-56</p>",
+    "expected_cnpjs": [
+      "33683111000107",
+      "33683111000794",
+      "33683111000360",
+      "33683111001090",
+      "33683111001928",
+      "33683111000441",
+      "33683111001170",
+      "33683111000522",
+      "33683111000603",
+      "33683111000280",
+      "33683111000875",
+      "33683111000956"
+    ]
+  }
+}

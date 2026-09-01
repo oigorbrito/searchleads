@@ -1,0 +1,77 @@
+name: Chassis Bake-Off
+
+on:
+  push:
+    branches:
+      - 'work/chassis-bakeoff-v1'
+  pull_request:
+    paths:
+      - 'tests/experimental/**'
+      - 'tests/fixtures/**'
+      - 'src/searchleads/entity_resolution/**'
+      - 'src/searchleads/gap_automation/**'
+      - 'src/searchleads/normalization.py'
+      - '.github/workflows/chassis-bakeoff.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core-chassis-bakeoff:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - name: Checkout SearchLeads
+        uses: actions/checkout@v4
+      - name: Checkout pinned external canonical linkage dataset
+        uses: actions/checkout@v4
+        with:
+          repository: dedupeio/dedupe
+          ref: 3f61e79102910bd355e920a2df7e44c14c9cb247
+          path: .external/dedupe
+          sparse-checkout: |
+            benchmarks/benchmarks/datasets/restaurant-1.csv
+            benchmarks/benchmarks/datasets/restaurant-2.csv
+          sparse-checkout-cone-mode: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install bake-off dependencies
+        run: >-
+          python -m pip install --upgrade pip pytest
+          followthemoney==4.10.2 nomenklatura==4.14.0
+          crawlee==1.9.3 rigour==2.3.1 python-stdnum==2.2
+      - name: Compile SearchLeads
+        run: python -m compileall -q src
+      - name: Run SearchLeads regression suite
+        run: python -m pytest -q -W error::ResourceWarning
+      - name: Run all core chassis probes and comparative scorecards
+        run: >-
+          python -m pytest -q -s tests/experimental
+          -W error::ResourceWarning
+
+  yente-stable-application:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - name: Checkout SearchLeads experiment
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install isolated Yente stable chassis
+        run: >-
+          python -m pip install --upgrade pip pytest yente==5.5.0
+      - name: Run Yente application chassis probe only
+        run: >-
+          python -m pytest -q -s
+          tests/experimental/test_chassis_bakeoff_yente_application.py
+          -W error::ResourceWarning

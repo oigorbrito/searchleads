@@ -1,0 +1,21 @@
+[
+  {"id":"company-review","type":"company","state":"REVIEW","expected":true,"priority":"NORMAL"},
+  {"id":"company-auto","type":"company","state":"AUTO_MATCH","expected":false},
+  {"id":"company-distinct","type":"company","state":"DISTINCT","expected":false},
+  {"id":"company-insufficient","type":"company","state":"INSUFFICIENT_EVIDENCE","expected":false},
+  {"id":"person-ambiguous","type":"person","expected":true,"priority":"NORMAL"},
+  {"id":"person-ambiguous-more-evidence","type":"person","expected":true,"priority":"NORMAL","more_evidence":true},
+  {"id":"conflict-open","type":"conflict","state":"OPEN","expected":true,"priority":"NORMAL"},
+  {"id":"conflict-open-high","type":"conflict","state":"OPEN","expected":true,"priority":"HIGH","high_impact":true},
+  {"id":"conflict-resolved","type":"conflict","state":"RESOLVED","expected":false},
+  {"id":"conflict-deferred","type":"conflict","state":"DEFERRED","expected":false},
+  {"id":"contact-discovered","type":"contact","state":"DISCOVERED","expected":true,"priority":"NORMAL"},
+  {"id":"contact-unknown","type":"contact","state":"UNKNOWN","expected":true,"priority":"NORMAL"},
+  {"id":"contact-validated","type":"contact","state":"VALIDATED","expected":false},
+  {"id":"contact-invalid","type":"contact","state":"INVALID","expected":false},
+  {"id":"contact-stale","type":"contact","state":"STALE","expected":false},
+  {"id":"lead-unknown-high","type":"lead","state":"UNKNOWN","expected":true,"priority":"HIGH","high_value":true},
+  {"id":"lead-unknown-low","type":"lead","state":"UNKNOWN","expected":false,"high_value":false},
+  {"id":"lead-qualified-high","type":"lead","state":"QUALIFIED","expected":false,"high_value":true},
+  {"id":"lead-not-qualified-high","type":"lead","state":"NOT_QUALIFIED","expected":false,"high_value":true}
+]

@@ -1,0 +1,52 @@
+{
+  "company_email": "css.serpro@serpro.gov.br",
+  "lead_id": "lead:acceptance:serpro-brasilia",
+  "timestamps": {
+    "directory": "2026-08-25T18:00:00+00:00",
+    "brasilapi_1": "2026-08-25T18:01:00+00:00",
+    "brasilapi_2": "2026-08-25T18:02:00+00:00",
+    "contact_1": "2026-08-25T18:03:00+00:00",
+    "contact_2": "2026-08-25T18:04:00+00:00",
+    "people": "2026-08-25T18:05:00+00:00",
+    "lead": "2026-08-25T18:06:00+00:00"
+  },
+  "directory_html": "<html><body><h2>Regional Brasília</h2><p>Brasília / Distrito Federal</p><p>CNPJ: 33.683.111/0002-80</p></body></html>",
+  "brasilapi_payloads": [
+    {
+      "cnpj": "33.683.111/0002-80",
+      "razao_social": "  SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)  ",
+      "nome_fantasia": "SERPRO",
+      "descricao_situacao_cadastral": "ATIVA",
+      "cnae_fiscal": 6204000,
+      "cnae_fiscal_descricao": "Consultoria em tecnologia da informação",
+      "municipio": "Brasília",
+      "uf": "df",
+      "snapshot_marker": 1
+    },
+    {
+      "cnpj": "33.683.111/0002-80",
+      "razao_social": "SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO)",
+      "nome_fantasia": "SERPRO BRASIL",
+      "descricao_situacao_cadastral": "ATIVA",
+      "cnae_fiscal": 6204000,
+      "cnae_fiscal_descricao": "Consultoria em tecnologia da informação",
+      "municipio": "Brasília",
+      "uf": "DF",
+      "snapshot_marker": 2
+    }
+  ],
+  "contact_pages": [
+    {
+      "url": "https://www.serpro.gov.br/menu/suporte1",
+      "html": "<html><body><p>E-mail: css.serpro@serpro.gov.br</p><p>Telefone: 0800 728 2323</p><a href=\"mailto:css.serpro@serpro.gov.br\">E-mail</a></body></html>"
+    },
+    {
+      "url": "https://www.serpro.gov.br/contact-info",
+      "html": "<html><body><p>Contato oficial</p><a href=\"mailto:css.serpro@serpro.gov.br\">css.serpro@serpro.gov.br</a><a href=\"tel:08007282323\">0800 728 2323</a><form action=\"/submit\"></form></body></html>"
+    }
+  ],
+  "people_page": {
+    "url": "https://www.transparencia.serpro.gov.br/acesso-a-informacao/institucional/quem-e-quem",
+    "html": "<html><body><h2>Diretoria Executiva</h2><p>Diretor-Presidente - DP</p><p>Wilton Itaiguara Gonçalves Mota</p><a href=\"mailto:presidencia@serpro.gov.br\">presidencia@serpro.gov.br</a><p>Telefone: (61) 2021-8101</p></body></html>"
+  }
+}

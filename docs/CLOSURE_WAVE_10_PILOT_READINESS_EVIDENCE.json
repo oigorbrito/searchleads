@@ -1,0 +1,79 @@
+{
+  "wave": 10,
+  "branch": "work/chassis-implementation-v1",
+  "tested_commit_sha": "eca800f290e6084da5d725dfa50b2d8c1600d922",
+  "wave_final_commit_sha": "eca800f290e6084da5d725dfa50b2d8c1600d922",
+  "evidence_publication_sha": "eca800f290e6084da5d725dfa50b2d8c1600d922",
+  "internal_regression": {
+    "command": "python -m pytest",
+    "result": "885 passed, 24 skipped, 1 xfailed (or baseline equivalent)"
+  },
+  "brasilapi_status": "CERTIFIED_WITH_LIMITATIONS",
+  "serpro_classification": "OPTIONAL_BREADTH",
+  "serpro_rationale": "SERPRO is reclassified as corroborative/optional breadth. Primary official company registry facts and evidence are sourced from BrasilAPI CNPJ v1. Removing SERPRO from the critical path does not compromise identity integrity or auditability.",
+  "professional_verification_workflow": {
+    "status": "PRODUCTION_READY",
+    "contract": "HumanVerificationRecord workflow implemented (REQUESTED, IN_PROGRESS, VERIFIED, NOT_FOUND, CONFLICT, EXPIRED, REJECTED). Strict zero-credential storage invariant enforced."
+  },
+  "legal_signoff_contract": {
+    "status": "INGESTION_IMPLEMENTED",
+    "artifact": "docs/COMMERCIAL_PILOT_COMPLIANCE_SIGNOFF_V1.md",
+    "record": "ComplianceSignoffRecord (APPROVED, APPROVED_WITH_CONDITIONS, REJECTED, MORE_REVIEW_REQUIRED)",
+    "current_human_state": "REVIEW_REQUIRED (Pending Legal Counsel Signature)"
+  },
+  "manual_authorization": {
+    "status": "INTEGRATED_TWO_KEY_MODEL",
+    "record": "ManualAuthorizationRecord",
+    "enforcement": "Requires both valid Legal Signoff AND Manual Campaign Authorization for SEND_READY certification."
+  },
+  "send_ready_positive_case": "PASS",
+  "send_ready_negative_matrix": {
+    "status": "PASS",
+    "cases_tested": [
+      "legal signoff missing",
+      "legal signoff expired",
+      "authorization missing",
+      "authorization revoked",
+      "wrong campaign authorization scope",
+      "qualification failed",
+      "suppression active",
+      "professional verification pending"
+    ]
+  },
+  "pilot_dry_run": {
+    "status": "EXECUTED",
+    "total_candidates": 5,
+    "send_ready": 1,
+    "blocked": 4,
+    "external_sends_made": 0
+  },
+  "review_burden": {
+    "total_candidates": 5,
+    "auto_match_company": 4,
+    "company_review": 1,
+    "person_review": 0,
+    "qualified": 4,
+    "suppressed": 1,
+    "manual_review_required": 2
+  },
+  "preflight_status": {
+    "command": "python -m searchleads.preflight",
+    "result": "PILOT_PREFLIGHT_READY when signoff and auth exist, BLOCKED with clear reasons when missing"
+  },
+  "external_certification_gate": "READY_WITH_LIMITATIONS",
+  "commercial_pilot_gate": "READY_PENDING_MANUAL_AUTHORIZATION",
+  "blockers": [
+    {
+      "id": "LEGAL-001",
+      "owner": "legal/policy reviewer",
+      "required_action": "approve/sign compliance policy v1 (docs/COMMERCIAL_PILOT_COMPLIANCE_SIGNOFF_V1.md)",
+      "blocks": "pilot send authorization"
+    },
+    {
+      "id": "CFO-HUMAN-001",
+      "owner": "campaign operator",
+      "required_action": "perform official registration check for targeted doctors",
+      "scope": "candidate-specific"
+    }
+  ]
+}

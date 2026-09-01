@@ -1,0 +1,65 @@
+{
+  "baseline_sha": "fb774cc6ddc4f8c7fc397476f868bd1de3a70506",
+  "branch": "work/chassis-implementation-v1",
+  "compat_adapter_count": 2,
+  "compatibility_adapters": [
+    {
+      "consumer": "searchleads.domain.migration.project_legacy_person",
+      "reason": "legacy person snapshot bridge for migration-only compatibility",
+      "removal_condition": "all legacy snapshot consumers read PersonIdentity and PersonCompanyRelationship directly",
+      "risk": "legacy snapshot callers must migrate in lockstep",
+      "status": "OPEN"
+    },
+    {
+      "consumer": "searchleads.selective_review.routing.review_qualification_decision",
+      "reason": "compatibility bridge for review routing over canonical qualification decisions",
+      "removal_condition": "all review callers consume canonical qualification decisions directly",
+      "risk": "review routing regressions if removed before callers migrate",
+      "status": "OPEN"
+    }
+  ],
+  "deployment_status": "PASS (single-process local venv, file-backed SQLite, backup/restore verified)",
+  "final_commit_sha": "2f5dfa72a4f31b675e22d82f5c39f24a80aec719",
+  "health_status": "PASS",
+  "install_status": "PASS (workspace venv .bench-venv; setuptools/wheel installed; editable install succeeded)",
+  "live_certification_status": "BLOCKED_EXTERNAL",
+  "observability_status": "MINIMAL_OPERABLE",
+  "readiness_gates": {
+    "commercial_pilot_ready": "NOT_YET",
+    "externally_certified": "NOT_YET",
+    "integrated": "READY",
+    "internally_verified": "PASS",
+    "operationally_ready": "READY"
+  },
+  "readiness_status": "PASS",
+  "recovery_status": "PASS",
+  "runtime": "Python 3.12.10; local fallback chassis active; FastAPI absent in local environment",
+  "runtime_status": "PASS",
+  "security_baseline": "PASS (structured logs, redacted telemetry, no secrets in canonical docs, backup/restore preserves integrity boundaries)",
+  "send_ready_status": "BLOCKED_BY_COMPLIANCE",
+  "startup_status": "PASS",
+  "tested_commit_sha": "2f5dfa72a4f31b675e22d82f5c39f24a80aec719",
+  "tests": [
+    {
+      "command": "python -m pytest tests/test_operational_readiness.py tests/test_operational_canonical_integration.py tests/test_persistence.py tests/test_domain_canonical_model.py",
+      "result": "70 passed"
+    },
+    {
+      "command": "python -m pytest",
+      "result": "879 passed, 24 skipped, 1 xfailed"
+    },
+    {
+      "command": ".\\.bench-venv\\Scripts\\python.exe -m pip install setuptools wheel",
+      "result": "PASS"
+    },
+    {
+      "command": ".\\.bench-venv\\Scripts\\python.exe -m pip install -e . --no-deps --no-build-isolation",
+      "result": "PASS"
+    }
+  ],
+  "wave": 6,
+  "blockers": [
+    "BR-001 Crawlee breadth remains external and environment-dependent, but it no longer blocks the internal operational path",
+    "BR-003 live certification, compliance sign-off, and send authorization remain external to the current repo"
+  ]
+}
