@@ -1,0 +1,70 @@
+{
+  "wave": 7,
+  "branch": "work/chassis-implementation-v1",
+  "pr": 114,
+  "tested_commit_sha": "c7ab1e9",
+  "final_commit_sha": "c7ab1e9",
+  "internal_regression": {
+    "command": "python -m pytest",
+    "result": "882 passed, 24 skipped, 1 xfailed"
+  },
+  "targeted_regression": {
+    "command": "python -m pytest tests/test_operational_readiness.py tests/test_operational_canonical_integration.py tests/test_persistence.py tests/test_domain_canonical_model.py",
+    "result": "73 passed"
+  },
+  "external_sources": [
+    {
+      "source": "BrasilAPI CNPJ v1",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "live network certification is not executed in this local checkout"
+    },
+    {
+      "source": "SERPRO transparency page",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "live network certification is not executed in this local checkout"
+    },
+    {
+      "source": "CRO/CFO registry",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "live network certification is not executed in this local checkout"
+    },
+    {
+      "source": "DNS/HTTP contact path",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "live network certification is not executed in this local checkout"
+    }
+  ],
+  "certification_matrix": [
+    {
+      "source": "BrasilAPI CNPJ v1",
+      "criticality": "PRODUCT_CRITICAL",
+      "status": "BLOCKED_EXTERNAL"
+    },
+    {
+      "source": "SERPRO transparency page",
+      "criticality": "PRODUCT_CRITICAL",
+      "status": "BLOCKED_EXTERNAL"
+    },
+    {
+      "source": "CRO/CFO registry",
+      "criticality": "PRODUCT_CRITICAL",
+      "status": "BLOCKED_EXTERNAL"
+    },
+    {
+      "source": "DNS/HTTP contact path",
+      "criticality": "OPTIONAL_BREADTH",
+      "status": "BLOCKED_EXTERNAL"
+    }
+  ],
+  "compliance_contract_status": "IMPLEMENTED",
+  "contact_use_status": "IMPLEMENTED",
+  "suppression_status": "IMPLEMENTED",
+  "send_ready_status": "BLOCKED_BY_COMPLIANCE",
+  "pilot_readiness_status": "NOT_READY",
+  "blockers": [
+    "live source certification remains external",
+    "campaign legal review remains external",
+    "legal sign-off remains external",
+    "campaign authorization remains external"
+  ]
+}

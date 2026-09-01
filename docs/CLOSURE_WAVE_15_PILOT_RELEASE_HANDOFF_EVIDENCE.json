@@ -1,0 +1,75 @@
+{
+  "wave": 15,
+  "branch": "work/chassis-implementation-v1",
+  "wave_start_sha": "286d5926b6c5546062a76005acfc49cb6626e03d",
+  "tested_commit_sha": null,
+  "evidence_publication_sha": "327b1f594d694051c72810639ce0070b4e1fe16d",
+  "mission": "make the final human/source handoff explicit and machine-readable without executing outreach or inventing approvals",
+  "implemented": {
+    "module": "src/searchleads/pilot_release.py",
+    "tests": "tests/test_pilot_release.py",
+    "runbook": "docs/PILOT_EXTERNAL_ACTION_RUNBOOK_V1.md",
+    "ci_contract_updated": true
+  },
+  "release_decision_contract": {
+    "blocked_state": "BLOCKED_EXTERNAL_DECISION",
+    "ready_state": "READY_FOR_AUTHORIZED_EXECUTION",
+    "ready_semantics": "recorded authority chain is valid for exact scoped inputs; no dispatch is performed",
+    "unknown_gate_behavior": "FAIL_CLOSED"
+  },
+  "owner_mapping": {
+    "LEGAL-001": "LEGAL_COMPLIANCE",
+    "EXT-CFO-001": "PROFESSIONAL_REVIEWER",
+    "AUTH-CAMPAIGN-001": "CAMPAIGN_OWNER",
+    "EXT-BRASILAPI-001": "SOURCE_OPERATOR"
+  },
+  "ci_attempts": [
+    {
+      "run_id": 33538638092,
+      "head_sha": "8d2ad82f9c895adf35763b09e3cbc9a8e13e6db7",
+      "result": "CI_EXTERNAL_RUNNER_BLOCKED",
+      "python_jobs": ["3.11", "3.12", "3.13"],
+      "observed": "all jobs failed before any workflow step; runner_id=0"
+    },
+    {
+      "run_id": 33538693826,
+      "head_sha": "473dbd9ce01faa11510b5869c49593155e05a7bd",
+      "result": "CI_EXTERNAL_RUNNER_BLOCKED",
+      "python_jobs": ["3.11", "3.12", "3.13"],
+      "observed": "repeat failure before any workflow step; runner_id=0"
+    }
+  ],
+  "verification_status": {
+    "new_wave15_targeted_tests": "NOT_EXECUTED_DUE_EXTERNAL_RUNNER_PROVISIONING",
+    "new_wave15_full_regression": "NOT_EXECUTED_DUE_EXTERNAL_RUNNER_PROVISIONING",
+    "last_verified_full_regression": "909 passed, 24 skipped, 1 xpassed",
+    "last_verified_python_matrix": ["3.11", "3.12", "3.13"],
+    "last_verified_live_brasilapi": "PASS"
+  },
+  "readiness": {
+    "internal_release_candidate": "READY_BASED_ON_LAST_VERIFIED_HEAD",
+    "external_decision_intake": "READY_BASED_ON_LAST_VERIFIED_HEAD",
+    "externally_certified": "READY_WITH_LIMITATIONS",
+    "commercial_pilot_ready": "BLOCKED_LEGAL",
+    "wave15_handoff_extension": "IMPLEMENTED_UNVERIFIED"
+  },
+  "remaining_external_actions": [
+    "LEGAL-001 designated legal/compliance decision",
+    "conditional EXT-CFO-001 person-specific professional verification",
+    "AUTH-CAMPAIGN-001 campaign-owner authorization",
+    "EXT-BRASILAPI-001 bounded revalidation immediately before approved use"
+  ],
+  "blockers": [
+    {
+      "id": "CI-EXT-001",
+      "class": "EXTERNAL",
+      "status": "OPEN",
+      "description": "GitHub Actions jobs fail before runner provisioning/steps on two consecutive Wave 15 runs",
+      "blocks": ["Wave 15 targeted verification", "Wave 15 full regression verification"],
+      "does_not_block": ["last verified RC state", "documentation handoff", "external human decision process"]
+    }
+  ],
+  "campaign_execution": "NOT_EXECUTED",
+  "legal_approval": "NOT_GRANTED",
+  "send_authorization": "NOT_GRANTED"
+}

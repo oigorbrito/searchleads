@@ -1,0 +1,20 @@
+[
+  {"id":"q01","title":"Cirurgião Bucomaxilofacial","state":"PR","expected":["QUALIFIED","HIGH","UNKNOWN","P2"]},
+  {"id":"q02","title":"Cirurgião-Dentista","state":"SP","expected":["QUALIFIED","MEDIUM","UNKNOWN","P3"]},
+  {"id":"q03","title":"Dentista","state":"MG","procedure":"Blefaroplastia","expected":["QUALIFIED","HIGH","UNKNOWN","P2"]},
+  {"id":"q04","title":"HOF","state":"RJ","intent":"COURSE_INTEREST","expected":["QUALIFIED","HIGH","HIGH","P1"]},
+  {"id":"q05","title":"Harmonização Orofacial","state":"BA","intent":"CONTINUING_EDUCATION","expected":["QUALIFIED","HIGH","MEDIUM","P2"]},
+  {"id":"q06","title":"HOF","state":"SC","intent":"EXPLICIT_NO_INTEREST","expected":["QUALIFIED","HIGH","LOW","P3"]},
+  {"id":"q07","state":"PR","expected":["UNKNOWN","UNKNOWN","UNKNOWN","REVIEW"]},
+  {"id":"q08","title":"Software Engineer","state":"PR","expected":["NOT_QUALIFIED","LOW","UNKNOWN","EXCLUDE"]},
+  {"id":"q09","title":"Dentista","expected":["UNKNOWN","UNKNOWN","UNKNOWN","REVIEW"]},
+  {"id":"q10","title":"Dentista","country":"US","expected":["NOT_QUALIFIED","LOW","UNKNOWN","EXCLUDE"]},
+  {"id":"q11","title":"Dentista","country":"Brasil","expected":["QUALIFIED","MEDIUM","UNKNOWN","P3"]},
+  {"id":"q12","title":"Especialista em Cirurgia Estética Orofacial - CEOF","state":"DF","offer_track":"COMPLEMENTARY_EXCLUSIVE_CEOF","expected":["QUALIFIED","HIGH","UNKNOWN","P2"]},
+  {"id":"q13","title":"Especialista em Harmonização Orofacial","state":"DF","offer_track":"COMPLEMENTARY_EXCLUSIVE_CEOF","expected":["NOT_QUALIFIED","LOW","UNKNOWN","EXCLUDE"]},
+  {"id":"q14","title":"Dentista","state":"GO","require_validated_contact":true,"expected":["NOT_QUALIFIED","LOW","UNKNOWN","EXCLUDE"]},
+  {"id":"q15","title":"Dentista","state":"GO","require_validated_contact":true,"validated_contact":true,"expected":["QUALIFIED","MEDIUM","UNKNOWN","P3"]},
+  {"id":"q16","title":"Dentista","alternate_title":"Software Engineer","state":"PR","conflict_field":"professional_role_title","expected":["UNKNOWN","UNKNOWN","UNKNOWN","REVIEW"]},
+  {"id":"q17","title":"HOF","state":"PR","intent":"COURSE_INTEREST","alternate_intent":"EXPLICIT_NO_INTEREST","conflict_field":"education_intent","expected":["QUALIFIED","HIGH","UNKNOWN","P2"]},
+  {"id":"q18","title":"Especialista em Endodontia","state":"PE","expected":["QUALIFIED","MEDIUM","UNKNOWN","P3"]}
+]

@@ -1,0 +1,17 @@
+[
+  {"name":"coherent_full_bundle","expected":true},
+  {"name":"company_without_lead","expected":true},
+  {"name":"input_order_changed","expected":true},
+  {"name":"cross_company_lead","expected":false},
+  {"name":"person_other_company","expected":false},
+  {"name":"missing_relationship_evidence","expected":false},
+  {"name":"contact_outside_owner","expected":false},
+  {"name":"candidate_missing_provenance","expected":false},
+  {"name":"candidate_provenance_mismatch","expected":false},
+  {"name":"canonical_missing_candidate","expected":false},
+  {"name":"conflict_field_mismatch","expected":false},
+  {"name":"provenance_missing_evidence","expected":false},
+  {"name":"evidence_missing_source","expected":false},
+  {"name":"review_missing_evidence","expected":false},
+  {"name":"duplicate_contact_id","expected":false}
+]

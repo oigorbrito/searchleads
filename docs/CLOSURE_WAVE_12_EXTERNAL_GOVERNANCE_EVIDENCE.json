@@ -1,0 +1,120 @@
+{
+  "wave": 12,
+  "branch": "work/chassis-implementation-v1",
+  "wave_start_sha": "8dc7b1b09204213fbf046c5d266b03d5a72fe49c",
+  "tested_commit_sha": "1e56bf88eb9914b1944e0744e9e529ac7884d832",
+  "evidence_publication_sha": "1ee6623e20c09781afd94e6b9b3c00d9dcdc7663",
+  "mission": "reduce the remaining external/human/legal critical path to explicit authority-owned gates without campaign execution",
+  "official_source_observations": [
+    {
+      "reference_id": "AUTH-LGPD-001",
+      "publisher": "Presidencia da Republica / Planalto",
+      "locator": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm",
+      "observed_date": "2026-09-01",
+      "supports": [
+        "LGPD Art. 6 purpose/adequacy/necessity principles",
+        "LGPD Art. 7 legal bases including legitimate interest in item IX",
+        "LGPD Art. 18 data-subject rights"
+      ],
+      "legal_approval": false
+    },
+    {
+      "reference_id": "AUTH-ANPD-001",
+      "publisher": "Autoridade Nacional de Protecao de Dados",
+      "locator": "https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes/guia_orientativo_hipoteses_legais_tratamento_de_dados_pessoais_legitimo_interesse",
+      "observed_date": "2026-09-01",
+      "supports": [
+        "official legitimate-interest guidance exists",
+        "purpose/necessity/safeguards/legitimate-expectation review is contextual",
+        "engineering evidence does not replace controller legal review"
+      ],
+      "legal_approval": false
+    },
+    {
+      "reference_id": "AUTH-CFO-001",
+      "publisher": "Conselho Federal de Odontologia",
+      "locator": "https://website.cfo.org.br/busca-profissionais/",
+      "observed_date": "2026-09-01",
+      "supports": [
+        "official Consulta de Profissionais surface exists"
+      ],
+      "person_specific_status_certified": false
+    },
+    {
+      "reference_id": "AUTH-SERPRO-001",
+      "publisher": "Servico Federal de Processamento de Dados - SERPRO",
+      "locator": "https://www.serpro.gov.br/menu/suporte/css",
+      "observed_date": "2026-09-01",
+      "supports": [
+        "official Consulta CNPJ API service exists",
+        "official API service is distinct from historical SearchLeads transparency-page enrichment path"
+      ]
+    }
+  ],
+  "implemented_contracts": {
+    "module": "src/searchleads/external_governance.py",
+    "tests": "tests/test_external_governance.py",
+    "documentation": "docs/EXTERNAL_GOVERNANCE_REVIEW_PACKET_V1.md",
+    "authority_types": ["ENGINEERING", "EXTERNAL_SOURCE", "HUMAN_REVIEW", "LEGAL_REVIEW", "CAMPAIGN_OWNER"],
+    "decision_types": ["SATISFIED", "REVIEW_REQUIRED", "BLOCKED", "NOT_REQUIRED"]
+  },
+  "critical_path_decisions": [
+    {"gate_id": "EXT-BRASILAPI-001", "decision": "REVIEW_REQUIRED", "reason": "fresh product-source revalidation remains required before approved campaign use"},
+    {"gate_id": "EXT-SERPRO-001", "decision": "NOT_REQUIRED", "reason": "SERPRO transparency enrichment is not on the minimum commercial critical path", "does_not_claim": "certification or rejection of the separate official SERPRO Consulta CNPJ API"},
+    {"gate_id": "EXT-CFO-001", "decision": "REVIEW_REQUIRED", "authority": "HUMAN_REVIEW", "reason": "person-specific current registration status must be captured when campaign policy depends on it"},
+    {"gate_id": "LEGAL-001", "decision": "REVIEW_REQUIRED", "authority": "LEGAL_REVIEW", "reason": "controller legal-basis/campaign review cannot be self-approved by engineering"},
+    {"gate_id": "AUTH-CAMPAIGN-001", "decision": "BLOCKED", "authority": "CAMPAIGN_OWNER", "reason": "campaign-specific manual authorization has not been granted"}
+  ],
+  "legal_review_packet": {
+    "status": "READY_FOR_HUMAN_REVIEW",
+    "decision": "REVIEW_REQUIRED",
+    "self_approved": false,
+    "questions_cover": [
+      "approved LGPD legal basis for exact campaign purpose/contact class/channel",
+      "legitimate-interest purpose/necessity/balancing analysis if used",
+      "notice/opposition/suppression/opt-out controls",
+      "retention/deletion period",
+      "prohibited or review-only source/contact/professional-registration classes"
+    ]
+  },
+  "professional_registration": {
+    "source_surface_authority": "ESTABLISHED",
+    "person_specific_current_status": "HUMAN_REVIEW_REQUIRED",
+    "verified_active_inferred_from_missing_end_date": false
+  },
+  "serpro": {
+    "official_cnpj_api_exists": true,
+    "historical_transparency_path_minimum_criticality": "NOT_REQUIRED",
+    "commercial_blocker_removed": true
+  },
+  "ci": {
+    "run_id": 33503519451,
+    "python_matrix": ["3.11", "3.12", "3.13"],
+    "status": "PASS",
+    "package_install": "PASS",
+    "installed_import": "PASS",
+    "rc_hygiene": "RC_HYGIENE_READY",
+    "compile": "PASS",
+    "rc_recovery_regression": "91 passed on reference Python 3.12.14",
+    "external_governance_regression": "18 passed on reference Python 3.12.14",
+    "full_regression": "899 passed, 24 skipped, 1 xpassed on reference Python 3.12.14"
+  },
+  "readiness": {
+    "architecture_baseline": "READY",
+    "integrated": "READY",
+    "internally_verified": "PASS",
+    "operationally_ready": "READY",
+    "internal_release_candidate": "READY",
+    "externally_certified": "PARTIAL",
+    "commercial_pilot_ready": "BLOCKED_LEGAL"
+  },
+  "remaining_minimum_critical_path": [
+    "LEGAL-001 human legal/compliance review",
+    "EXT-BRASILAPI-001 fresh revalidation before approved use",
+    "EXT-CFO-001 person-specific current status verification when policy requires it",
+    "AUTH-CAMPAIGN-001 manual campaign authorization after prior gates close"
+  ],
+  "removed_from_minimum_critical_path": ["SERPRO transparency enrichment path", "Crawlee optional breadth", "additional ER challenger breadth"],
+  "campaign_execution": "NOT_EXECUTED",
+  "send_authorization": "NOT_GRANTED"
+}
