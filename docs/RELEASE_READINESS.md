@@ -21,9 +21,9 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: last locally recorded full regression passed with `885 passed`, `24 skipped`, `1 xfailed`; Wave 11 hardened CI now requires package installation and installed import before the offline test suite
-- status: PASS_WITH_CI_REVALIDATION_PENDING
-- blockers: current hardened CI result pending; skip/xfail inventory remains classified
+- current evidence: hardened CI run `33471375669` passed package install, installed import, RC hygiene, compile, targeted RC/recovery regression and full offline regression on Python 3.11, 3.12 and 3.13; reference 3.12 result is `91 passed` targeted and `894 passed, 24 skipped, 1 xpassed` full
+- status: PASS
+- blockers: none internal; the single XPASS is an explicitly obsolete benchmark contract superseded by aggregate qualification analysis
 
 ### Operationally Ready
 
@@ -35,9 +35,9 @@ Status: CANONICAL
 ### Internal Release Candidate
 
 - criteria: clean package installation, installed import, offline deterministic regression, repository hygiene, recovery contracts, explicit blocker separation, and green hardened CI
-- current evidence: Wave 11 added `RELEASE_CANDIDATE_INTERNAL_V1.md`, hardened CI install/import checks, and stricter local artifact/secret ignore rules
-- status: VERIFICATION_PENDING
-- blockers: hardened CI must complete successfully on the Wave 11 head; this execution environment cannot clone GitHub directly due DNS/network restriction
+- current evidence: `RELEASE_CANDIDATE_INTERNAL_V1.md`, green Python 3.11/3.12/3.13 hardened CI, `RC_HYGIENE_READY`, targeted RC/recovery battery, cross-platform configuration tests, and experimental bake-off isolation
+- status: READY
+- blockers: none internal
 
 ### Externally Certified
 
@@ -58,3 +58,15 @@ Status: CANONICAL
 - Wave 10: `SKIPPED_BY_OWNER / DEFERRED`
 - this is not a PASS or readiness promotion
 - unresolved Wave 10 external/human/legal gates remain carried forward
+
+## Current critical-path split
+
+Internal engineering release-candidate path: CLOSED / READY.
+
+External/human/legal path remains open:
+
+1. `LEGAL-001` legal/compliance sign-off;
+2. campaign-specific manual authorization;
+3. CFO/CRO human professional-registration verification when policy requires it;
+4. SERPRO criticality/path confirmation if it remains required;
+5. remaining BrasilAPI certification limitation if applicable.
