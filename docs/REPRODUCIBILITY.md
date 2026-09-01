@@ -137,7 +137,9 @@ Observation JSON is raw study output for analysis purposes. It is not a claim an
 
 For deterministic benchmarks, the observation should retain individual case/pair outcomes and document why repeated identical executions are not being used to estimate stochastic variance. Aggregate metrics must remain recomputable from the retained outcomes where applicable.
 
-The current initial observation-producing modules cover runtime/recovery, runtime adapter identity/persistence, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
+The current observation-producing modules cover runtime/recovery, runtime adapter identity/persistence, FTM↔SearchLeads Evidence bridge cardinality/lineage probes, normalization, normalization-to-ER ablation, and CNPJ oracle/admission probes. Tests that only validate the measurement framework itself are not converted into empirical evidence.
+
+The FTM evidence-bridge probes emit four bounded `FUNCTIONAL_PROBE` observations only when the observation output directory is configured. They establish no active architecture decision and remain `NOT_EVALUATED` until an execution bundle exists.
 
 ## Canonical study report
 
