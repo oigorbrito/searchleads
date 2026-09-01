@@ -1,66 +1,61 @@
 # FACT_LINEAGE_CHASSIS_DECISION_V1
 
-Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; external execution remains `INFRASTRUCTURE_BLOCKED` while Actions jobs terminate without usable step logs.
+Status: `HISTORICAL_DECISION_RECORD`.
 
-## Question
+This document preserves a prior engineering direction for semantic statements, raw Evidence, provenance, and conflict representation. It is not a canonical empirical result under the current harness methodology.
 
-Which SearchLeads fact/provenance concepts should survive if FollowTheMoney becomes the semantic entity/statement layer?
+Historical decision label: `COMPOSE`.
 
-The decision separates semantic truth representation from raw-observation preservation. Those responsibilities need not live in one record type.
+## Research question
 
-## Decision matrix
+Which fact/provenance responsibilities can be represented by a semantic statement layer while preserving SearchLeads raw-observation identity, integrity, replay, qualification semantics, and auditability?
 
-| Current concept | Candidate disposition | Decision |
+The relevant empirical question is not whether an external library can instantiate a statement. It is whether a candidate composition preserves the declared behavior and reduces a defined cost/complexity construct under a reproducible method.
+
+## Historical responsibility split
+
+| Current concept | Historical direction | Current methodological interpretation |
 |---|---|---|
-| `Evidence` raw observation | retain as independent captured-input identity/store | `KEEP` |
-| Evidence digest/envelope integrity | retain | `KEEP` |
-| FTM `Statement` semantics | use for semantic entity/property/value representation where compatible | `COMPOSE` |
-| statement↔Evidence association | explicit many-to-many bridge | `COMPOSE` |
-| `CandidateFact` | transitional compatibility/input projection; do not assume permanent core primitive | `DEFER` |
-| `CanonicalFact` | candidate projection/aggregation over statements; permanence not yet justified | `DEFER` |
-| persisted `Conflict` | derive by default; persist only adjudication or irreducible cache state | `COMPOSE` |
-| SearchLeads `Provenance` | retain only responsibilities not represented by FTM statement metadata + explicit Evidence links | `COMPOSE` |
+| SearchLeads raw `Evidence` | retain independent captured-input identity/store | integrity/replay behavior is independently testable; retention decision is not a benchmark win |
+| Evidence digest/envelope integrity | retain | correctness/integrity requirement |
+| semantic statements | compose where compatible | capability/semantic fit requires explicit compatibility probes |
+| statement↔Evidence association | explicit many-to-many bridge | cardinality/integrity requirement to be exercised functionally |
+| `CandidateFact` | defer permanent-core decision | comparative simplification requires reconstruction/complexity evidence |
+| `CanonicalFact` | defer permanent-core decision | persistence-vs-projection trade-off requires measured reconstruction/operational evidence |
+| persisted `Conflict` | prefer derivation plus persisted adjudication where needed | benefit/cost of derivation vs persistence requires a declared workload if claimed empirically |
+| SearchLeads `Provenance` | retain only non-overlapping responsibilities | reduction claim requires evidence of no lineage loss and reproducible reconstruction |
 
-## Identity rule
+These are historical engineering directions, not `SUPPORTED` empirical superiority claims by themselves.
 
-`statement_id` and `evidence_id` are different namespaces and must remain different.
+## Identity invariant
 
-A statement identifies a semantic assertion. Evidence identifies a captured observation/raw input. Therefore both cardinalities are required:
+`statement_id` and `evidence_id` are different namespaces.
+
+A semantic statement identifies an assertion. Evidence identifies a captured observation/raw input. The model must support:
 
 ```text
-one Evidence -> many statements
-one statement -> many Evidence records
+one Evidence -> many semantic statements
+one semantic statement -> many Evidence records
 ```
 
-Any implementation that stores `evidence_id` as the FTM statement identifier is rejected because distinct semantic assertions from the same captured document would collide.
+Collapsing those identities would create semantic collisions. This is a correctness/integrity constraint, not a performance result.
 
-## Proposed responsibility split
+## Raw Evidence responsibilities
 
-### Semantic statement layer
-
-Prefer FollowTheMoney statements for:
-
-- entity/property/value semantics;
-- statement identity;
-- dataset/origin metadata;
-- observed temporal metadata supported by FTM;
-- canonical-entity linkage;
-- generic graph semantics.
-
-### Raw Evidence layer
-
-Keep SearchLeads Evidence for:
+SearchLeads Evidence is intended to preserve:
 
 - stable captured-observation identity;
 - raw payload retention;
 - source capture metadata not reducible to a semantic statement;
 - replay/reprocessing input;
 - digest/integrity verification;
-- mandatory evidence requirements for commercially consequential facts and relationships.
+- mandatory evidence requirements for consequential facts and relationships.
 
-### Bridge layer
+A semantic statement layer may overlap with some provenance semantics but does not automatically replace raw Evidence identity.
 
-Use an explicit link such as:
+## Bridge hypothesis
+
+A logical many-to-many bridge such as:
 
 ```text
 StatementEvidenceLink
@@ -68,112 +63,84 @@ StatementEvidenceLink
     evidence_ids[]
 ```
 
-A normalized physical representation may instead store one row per `(statement_id, evidence_id)` pair. The logical requirement is many-to-many cardinality, not this exact storage shape.
+is one candidate representation. The exact physical storage shape is not fixed by this historical decision.
 
-## CandidateFact / CanonicalFact
+A functional probe should establish cardinality, referential integrity, reconstruction, and corruption/missing-Evidence behavior before the representation is considered compatible.
 
-No deletion is authorized yet.
+## CandidateFact / CanonicalFact claim boundary
 
-`CandidateFact` currently packages raw value, normalized value, evidence references, provenance, confidence, decision class and observation time. Some of those responsibilities overlap FTM statements; others are SearchLeads-specific workflow concerns.
+No deletion or replacement claim is authorized merely because another framework offers semantic statements.
 
-The correct experiment is therefore not "can FTM instantiate a statement?" but whether the same downstream behavior can be expressed with fewer owned concepts while preserving:
+Any claim that SearchLeads can remove or shrink these concepts must preserve and evaluate, as applicable:
 
 - raw Evidence requirements;
 - normalization traceability;
 - qualification behavior;
 - conflict visibility;
-- reprocessing;
-- deterministic persistence/reconstruction.
+- replay/reprocessing;
+- deterministic persistence/reconstruction;
+- decision/audit identity.
 
-Until that comparison executes, `CandidateFact` is `DEFER`, not `KEEP` and not `REPLACE`.
-
-`CanonicalFact` is similarly treated as a possible projection/aggregation rather than assumed durable storage. If canonical values can be reproduced deterministically from statements + judgements + policy, persisting a second truth record may be unnecessary. That must be tested for complexity, latency, reproducibility and auditability.
+If the claim is lower complexity or lower operational cost, the study must define and measure that construct rather than infer it from record-type count alone.
 
 ## Conflict representation
 
-Default candidate: derive conflicts from multiple materially incompatible statements for the same semantic subject/property under the active policy.
+A historical candidate direction was to derive reconstructable conflict state and persist only irreducible human adjudication or justified cache state.
 
-Persist a dedicated Conflict record only if experiments demonstrate a concrete advantage such as:
+This is a design hypothesis. The following are distinct claims requiring different evidence:
 
-- substantially cheaper repeated reads;
-- required stable workflow identity for human review;
-- preservation of historical adjudication state that cannot be reconstructed from statements/judgements;
-- materially simpler audit semantics.
+- conflict state can be reconstructed correctly: functional/reconstruction evidence;
+- derivation is cheaper than persistence: controlled workload/cost evidence;
+- derivation improves auditability: explicit auditability construct and evaluation;
+- persisted workflow identity is necessary: functional/product requirement evidence.
 
-Conflict handling is therefore no longer a structural blocker. The best architecture is:
-
-- derive conflict state from statements and Evidence by default;
-- persist only the irreducible human adjudication event or a provable cache;
-- never let a persisted Conflict record become the only source of truth for reconstructable lineage.
-
-## Provenance composition
-
-FTM `dataset`, `origin`, temporal metadata and statement identity cover part of current SearchLeads provenance. They do not by themselves guarantee raw payload identity, integrity, or exact replay input.
-
-The target is to measure whether SearchLeads `Provenance` can shrink to only the non-overlapping responsibilities rather than keeping two parallel lineage systems.
-
-Success criterion:
-
-```text
-minimum owned lineage model
-+ no evidence loss
-+ deterministic reconstruction
-+ no semantic identifier collision
-```
+No one of those claims implies the others.
 
 ## Required executable gates
 
-The combined fact-lineage bake-off must demonstrate:
+A current fact-lineage claim bundle should preserve evidence for relevant gates such as:
 
 1. one raw Evidence supporting multiple distinct semantic statements;
 2. one semantic statement corroborated by multiple independent Evidence records;
 3. conflicting values retained without destructive overwrite;
 4. dataset/origin/time metadata retained independently from raw Evidence identity;
-5. replay from Evidence can rebuild the same semantic inputs;
-6. corruption/missing Evidence is detectable;
-7. qualification-relevant facts cannot become evidence-free through conversion;
-8. relationship-scoped facts remain scoped after statement conversion;
-9. no silent collapse of two origins solely because normalized semantic values match;
-10. explicit handling of adjudication/judgements separate from observation identity.
+5. replay from Evidence rebuilding the declared semantic inputs;
+6. corruption/missing Evidence detection;
+7. qualification-relevant facts remaining evidence-backed;
+8. relationship-scoped facts remaining scoped after conversion;
+9. distinct origins not collapsing solely because normalized values match;
+10. adjudication/judgement state remaining separate from observation identity.
 
-Existing PR #113 probes cover several of these individually; `test_chassis_bakeoff_domain_chassis_integrated.py` adds cross-cutting cardinality and scoping gates.
+JUnit execution status alone is not sufficient when a claim depends on measurements or reconstructed outputs not represented by JUnit. Those observations must be preserved as structured artifacts.
 
-## Complexity benchmark to collect when runners work
+## Complexity/performance claims
 
-For SearchLeads baseline versus FTM+Evidence bridge, record:
+Potential observations include:
 
-- number of owned record types;
+- owned record types;
 - owned implementation LOC excluding tests/docs;
 - adapter LOC;
 - semantic-reference rules;
 - persistence codec rules;
-- write amplification per observation;
-- read operations required to reconstruct a qualified decision;
+- write amplification;
+- read operations needed for reconstruction;
 - round-trip/replay correctness;
-- corruption-detection coverage;
-- latency and memory for representative fact sets.
+- corruption-detection outcomes;
+- latency/memory under a declared representative fact workload.
 
-No winner on those quantitative dimensions is claimed while the runner is blocked.
+Counts such as LOC or record-type count are descriptive observations. They do not become maintainability or quality metrics without a method that justifies that construct.
 
-## Current decision
+## Decision semantics
 
-`COMPOSE` is the leading fact-lineage architecture:
+The historical fact-lineage direction remains recorded as `COMPOSE`:
 
 ```text
-FollowTheMoney semantic statements
-        ↕ explicit many-to-many links
+semantic statements
+        ↕ explicit evidence links
 SearchLeads raw Evidence + integrity
         ↕ derived conflict state / adjudication events
 ```
 
-This is stronger than either extreme currently supported by evidence:
+Under the current vocabulary this is `decision_state=HISTORICAL_DECISION` with a legacy label of `COMPOSE`.
 
-- FTM lineage alone does not replace raw Evidence/replay guarantees;
-- retaining the entire SearchLeads fact/provenance stack unchanged would duplicate mature semantic statement machinery without proof that the duplication is valuable;
-- persisting Conflict as a primary truth store is unnecessary unless repeated-read cost or audit semantics prove it is needed.
-
-The exact fate of `CandidateFact`, `CanonicalFact`, and the residual `Provenance` schema remains intentionally deferred until executable complexity and reconstruction benchmarks run.
-
-## Consolidated scorecard
-
-See [`SEARCHLEADS_CHASSIS_SCORECARD_V1`](./SEARCHLEADS_CHASSIS_SCORECARD_V1.md) for the current cross-cutting decision table across domain, lineage, normalization, runtime, application chassis and persistence.
+Current empirical support for any stronger claim must come from the canonical claim/evidence report. Missing required inputs result in `INSUFFICIENT_EVIDENCE`; absent execution results in `NOT_EVALUATED`.
