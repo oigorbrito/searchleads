@@ -21,7 +21,7 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: Wave 13 CI run `33507232293` passed package install, installed import, RC hygiene, compile, RC/recovery, external-governance/preflight and full offline regression on Python 3.11, 3.12 and 3.13; reference 3.12 result is `91 passed` RC/recovery, `28 passed` external-governance/preflight, and `909 passed, 24 skipped, 1 xpassed` full
+- current evidence: Wave 14 CI run `33507553399` passed package install, installed import, RC hygiene, compile, RC/recovery, external-governance/preflight, one opt-in BrasilAPI live point revalidation on Python 3.12, and full offline regression across Python 3.11, 3.12 and 3.13; reference full result remains `909 passed, 24 skipped, 1 xpassed`
 - status: PASS
 - blockers: none internal; the single XPASS is an explicitly obsolete benchmark contract superseded by aggregate qualification analysis
 
@@ -48,17 +48,17 @@ Status: CANONICAL
 
 ### Externally Certified
 
-- criteria: every source that is actually required by the minimum commercial path has authority, freshness and evidence requirements classified and satisfied or explicitly human-gated
-- current evidence: BrasilAPI remains certified with limitations/revalidation; CFO publishes an official professional consultation surface but person-specific current status remains human-gated; the SERPRO transparency enrichment path has been reclassified `NOT_REQUIRED` for the minimum commercial path after review of the distinct official SERPRO Consulta CNPJ API/service boundary
-- status: PARTIAL
-- blockers: `EXT-BRASILAPI-001` fresh revalidation and `EXT-CFO-001` person-specific current-status verification when policy requires it
+- criteria: every source actually required by the minimum commercial path has authority, freshness and evidence requirements classified and either currently validated or explicitly candidate-specific/human-gated
+- current evidence: Wave 14 executed one safe live BrasilAPI CNPJ point lookup through the product adapter on 2026-09-01T12:25:17Z; HTTP 200, required contract fields present, evidence digest `sha256:f4c55ba5ba3910bfffe1c643250c527d0b3b17732153c9b4fc0962adbeccd909`, raw payload not published. SERPRO transparency enrichment remains `NOT_REQUIRED`. CFO/CRO status remains candidate-specific human evidence only when approved campaign policy requires current professional status
+- status: READY_WITH_LIMITATIONS
+- limitations: BrasilAPI freshness is point-in-time and policy remains `REVALIDATE_BEFORE_USE`; CFO/CRO is conditional, person-specific, human-gated evidence
 
 ### Commercial Pilot Ready
 
 - criteria: qualification, contacts, compliance, required external certification, suppression and SEND_READY conditions are all satisfied under an approved policy and manual campaign authorization
-- current evidence: qualification policy, contact-use, suppression, pilot readiness, compliance policy interface, manual authorization revocation, send-ready proof contracts, official-source authority references, legal-review packet, and campaign authority preflight are represented canonically
+- current evidence: qualification policy, contact-use, suppression, pilot readiness, compliance policy interface, manual authorization revocation, send-ready proof contracts, official-source authority references, legal-review packet, campaign authority preflight, and current BrasilAPI live contract evidence are represented canonically
 - status: BLOCKED_LEGAL
-- blockers: `LEGAL-001`, `AUTH-CAMPAIGN-001`, `EXT-CFO-001` when professional status is campaign-critical, and `EXT-BRASILAPI-001` fresh source revalidation
+- blockers: `LEGAL-001`, `AUTH-CAMPAIGN-001`, conditional `EXT-CFO-001`, and a repeat of `EXT-BRASILAPI-001` immediately before any approved campaign use because freshness is not perpetual
 
 ## Deferred wave status
 
@@ -73,14 +73,18 @@ Status: CANONICAL
 Engineering decisions:
 
 - `EXT-SERPRO-001`: `NOT_REQUIRED` for the minimum commercial path; no longer a pilot blocker
-- `EXT-CFO-001`: `REVIEW_REQUIRED` by a human, person-specific and timestamped
+- `EXT-CFO-001`: `REVIEW_REQUIRED` by a human only when policy requires current professional status, person-specific and timestamped
 - `LEGAL-001`: `REVIEW_REQUIRED` by the controller/compliance authority; engineering cannot self-approve
 - `AUTH-CAMPAIGN-001`: `BLOCKED` until manual campaign authorization exists
-- `EXT-BRASILAPI-001`: `REVIEW_REQUIRED` for fresh product-source revalidation before campaign use
+- `EXT-BRASILAPI-001`: current live contract PASS; repeat immediately before approved use under `REVALIDATE_BEFORE_USE`
 
 ## Campaign authority preflight
 
 Wave 13 makes the remaining decisions machine-checkable without granting them. The preflight rejects missing, expired, revoked, rejected or scope-mismatched legal signoff and authorization records. Professional verification is required only when the approved campaign policy requires current professional status. A synthetic positive fixture proves the state machine, not real-world approval.
+
+## Wave 14 live-source observation
+
+The product BrasilAPI adapter performed exactly one read-only point lookup in GitHub Actions. The probe did not crawl, loop, send contact data, print the raw response, or execute a campaign. The live observation is evidence of the contract at its timestamp, not blanket future certification.
 
 ## Current critical-path split
 
@@ -88,11 +92,13 @@ Internal engineering release-candidate path: CLOSED / READY.
 
 External decision-intake path: CLOSED / READY.
 
-Remaining minimum external/human/legal path:
+External source certification: READY_WITH_LIMITATIONS.
+
+Remaining minimum human/commercial path:
 
 1. answer `LEGAL-001` through designated legal/compliance review against the exact campaign policy version;
-2. revalidate BrasilAPI source/contract freshness immediately before approved campaign use;
-3. perform person-specific CFO/CRO current-status verification only where the approved campaign policy requires professional status;
-4. obtain campaign-specific manual authorization after the preceding gates are satisfied.
+2. perform person-specific CFO/CRO current-status verification only where the approved campaign policy requires professional status;
+3. obtain campaign-specific manual authorization after the preceding gates are satisfied;
+4. immediately before any approved use, repeat the bounded BrasilAPI revalidation required by freshness policy.
 
 SERPRO transparency enrichment and Crawlee/challenger breadth are no longer on this minimum critical path.
