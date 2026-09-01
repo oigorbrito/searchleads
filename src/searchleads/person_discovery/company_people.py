@@ -274,7 +274,9 @@ class CompanyPeopleSource:
             locator = url
         if captured_at is None:
             raise ValueError("fetched_at is required when body is supplied")
-        evidence_id = f"evidence:person-discovery:{_digest(locator + '\0' + captured_at.isoformat())[:24]}"
+        separator = "\0"
+        evidence_material = locator + separator + captured_at.isoformat()
+        evidence_id = f"evidence:person-discovery:{_digest(evidence_material)[:24]}"
         evidence = Evidence(
             evidence_id,
             source.source_id,
@@ -288,7 +290,8 @@ class CompanyPeopleSource:
         facts: list[CandidateFact] = []
         provenances: list[Provenance] = []
         for observation in observations:
-            person_id = f"person:discovery:{_digest(company_id + '\0' + observation.name)[:24]}"
+            person_material = company_id + separator + observation.name
+            person_id = f"person:discovery:{_digest(person_material)[:24]}"
             role_provenance, role_fact = _fact_and_provenance(
                 person_id, "role", observation.role, evidence, "role"
             )
