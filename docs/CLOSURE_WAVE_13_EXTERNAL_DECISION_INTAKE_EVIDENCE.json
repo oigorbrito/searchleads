@@ -3,7 +3,7 @@
   "branch": "work/chassis-implementation-v1",
   "wave_start_sha": "66ef96128646ba1af4f91797af13c36b451ca161",
   "tested_commit_sha": "7218eb2b3f65e7007ce677304e8ee2374cfd6903",
-  "evidence_publication_sha": "PENDING",
+  "evidence_publication_sha": "120c605b06e6210fdcb99d92561f887056d43dbd",
   "mission": "make the remaining human/legal/source decisions ingestible, scoped, expiring, revocable, auditable and fail-closed without campaign execution",
   "implemented": {
     "module": "src/searchleads/campaign_preflight.py",
@@ -17,35 +17,13 @@
     "preflight": "evaluate_campaign_preflight"
   },
   "compliance_signoff_contract": {
-    "decisions": [
-      "APPROVED",
-      "APPROVED_WITH_CONDITIONS",
-      "REJECTED",
-      "MORE_REVIEW_REQUIRED"
-    ],
-    "scope": [
-      "policy_id",
-      "policy_version",
-      "jurisdiction",
-      "channel",
-      "campaign_id"
-    ],
-    "validity": [
-      "timezone-aware decision timestamp",
-      "optional expiry",
-      "revocation",
-      "reviewer provenance",
-      "authority evidence references"
-    ],
+    "decisions": ["APPROVED", "APPROVED_WITH_CONDITIONS", "REJECTED", "MORE_REVIEW_REQUIRED"],
+    "scope": ["policy_id", "policy_version", "jurisdiction", "channel", "campaign_id"],
+    "validity": ["timezone-aware decision timestamp", "optional expiry", "revocation", "reviewer provenance", "authority evidence references"],
     "engineering_self_approval": false
   },
   "professional_verification_contract": {
-    "decisions": [
-      "VERIFIED_ACTIVE",
-      "VERIFIED_INACTIVE",
-      "NOT_FOUND",
-      "CONFLICT"
-    ],
+    "decisions": ["VERIFIED_ACTIVE", "VERIFIED_INACTIVE", "NOT_FOUND", "CONFLICT"],
     "person_specific": true,
     "evidence_required": true,
     "freshness_supported": true,
