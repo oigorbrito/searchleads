@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from difflib import SequenceMatcher
+import hashlib
 import json
 from math import sqrt
 from pathlib import Path
@@ -19,12 +20,17 @@ from searchleads.entity_resolution import CompanyRecord, LabeledPair
 from searchleads.entity_resolution import company as company_er
 
 
+FIXTURE_PATH = "tests/fixtures/company_er_v1.json"
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "company_er_v1.json"
 THRESHOLDS = tuple(value / 100 for value in range(50, 96, 2))
 NameKey = Callable[[str], str]
 
 
 _RIGOUR_FLAGS = Normalize.NFKD | Normalize.CASEFOLD | Normalize.NAME
+
+
+def _fixture_sha256() -> str:
+    return hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
 
 
 def _rigour_default(value: str) -> str:
@@ -215,7 +221,7 @@ def test_name_normalization_is_measured_as_an_er_feature_ablation() -> None:
         method="controlled deterministic feature ablation with calibration/holdout separation",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
-            "fixture": FIXTURE.as_posix(),
+            "fixture": {"path": FIXTURE_PATH, "sha256": _fixture_sha256()},
             "total_pairs": len(pairs),
             "calibration_pairs": len(calibration),
             "holdout_pairs": len(holdout),
@@ -261,6 +267,7 @@ def test_normalization_ablation_keeps_registry_conflict_as_hard_negative() -> No
         method="deterministic invariant functional probe",
         evidence_class="FUNCTIONAL_PROBE",
         payload={
+            "fixture": {"path": FIXTURE_PATH, "sha256": _fixture_sha256()},
             "registry_conflict_pair_count": len(conflict_pairs),
             "threshold": 0.50,
             "strategy": "rigour_nfkd_casefold_name_strip_org_type_2_3_1",
