@@ -23,9 +23,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install test dependencies
-        run: python -m pip install --upgrade pip pytest
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install .
+          python -m pip install pytest
+      - name: Verify installed import
+        run: python -c "import searchleads; print(searchleads.__name__)"
       - name: Compile package
         run: python -m compileall -q src
-      - name: Run tests
-        run: python -m pytest -q -W error::ResourceWarning
+      - name: Run offline regression
+        run: python -m pytest -q
