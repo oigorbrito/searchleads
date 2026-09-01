@@ -66,15 +66,31 @@ def _load_cases() -> list[dict[str, object]]:
     return data
 
 
+def _case_outcomes(cases: list[dict[str, object]], key_fn: NameKey) -> list[dict[str, object]]:
+    outcomes: list[dict[str, object]] = []
+    for case in cases:
+        left_key = key_fn(str(case["left"]))
+        right_key = key_fn(str(case["right"]))
+        assert left_key
+        assert right_key
+        outcomes.append(
+            {
+                "case_id": str(case["id"]),
+                "category": str(case["category"]),
+                "expected_same": bool(case["same"]),
+                "predicted_same": left_key == right_key,
+                "left_key": left_key,
+                "right_key": right_key,
+            }
+        )
+    return outcomes
+
+
 def _metrics(cases: list[dict[str, object]], key_fn: NameKey) -> dict[str, float | int]:
     tp = fp = tn = fn = 0
-    for case in cases:
-        expected_same = bool(case["same"])
-        left = key_fn(str(case["left"]))
-        right = key_fn(str(case["right"]))
-        assert left
-        assert right
-        predicted_same = left == right
+    for outcome in _case_outcomes(cases, key_fn):
+        expected_same = bool(outcome["expected_same"])
+        predicted_same = bool(outcome["predicted_same"])
         if expected_same and predicted_same:
             tp += 1
         elif expected_same and not predicted_same:
@@ -108,13 +124,11 @@ def _metrics(cases: list[dict[str, object]], key_fn: NameKey) -> dict[str, float
 
 def _category_errors(cases: list[dict[str, object]], key_fn: NameKey) -> dict[str, tuple[int, int]]:
     errors: dict[str, list[int]] = {}
-    for case in cases:
-        category = str(case["category"])
-        expected_same = bool(case["same"])
-        predicted_same = key_fn(str(case["left"])) == key_fn(str(case["right"]))
+    for outcome in _case_outcomes(cases, key_fn):
+        category = str(outcome["category"])
         total, wrong = errors.setdefault(category, [0, 0])
         total += 1
-        wrong += int(predicted_same != expected_same)
+        wrong += int(bool(outcome["predicted_same"]) != bool(outcome["expected_same"]))
         errors[category] = [total, wrong]
     return {category: (counts[0], counts[1]) for category, counts in sorted(errors.items())}
 
@@ -136,9 +150,11 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
     print("COMPANY_NAME_NORMALIZATION_BAKEOFF_V1")
     print("corpus=44 positive=20 negative=24 curated_adversarial=YES")
     for name, key_fn in strategies.items():
+        outcomes = _case_outcomes(cases, key_fn)
         metrics = _metrics(cases, key_fn)
         category_errors = _category_errors(cases, key_fn)
         structured_results[name] = {
+            "case_outcomes": outcomes,
             "metrics": metrics,
             "category_errors": {
                 category: {"total": total, "errors": wrong}
@@ -158,7 +174,7 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
     write_observation(
         observation_id="normalization-key-comparison-v1",
         research_question="How do the declared company-name normalization strategies behave on the frozen adversarial equivalence/collision corpus?",
-        method="controlled benchmark on a frozen curated adversarial corpus",
+        method="controlled deterministic benchmark on a frozen curated adversarial corpus",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
             "corpus": {
@@ -168,6 +184,7 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
                 "negative": sum(not bool(case["same"]) for case in cases),
                 "curated_adversarial": True,
             },
+            "repetition_justification": "Strategies are deterministic pure transformations over a fixed corpus; repeated identical executions do not estimate stochastic variance.",
             "strategies": structured_results,
             "decision_state": "DEFER",
         },
@@ -187,19 +204,28 @@ def test_legal_form_removal_is_measured_as_a_collision_tradeoff() -> None:
     assert len(cases) == 4
     assert all(not bool(case["same"]) for case in cases)
 
+    folded_outcomes = _case_outcomes(cases, _rigour_folded_key)
+    stripped_outcomes = _case_outcomes(cases, _rigour_folded_without_org_type_key)
     folded = _metrics(cases, _rigour_folded_key)
     stripped = _metrics(cases, _rigour_folded_without_org_type_key)
 
     write_observation(
         observation_id="normalization-legal-form-collision-guard-v1",
         research_question="Does organization-type removal change false collisions on the frozen legal-form collision guards?",
-        method="controlled feature-ablation benchmark",
+        method="controlled deterministic feature-ablation benchmark",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
             "case_count": len(cases),
             "all_cases_are_negative_controls": True,
-            "rigour_folded_false_collisions": int(folded["fp"]),
-            "rigour_strip_org_type_false_collisions": int(stripped["fp"]),
+            "repetition_justification": "Both transformations are deterministic on the fixed four-case guard corpus.",
+            "rigour_folded": {
+                "case_outcomes": folded_outcomes,
+                "false_collisions": int(folded["fp"]),
+            },
+            "rigour_strip_org_type": {
+                "case_outcomes": stripped_outcomes,
+                "false_collisions": int(stripped["fp"]),
+            },
         },
         validity_limits=[
             "four curated collision guards only",
