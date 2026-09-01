@@ -123,11 +123,12 @@ def test_cnpj_challengers_are_compared_against_current_official_format() -> None
     write_observation(
         observation_id="cnpj-validation-oracle-comparison-v1",
         research_question="How do current SearchLeads CNPJ format acceptance and the pinned Rigour validator compare with the declared Receita/Serpro acceptance oracle on frozen official/adversarial cases?",
-        method="controlled oracle comparison on frozen official and checksum-invalid cases",
+        method="controlled deterministic oracle comparison on frozen official and checksum-invalid cases",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
             "case_count": len(CASES),
             "cases": case_observations,
+            "repetition_justification": "The reference function and both implementations are deterministic on the fixed six-case corpus; repeated identical executions do not estimate stochastic variance.",
             "searchleads_against_official": {"tp": sl_tp, "fp": sl_fp, "tn": sl_tn, "fn": sl_fn},
             "rigour_against_official": {"tp": rg_tp, "fp": rg_fp, "tn": rg_tn, "fn": rg_fn},
             "searchleads_behavior_under_test": "FORMAT_CANONICALIZATION_NOT_CHECKSUM_VALIDATION",
