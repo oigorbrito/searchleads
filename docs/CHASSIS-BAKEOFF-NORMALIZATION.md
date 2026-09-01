@@ -1,145 +1,138 @@
 # Chassis Bake-Off — Normalization V1
 
-## Decision rule
+Status: `EXPERIMENTAL_PROTOCOL`.
 
-SearchLeads normalization is a baseline, not a protected design. Rigour 2.3.1 is a challenger, not an assumed winner.
+This document defines normalization and identifier-validation questions for the chassis bake-off. It is not production authority and it does not identify a winner.
 
-Normalization is evaluated as feature engineering. A normalized string is never entity identity and cannot, by itself, authorize a merge, canonical fact, qualified Lead, or contact validation state.
+The canonical methodological vocabulary is defined in `EMPIRICAL-HARNESS-METHODOLOGY.md`.
+
+## Research questions
+
+1. How do deterministic name-normalization strategies differ on the declared adversarial corpus?
+2. Does changing only name normalization alter downstream Company ER behavior under a controlled ablation?
+3. Does SearchLeads CNPJ handling satisfy the current formal validity contract, distinct from formatting/canonicalization?
+
+Normalization is feature engineering. A normalized string is never entity identity and cannot by itself authorize a merge, canonical fact, Lead qualification, or contact-validation state.
 
 ## Evidence classes
 
-- `OFFICIAL_SPEC`: Receita Federal / Serpro current CNPJ alphanumeric specification and published examples.
-- `ENGINEERING_EVIDENCE`: Rigour 2.3.1 public normalization APIs, organization-type reference database, tests and implementation; python-stdnum 2.2 current CNPJ implementation.
-- `LOCAL_EXPERIMENT`: frozen SearchLeads adversarial name corpus, downstream ER ablation, and CNPJ challenger probes in this PR.
-- `HYPOTHESIS`: any proposed production replacement before the GitHub runner actually executes the benchmark.
+Use current evidence classes rather than legacy `ENGINEERING_EVIDENCE`/`LOCAL_EXPERIMENT` labels:
 
-No scientific-performance claim is made from the curated fixture alone.
+- official CNPJ specification/examples: external authority for the identifier contract, not a benchmark result;
+- library/API/source inspection: `STATIC_INSPECTION`;
+- deterministic executable behavior checks: `FUNCTIONAL_PROBE`;
+- repeated comparable name/ER measurements under a declared workload: `CONTROLLED_BENCHMARK` when the protocol requirements are satisfied.
+
+A curated fixture is not independent market ground truth.
 
 ## Current SearchLeads architectural duplication
 
 The current company-name field normalizer and current company ER do not share one normalization implementation:
 
-- `searchleads.normalization._normalize_company_name` performs NFKC + whitespace normalization and preserves case/accents;
-- `searchleads.entity_resolution.company._fold` independently performs NFKC + whitespace normalization, casefold, NFKD decomposition, and combining-mark removal.
+- `searchleads.normalization._normalize_company_name` performs NFKC plus whitespace normalization and preserves case/accents;
+- `searchleads.entity_resolution.company._fold` independently performs NFKC, whitespace normalization, casefold, NFKD decomposition, and combining-mark removal.
 
-Therefore replacing only the field normalizer can produce a cleaner stored projection without changing company ER at all. The bake-off treats this duplication as an engineering problem to measure, not as a reason to preserve either implementation.
+This is a static architectural observation. It supports a hypothesis that one explicit normalization contract could reduce duplication. It does not establish that any challenger improves ER quality.
 
-A production change should prefer one explicit, testable name-feature contract if the benchmark shows that doing so preserves or improves ER behavior.
+## Company-name strategies under evaluation
 
-## Company-name challengers
+The frozen protocol compares deterministic strategies over the same declared corpus, including:
 
-The key-level benchmark compares four deterministic strategies over the same 44-pair frozen corpus:
+1. current SearchLeads NFKC/whitespace projection;
+2. Rigour `normalize_name`;
+3. explicit Rigour NFKD/casefold/name pipeline;
+4. the same folded representation with organization-type removal.
 
-1. `searchleads_nfkc_whitespace_v1`
-   - current SearchLeads company-name projection;
-   - Unicode NFKC + whitespace collapse;
-   - preserves case and accents.
-2. `rigour_normalize_name_2_3_1`
-   - Rigour public `normalize_name` convenience key;
-   - Unicode casefold + name tokenization.
-3. `rigour_nfkd_casefold_name_2_3_1`
-   - explicit `NFKD | CASEFOLD | NAME` pipeline;
-   - tests whether compatibility decomposition and casefold improve representation invariance.
-4. `rigour_nfkd_casefold_name_strip_org_type_2_3_1`
-   - same folded key plus Rigour organization-type removal;
-   - tests the recall/collision trade-off of dropping legal-form tokens.
+The corpus contains representation-equivalent pairs and distinct controls, including case, accent, punctuation, whitespace, Unicode composition/compatibility, format characters, legal forms, near spellings, geography, numeric tokens, extra tokens, and collision guards.
 
-The corpus has 20 representation-equivalent pairs and 24 distinct controls. It includes case, accent, punctuation, whitespace, Unicode compatibility/composition, invisible format characters, legal forms, near spellings, geography, numeric tokens, extra tokens, and four explicit legal-form collision guards.
+### Metrics
 
-### Key-level metrics
-
-For equality of normalized keys as a *feature*:
+When defensible labels exist for the frozen corpus, the protocol may report:
 
 - TP / FP / TN / FN;
 - precision;
 - recall;
-- F0.5, because false collisions are intentionally expensive in this experiment;
+- F0.5 when the research question explicitly assigns higher cost to false collisions;
 - false-collision rate;
 - Matthews correlation coefficient;
-- error counts by perturbation category.
+- error counts by declared perturbation category.
 
-There is deliberately no assertion that Rigour or SearchLeads must win.
+These are fixture-scoped measurements. They are not production-accuracy estimates.
 
-The curated fixture is an adversarial engineering corpus, not a market-representative sample and not independent evidence of entity-resolution precision.
+No result may be summarized as `winner`, `better`, or `best` without a bounded claim that names the metric, workload, environment, and validity limits.
 
 ## Downstream ER ablation
 
-`test_chassis_bakeoff_normalization_er_impact.py` applies the name strategies inside the existing company ER benchmark while holding the other components fixed:
+`test_chassis_bakeoff_normalization_er_impact.py` changes the name representation while holding other Company ER behavior fixed as far as the protocol declares:
 
-- registry conflict/exact rules unchanged;
+- registry rules unchanged;
 - domain feature unchanged;
 - phone feature unchanged;
 - address feature unchanged;
 - location feature unchanged;
 - CNAE feature unchanged;
-- weighted feature weights unchanged.
+- weighting unchanged.
 
-Only `name_similarity` changes.
+Only the name-related representation/similarity path is intended to vary.
 
-The experiment reports both:
+The protocol may evaluate both a fixed historical threshold and a threshold selected from a calibration partition then applied to holdout data. Any threshold selection procedure must be recorded and must not be changed after observing holdout outcomes to favor a candidate.
 
-- the existing fixed `0.78` weighted threshold, to show the direct effect of changing only the name representation;
-- a threshold selected from the 18-pair calibration partition and evaluated on the 36-pair holdout, to avoid rejecting a challenger merely because its score scale shifted.
+Registry conflict remains a hard negative where the product policy defines it as such.
 
-Registry conflict remains a hard negative and cannot be overridden by aggressive name normalization.
+## CNPJ correctness boundary
 
-This corpus predates the experiment, so independence of the SearchLeads baseline is not certified. The result is regression/comparative evidence, not a final unbiased market-quality estimate.
+CNPJ canonicalization and CNPJ validity are separate operations.
 
-## CNPJ challengers
+Current SearchLeads `_normalize_cnpj` compacts and canonicalizes a shaped identifier. Shape acceptance alone is not checksum validation.
 
-As of 2026-07-31, Receita Federal has generated the first alphanumeric CNPJ. Current systems therefore must not assume that CNPJ is numeric-only.
+The experiment compares:
 
-Official sources used by the experiment:
+1. a reference implementation of the declared Receita/Serpro validity algorithm;
+2. current SearchLeads CNPJ canonicalization behavior;
+3. the pinned external validation path through Rigour/python-stdnum.
 
-- Receita Federal announcement of the first alphanumeric CNPJ, `00.000.000/E08G-12`:
-  https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/julho/receita-federal-gera-o-primeiro-cnpj-em-formato-alfanumerico
-- Receita Federal / Serpro technical DV documentation:
-  https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/documentos-tecnicos/cnpj
-- Published worked example: `12.ABC.345/01DE-35`.
+The official specification remains the authority for the identifier contract. An external library is evaluated against that contract; it does not become authoritative merely because it is a challenger.
 
-The frozen CNPJ probe compares:
+A source value may be preserved/canonicalized while failing validation. Validation must not erase raw Evidence.
 
-1. the official reference algorithm implemented directly from the Receita/Serpro specification;
-2. current SearchLeads CNPJ canonicalization from the gap planner;
-3. Rigour 2.3.1 `rigour.ids.CNPJ`, with the experiment pinning `python-stdnum==2.2`.
+## Claim boundaries
 
-The official implementation is the acceptance oracle for the six frozen valid/invalid cases. SearchLeads and Rigour are measured against it.
+Supported static/correctness conclusions may include:
 
-### Dependency verification
+- SearchLeads currently has duplicated name-normalization logic in separate paths;
+- canonicalization is not equivalent to formal CNPJ validity checking;
+- a candidate library exposes specific normalization or validation APIs.
 
-Nomenklatura 4.14.0 requires `rigour >= 2.2.3, < 3.0.0`, so Rigour 2.3.1 is within its supported dependency range.
+The following require controlled empirical evidence and raw observations:
 
-python-stdnum 2.2 explicitly added support for the new Brazilian CNPJ format. Its `stdnum.br.cnpj` implementation:
+- a normalization strategy improves downstream ER;
+- a strategy reduces false collisions under a workload;
+- one strategy has higher precision/recall under a declared dataset;
+- a strategy should replace another in production.
 
-- accepts 14 alphanumeric characters;
-- uppercases and compacts valid separators;
-- maps each of the first 12 characters with `ord(character) - 48`;
-- applies the official modulo-11 weight sequences;
-- requires the last two characters to match the computed numeric check digits;
-- includes `12.ABC.345/01DE-35` as a documented valid example.
+The following are not authorized from a curated fixture alone:
 
-Thus support for alphanumeric CNPJ is no longer a hypothesis for the pinned external dependency. The remaining empirical question is whether the complete Rigour wrapper, SearchLeads handling, and official oracle agree across the frozen cases and future adversarial cases.
+- market-wide ER accuracy;
+- universal normalization superiority;
+- production false-merge rate;
+- production adoption.
 
-### Important semantic distinction
+## Acceptance and rejection criteria
 
-Current SearchLeads `_normalize_cnpj` checks compact shape (`14` alphanumeric characters) and canonicalizes formatting/case. It is not a checksum validator. Accepting a syntactically shaped identifier must not be described as validating the CNPJ.
+Before an active production recommendation, the study must preserve:
 
-Rigour exposes a validation-oriented API via python-stdnum. Even if it wins the validation benchmark, canonicalization and validation should remain distinguishable operations: a source value may be preserved and normalized while failing validation, and a validation result must not erase raw Evidence.
+- complete SearchLeads regression outcome;
+- environment manifest;
+- raw JUnit execution evidence;
+- raw structured observations for metrics not represented by JUnit;
+- declared corpus identity/hash where applicable;
+- false-collision outcomes, not only positive invariance;
+- downstream ER effects when ER benefit is claimed;
+- current official CNPJ contract cases when identifier correctness is claimed;
+- explicit validity limits and threats.
 
-If the external validator and official oracle disagree on any current official case, the official specification wins for the Brazilian identifier contract; the external library remains replaceable.
+A required missing artifact causes the current claim state to become `INSUFFICIENT_EVIDENCE` in the canonical report.
 
-## Adoption gate
+## Decision semantics
 
-No normalization implementation is replaced until:
-
-- the complete SearchLeads regression suite executes;
-- all normalization probes execute on Python 3.11 and 3.12;
-- false collisions are reviewed, not only positive invariance;
-- the chosen name representation does not create a prohibited false-merge regression in downstream ER;
-- the chosen approach resolves or explicitly justifies the duplicate normalization logic currently split between field normalization and ER;
-- the CNPJ behavior matches current Receita official examples, including alphanumeric identifiers;
-- raw source values and Evidence remain unchanged and auditable.
-
-## Current CI gate
-
-GitHub-hosted jobs for this repository have repeatedly terminated before checkout/setup with no job steps. Until that infrastructure gate is resolved, the files in this PR are executable protocols and hypotheses, not PASS results.
+Historical decisions about normalization or identifier validation may remain documented elsewhere as engineering decisions. This experiment does not convert them into `SUPPORTED` evidence merely by executing probes.
