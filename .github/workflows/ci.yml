@@ -50,5 +50,8 @@ jobs:
           tests/test_external_governance.py
           tests/test_campaign_preflight.py
           tests/test_operational_readiness.py
+      - name: Run opt-in BrasilAPI live revalidation
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[live-brasilapi]') && matrix.python-version == '3.12'
+        run: python scripts/revalidate_brasilapi_live.py
       - name: Run offline regression
         run: python -m pytest -q
