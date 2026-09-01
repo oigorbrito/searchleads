@@ -1,0 +1,111 @@
+{
+  "wave": 13,
+  "branch": "work/chassis-implementation-v1",
+  "wave_start_sha": "66ef96128646ba1af4f91797af13c36b451ca161",
+  "tested_commit_sha": "7218eb2b3f65e7007ce677304e8ee2374cfd6903",
+  "evidence_publication_sha": "PENDING",
+  "mission": "make the remaining human/legal/source decisions ingestible, scoped, expiring, revocable, auditable and fail-closed without campaign execution",
+  "implemented": {
+    "module": "src/searchleads/campaign_preflight.py",
+    "tests": "tests/test_campaign_preflight.py",
+    "ci_gate": "external governance contract regression",
+    "records": [
+      "ComplianceSignoffRecord",
+      "ProfessionalVerificationRecord",
+      "CampaignAuthorizationRecord"
+    ],
+    "preflight": "evaluate_campaign_preflight"
+  },
+  "compliance_signoff_contract": {
+    "decisions": [
+      "APPROVED",
+      "APPROVED_WITH_CONDITIONS",
+      "REJECTED",
+      "MORE_REVIEW_REQUIRED"
+    ],
+    "scope": [
+      "policy_id",
+      "policy_version",
+      "jurisdiction",
+      "channel",
+      "campaign_id"
+    ],
+    "validity": [
+      "timezone-aware decision timestamp",
+      "optional expiry",
+      "revocation",
+      "reviewer provenance",
+      "authority evidence references"
+    ],
+    "engineering_self_approval": false
+  },
+  "professional_verification_contract": {
+    "decisions": [
+      "VERIFIED_ACTIVE",
+      "VERIFIED_INACTIVE",
+      "NOT_FOUND",
+      "CONFLICT"
+    ],
+    "person_specific": true,
+    "evidence_required": true,
+    "freshness_supported": true,
+    "missing_end_date_infers_active": false,
+    "required_only_when_campaign_policy_requires_professional_status": true
+  },
+  "campaign_authorization_contract": {
+    "campaign_specific": true,
+    "policy_specific": true,
+    "expiry_supported": true,
+    "revocation_supported": true,
+    "generic_unbounded_authorization": false
+  },
+  "preflight_fail_closed_matrix": [
+    "EXT-BRASILAPI-001 when source is not freshly revalidated",
+    "LEGAL-001 when signoff is absent, expired, revoked, rejected or scope-mismatched",
+    "EXT-CFO-001 when policy requires professional verification and person-specific current evidence is absent/invalid",
+    "AUTH-CAMPAIGN-001 when campaign authorization is absent, expired, revoked or scope-mismatched"
+  ],
+  "positive_fixture": {
+    "status": "PASS",
+    "meaning": "synthetic scoped approvals can produce READY_FOR_AUTHORIZED_EXECUTION",
+    "campaign_execution": "NOT_EXECUTED",
+    "real_authorization_claimed": false
+  },
+  "brasilapi": {
+    "documentation_revalidated_on": "2026-09-01",
+    "official_project_docs_observation": "CNPJ v1 endpoint contract remains documented with 200/400/404 semantics and request-by-CNPJ use",
+    "live_product_request_this_wave": "NOT_EXECUTED",
+    "gate": "EXT-BRASILAPI-001 remains required immediately before approved use"
+  },
+  "ci": {
+    "run_id": 33507232293,
+    "python_matrix": ["3.11", "3.12", "3.13"],
+    "status": "PASS",
+    "package_install": "PASS",
+    "installed_import": "PASS",
+    "rc_hygiene": "RC_HYGIENE_READY",
+    "compile": "PASS",
+    "rc_recovery_reference": "91 passed on Python 3.12.14",
+    "external_governance_and_preflight_reference": "28 passed on Python 3.12.14",
+    "full_regression_reference": "909 passed, 24 skipped, 1 xpassed on Python 3.12.14"
+  },
+  "readiness": {
+    "architecture_baseline": "READY",
+    "integrated": "READY",
+    "internally_verified": "PASS",
+    "operationally_ready": "READY",
+    "internal_release_candidate": "READY",
+    "external_decision_intake": "READY",
+    "externally_certified": "PARTIAL",
+    "commercial_pilot_ready": "BLOCKED_LEGAL"
+  },
+  "remaining_external_actions": [
+    "LEGAL-001 designated human legal/compliance decision for the exact campaign/policy/channel/contact class",
+    "EXT-BRASILAPI-001 fresh read-only revalidation immediately before any approved campaign use",
+    "EXT-CFO-001 person-specific CFO/CRO verification when the approved policy requires current professional status",
+    "AUTH-CAMPAIGN-001 campaign-owner authorization after prior gates close"
+  ],
+  "internal_blockers": [],
+  "campaign_execution": "NOT_EXECUTED",
+  "send_authorization": "NOT_GRANTED"
+}
