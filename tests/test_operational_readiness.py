@@ -73,9 +73,9 @@ def _seed_repository(repository: SQLiteRepository) -> dict[str, object]:
     }
 
 
-def test_operational_configuration_classifies_and_validates() -> None:
-    repo_path = Path(r"C:\Projetos\searchleads\var\searchleads.sqlite")
-    backup_path = Path(r"C:\Projetos\searchleads\var\searchleads.backup.sqlite")
+def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> None:
+    repo_path = (tmp_path / "searchleads.sqlite").resolve()
+    backup_path = (tmp_path / "searchleads.backup.sqlite").resolve()
     configuration = OperationalConfiguration.from_mapping(
         {
             "SEARCHLEADS_REPOSITORY_PATH": str(repo_path),
