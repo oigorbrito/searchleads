@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -17,10 +18,15 @@ from searchleads.domain import CandidateFact
 from searchleads.normalization import normalize_candidate_fact
 
 
+FIXTURE_PATH = "tests/fixtures/company_name_normalization_bakeoff_v1.json"
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "company_name_normalization_bakeoff_v1.json"
 
 
 NameKey = Callable[[str], str]
+
+
+def _fixture_sha256() -> str:
+    return hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
 
 
 def _searchleads_key(value: str) -> str:
@@ -178,7 +184,8 @@ def test_company_name_normalization_scorecard_does_not_encode_a_winner() -> None
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
             "corpus": {
-                "path": FIXTURE.as_posix(),
+                "path": FIXTURE_PATH,
+                "sha256": _fixture_sha256(),
                 "cases": len(cases),
                 "positive": sum(bool(case["same"]) for case in cases),
                 "negative": sum(not bool(case["same"]) for case in cases),
@@ -215,6 +222,7 @@ def test_legal_form_removal_is_measured_as_a_collision_tradeoff() -> None:
         method="controlled deterministic feature-ablation benchmark",
         evidence_class="CONTROLLED_BENCHMARK",
         payload={
+            "fixture": {"path": FIXTURE_PATH, "sha256": _fixture_sha256()},
             "case_count": len(cases),
             "all_cases_are_negative_controls": True,
             "repetition_justification": "Both transformations are deterministic on the fixed four-case guard corpus.",
