@@ -84,6 +84,12 @@ def _validate_observation(observation: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"observation missing required fields: {', '.join(missing)}")
     if observation["schema_version"] != OBSERVATION_SCHEMA_VERSION:
         raise ValueError(f"unsupported observation schema_version: {observation['schema_version']}")
+    if not isinstance(observation["observation_id"], str) or not observation["observation_id"].strip():
+        raise ValueError("observation_id must be a non-empty string")
+    if not isinstance(observation["research_question"], str) or not observation["research_question"].strip():
+        raise ValueError("observation research_question must be a non-empty string")
+    if not isinstance(observation["method"], str) or not observation["method"].strip():
+        raise ValueError("observation method must be a non-empty string")
     if observation["evidence_class"] not in EVIDENCE_CLASSES:
         raise ValueError(f"unsupported observation evidence_class: {observation['evidence_class']}")
     if not isinstance(observation["payload"], dict):
@@ -135,6 +141,8 @@ def _validate_claim(claim: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"unsupported decision_state: {claim['decision_state']}")
     if not isinstance(claim["input_artifacts"], list):
         raise ValueError("input_artifacts must be a list")
+    if not isinstance(claim["observations"], list):
+        raise ValueError("observations must be a list")
     return claim
 
 
@@ -179,11 +187,16 @@ def _junit_summary(record: ArtifactRecord) -> dict[str, Any]:
     }
 
 
-def _decision_support(effective_state: str, decision_state: str, missing: list[str]) -> dict[str, Any]:
-    if missing:
+def _decision_support(
+    effective_state: str,
+    decision_state: str,
+    missing_inputs: list[str],
+    missing_observations: list[str],
+) -> dict[str, Any]:
+    if missing_inputs or missing_observations:
         return {
             "eligible_from_current_evidence": False,
-            "reason": "MISSING_INPUT_ARTIFACTS",
+            "reason": "MISSING_REQUIRED_EVIDENCE",
         }
     if decision_state in {"DEFER", "HISTORICAL_DECISION"}:
         return {
@@ -201,21 +214,40 @@ def _decision_support(effective_state: str, decision_state: str, missing: list[s
     }
 
 
-def _materialize_claim(claim: dict[str, Any], available_paths: set[str]) -> dict[str, Any]:
+def _materialize_claim(
+    claim: dict[str, Any],
+    available_paths: set[str],
+    available_observation_ids: set[str],
+) -> dict[str, Any]:
     materialized = dict(claim)
-    referenced = [str(value) for value in claim["input_artifacts"]]
-    missing = sorted(path for path in referenced if path not in available_paths)
+    referenced_inputs = [str(value) for value in claim["input_artifacts"]]
+    referenced_observations = [str(value) for value in claim["observations"]]
+    missing_inputs = sorted(path for path in referenced_inputs if path not in available_paths)
+    missing_observations = sorted(
+        observation_id
+        for observation_id in referenced_observations
+        if observation_id not in available_observation_ids
+    )
     declared_state = str(claim["evidence_state"])
-    effective_state = "INSUFFICIENT_EVIDENCE" if missing else declared_state
+    effective_state = (
+        "INSUFFICIENT_EVIDENCE"
+        if missing_inputs or missing_observations
+        else declared_state
+    )
     decision_state = str(claim["decision_state"])
     materialized["declared_evidence_state"] = declared_state
     materialized["evidence_state"] = effective_state
     materialized["traceability"] = {
-        "all_inputs_present": not missing,
-        "missing_input_artifacts": missing,
+        "all_inputs_present": not missing_inputs,
+        "missing_input_artifacts": missing_inputs,
+        "all_observations_present": not missing_observations,
+        "missing_observations": missing_observations,
     }
     materialized["decision_support"] = _decision_support(
-        effective_state, decision_state, missing
+        effective_state,
+        decision_state,
+        missing_inputs,
+        missing_observations,
     )
     return materialized
 
@@ -235,8 +267,13 @@ def build_report(
         for artifact in sorted(source_artifacts, key=lambda item: item.path)
     ]
     available_paths = {item["path"] for item in artifact_index}
+    available_observation_ids = {
+        str(record.payload["observation_id"])
+        for record in observations
+    }
     materialized_claims = [
-        _materialize_claim(claim, available_paths) for claim in claim_payloads
+        _materialize_claim(claim, available_paths, available_observation_ids)
+        for claim in claim_payloads
     ]
     report = {
         "schema_version": "searchleads_empirical_study_report_v1",
