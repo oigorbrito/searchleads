@@ -21,7 +21,7 @@ Status: CANONICAL
 ### Internally Verified
 
 - criteria: internal test battery and evidence gates pass
-- current evidence: hardened CI run `33471375669` passed package install, installed import, RC hygiene, compile, targeted RC/recovery regression and full offline regression on Python 3.11, 3.12 and 3.13; reference 3.12 result is `91 passed` targeted and `894 passed, 24 skipped, 1 xpassed` full
+- current evidence: Wave 13 CI run `33507232293` passed package install, installed import, RC hygiene, compile, RC/recovery, external-governance/preflight and full offline regression on Python 3.11, 3.12 and 3.13; reference 3.12 result is `91 passed` RC/recovery, `28 passed` external-governance/preflight, and `909 passed, 24 skipped, 1 xpassed` full
 - status: PASS
 - blockers: none internal; the single XPASS is an explicitly obsolete benchmark contract superseded by aggregate qualification analysis
 
@@ -39,6 +39,13 @@ Status: CANONICAL
 - status: READY
 - blockers: none internal
 
+### External Decision Intake
+
+- criteria: legal/compliance, professional-verification and campaign-authorization decisions can be ingested with exact scope, provenance, expiry/revocation and fail-closed validation
+- current evidence: Wave 13 added `ComplianceSignoffRecord`, `ProfessionalVerificationRecord`, `CampaignAuthorizationRecord`, `evaluate_campaign_preflight`, dedicated tests and CI coverage
+- status: READY
+- blockers: none internal; actual human decisions remain external inputs
+
 ### Externally Certified
 
 - criteria: every source that is actually required by the minimum commercial path has authority, freshness and evidence requirements classified and satisfied or explicitly human-gated
@@ -49,7 +56,7 @@ Status: CANONICAL
 ### Commercial Pilot Ready
 
 - criteria: qualification, contacts, compliance, required external certification, suppression and SEND_READY conditions are all satisfied under an approved policy and manual campaign authorization
-- current evidence: qualification policy, contact-use, suppression, pilot readiness, compliance policy interface, manual authorization revocation, send-ready proof contracts, official-source authority references and a canonical legal-review packet are represented
+- current evidence: qualification policy, contact-use, suppression, pilot readiness, compliance policy interface, manual authorization revocation, send-ready proof contracts, official-source authority references, legal-review packet, and campaign authority preflight are represented canonically
 - status: BLOCKED_LEGAL
 - blockers: `LEGAL-001`, `AUTH-CAMPAIGN-001`, `EXT-CFO-001` when professional status is campaign-critical, and `EXT-BRASILAPI-001` fresh source revalidation
 
@@ -71,9 +78,15 @@ Engineering decisions:
 - `AUTH-CAMPAIGN-001`: `BLOCKED` until manual campaign authorization exists
 - `EXT-BRASILAPI-001`: `REVIEW_REQUIRED` for fresh product-source revalidation before campaign use
 
+## Campaign authority preflight
+
+Wave 13 makes the remaining decisions machine-checkable without granting them. The preflight rejects missing, expired, revoked, rejected or scope-mismatched legal signoff and authorization records. Professional verification is required only when the approved campaign policy requires current professional status. A synthetic positive fixture proves the state machine, not real-world approval.
+
 ## Current critical-path split
 
 Internal engineering release-candidate path: CLOSED / READY.
+
+External decision-intake path: CLOSED / READY.
 
 Remaining minimum external/human/legal path:
 
