@@ -2,11 +2,12 @@ name: Project 4 operational memory
 
 on:
   issues:
-    types: [opened, reopened, transferred]
+    types: [opened, reopened, transferred, closed]
   pull_request:
     types: [opened, reopened, ready_for_review, converted_to_draft, synchronize]
 
 permissions:
+  actions: read
   contents: read
   issues: read
   pull-requests: read
@@ -15,7 +16,8 @@ jobs:
   sync-project:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.PROJECT4_ADD_PAT }}
+      PROJECT_TOKEN: ${{ secrets.PROJECT4_ADD_PAT }}
+      REPO_TOKEN: ${{ github.token }}
       PROJECT_OWNER: tihotm
       PROJECT_NUMBER: '4'
       CONTENT_ID: ${{ github.event.issue.node_id || github.event.pull_request.node_id }}
@@ -28,6 +30,14 @@ jobs:
           case "${{ github.event_name }}:${{ github.event.action }}" in
             issues:opened|issues:reopened|issues:transferred)
               status='Backlog'
+              ;;
+            issues:closed)
+              if [[ "${{ github.event.issue.state_reason }}" != 'completed' ]]; then
+                echo 'Issue was not closed as completed; no project mutation performed.'
+                printf 'skip=true\n' >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              status='Done'
               ;;
             pull_request:converted_to_draft)
               status='In Progress'
@@ -48,18 +58,57 @@ jobs:
               ;;
           esac
           printf 'name=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          printf 'skip=false\n' >> "$GITHUB_OUTPUT"
 
-      # Done is intentionally not set here: completion must remain gated by
-      # issue state plus successful required regression/CI evidence.
       - name: Add item and set Project 4 status
+        if: steps.status.outputs.skip != 'true'
         shell: bash
         env:
           TARGET_STATUS: ${{ steps.status.outputs.name }}
         run: |
           set -euo pipefail
 
+          if [[ "$TARGET_STATUS" == 'Done' ]]; then
+            closing_prs="$({
+              GH_TOKEN="$PROJECT_TOKEN" gh api graphql \
+                -f query='query($id:ID!){node(id:$id){... on Issue{closedByPullRequestsReferences(first:20,includeClosedPrs:true){nodes{number merged headRefOid repository{nameWithOwner}}}}}}' \
+                -F id="$CONTENT_ID"
+            })"
+
+            pr_count="$(jq -r '.data.node.closedByPullRequestsReferences.nodes | length' <<<"$closing_prs")"
+            if (( pr_count > 0 )); then
+              while IFS= read -r encoded; do
+                pr="$(printf '%s' "$encoded" | base64 --decode)"
+                number="$(jq -r '.number' <<<"$pr")"
+                merged="$(jq -r '.merged' <<<"$pr")"
+                head_sha="$(jq -r '.headRefOid' <<<"$pr")"
+                repo="$(jq -r '.repository.nameWithOwner' <<<"$pr")"
+
+                if [[ "$merged" != 'true' || -z "$head_sha" || "$head_sha" == 'null' ]]; then
+                  echo "Issue completion is not eligible for Done: closing PR #$number is not merged or has no head SHA."
+                  exit 0
+                fi
+
+                runs="$({
+                  GH_TOKEN="$REPO_TOKEN" gh api -X GET \
+                    "repos/$repo/actions/workflows/ci.yml/runs" \
+                    -f head_sha="$head_sha" \
+                    -f event='pull_request' \
+                    -f per_page=20
+                })"
+                latest_status="$(jq -r '.workflow_runs[0].status // empty' <<<"$runs")"
+                latest_conclusion="$(jq -r '.workflow_runs[0].conclusion // empty' <<<"$runs")"
+
+                if [[ "$latest_status" != 'completed' || "$latest_conclusion" != 'success' ]]; then
+                  echo "Issue completion is not eligible for Done: latest CI for closing PR #$number at $head_sha is status=$latest_status conclusion=$latest_conclusion."
+                  exit 0
+                fi
+              done < <(jq -r '.data.node.closedByPullRequestsReferences.nodes[] | @base64' <<<"$closing_prs")
+            fi
+          fi
+
           metadata="$({
-            gh api graphql \
+            GH_TOKEN="$PROJECT_TOKEN" gh api graphql \
               -f query='query($login:String!,$number:Int!){user(login:$login){projectV2(number:$number){id fields(first:100){nodes{... on ProjectV2SingleSelectField{id name options{id name}}}}}}}' \
               -F login="$PROJECT_OWNER" \
               -F number="$PROJECT_NUMBER"
@@ -75,7 +124,7 @@ jobs:
           fi
 
           added="$({
-            gh api graphql \
+            GH_TOKEN="$PROJECT_TOKEN" gh api graphql \
               -f query='mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}' \
               -F project="$project_id" \
               -F content="$CONTENT_ID"
@@ -87,7 +136,7 @@ jobs:
             exit 1
           fi
 
-          gh api graphql \
+          GH_TOKEN="$PROJECT_TOKEN" gh api graphql \
             -f query='mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}' \
             -F project="$project_id" \
             -F item="$item_id" \
