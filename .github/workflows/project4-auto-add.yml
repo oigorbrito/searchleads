@@ -1,10 +1,10 @@
-name: Project 4 auto-add
+name: Project 4 operational memory
 
 on:
   issues:
     types: [opened, reopened, transferred]
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -12,11 +12,75 @@ permissions:
   pull-requests: read
 
 jobs:
-  add-to-project:
+  sync-project:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT4_ADD_PAT }}
+      PROJECT_OWNER: tihotm
+      PROJECT_NUMBER: '4'
+      CONTENT_ID: ${{ github.event.issue.node_id || github.event.pull_request.node_id }}
     steps:
-      - name: Add issue or pull request to Project 4
-        uses: actions/add-to-project@v2
-        with:
-          project-url: https://github.com/users/tihotm/projects/4
-          github-token: ${{ secrets.PROJECT4_ADD_PAT }}
+      - name: Resolve desired project status
+        id: status
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ github.event_name }}:${{ github.event.action }}" in
+            issues:opened|issues:reopened|issues:transferred)
+              status='Backlog'
+              ;;
+            pull_request:opened|pull_request:reopened|pull_request:converted_to_draft)
+              status='In Progress'
+              ;;
+            pull_request:ready_for_review)
+              status='Review / Validation'
+              ;;
+            *)
+              echo 'Unsupported event/action; no project mutation performed.'
+              exit 1
+              ;;
+          esac
+          printf 'name=%s\n' "$status" >> "$GITHUB_OUTPUT"
+
+      - name: Add item and set Project 4 status
+        shell: bash
+        env:
+          TARGET_STATUS: ${{ steps.status.outputs.name }}
+        run: |
+          set -euo pipefail
+
+          metadata="$({
+            gh api graphql \
+              -f query='query($login:String!,$number:Int!){user(login:$login){projectV2(number:$number){id fields(first:100){nodes{... on ProjectV2SingleSelectField{id name options{id name}}}}}}}' \
+              -F login="$PROJECT_OWNER" \
+              -F number="$PROJECT_NUMBER"
+          })"
+
+          project_id="$(jq -r '.data.user.projectV2.id // empty' <<<"$metadata")"
+          status_field_id="$(jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .id' <<<"$metadata")"
+          status_option_id="$(jq -r --arg target "$TARGET_STATUS" '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == $target) | .id' <<<"$metadata")"
+
+          if [[ -z "$project_id" || -z "$status_field_id" || -z "$status_option_id" ]]; then
+            echo "Project 4 metadata missing for Status=$TARGET_STATUS" >&2
+            exit 1
+          fi
+
+          added="$({
+            gh api graphql \
+              -f query='mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}' \
+              -F project="$project_id" \
+              -F content="$CONTENT_ID"
+          })"
+          item_id="$(jq -r '.data.addProjectV2ItemById.item.id // empty' <<<"$added")"
+
+          if [[ -z "$item_id" ]]; then
+            echo 'Project item id was not returned after add.' >&2
+            exit 1
+          fi
+
+          gh api graphql \
+            -f query='mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}' \
+            -F project="$project_id" \
+            -F item="$item_id" \
+            -F field="$status_field_id" \
+            -F option="$status_option_id"
