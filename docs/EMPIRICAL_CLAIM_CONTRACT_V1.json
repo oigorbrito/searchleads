@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "searchleads://schemas/empirical-claim-contract-v1",
+  "title": "SearchLeads Empirical Claim Contract V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["claim_id","research_question","method","evidence_class","input_artifacts","observations","analysis","validity_limits","supported_conclusion","unsupported_conclusions","evidence_state","decision_state"],
+  "properties": {
+    "claim_id": {"type":"string","minLength":1},
+    "research_question": {"type":"string","minLength":1},
+    "method": {"type":"string","minLength":1},
+    "evidence_class": {"enum":["STATIC_INSPECTION","FUNCTIONAL_PROBE","CONTROLLED_BENCHMARK","INTERNAL_REPRODUCTION","EXTERNAL_REPRODUCTION","LIVE_OPERATIONAL_EVIDENCE","HUMAN_OR_EXTERNAL_AUTHORITY"]},
+    "input_artifacts": {"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "observations": {"description":"Stable observation_id values required by this claim.","type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "analysis": {},
+    "validity_limits": {"type":"array"},
+    "supported_conclusion": {},
+    "unsupported_conclusions": {"type":"array"},
+    "evidence_state": {"enum":["SUPPORTED","PARTIALLY_SUPPORTED","NOT_SUPPORTED","NOT_EVALUATED","INSUFFICIENT_EVIDENCE","REPLICATION_REQUIRED"]},
+    "decision_state": {"enum":["ADOPT","COMPOSE","RETAIN","DEFER","REJECT","HISTORICAL_DECISION"]}
+  }
+}
