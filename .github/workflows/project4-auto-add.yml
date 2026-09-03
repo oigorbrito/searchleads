@@ -49,6 +49,8 @@ jobs:
           esac
           printf 'name=%s\n' "$status" >> "$GITHUB_OUTPUT"
 
+      # Done is intentionally not set here: completion must remain gated by
+      # issue state plus successful required regression/CI evidence.
       - name: Add item and set Project 4 status
         shell: bash
         env:
