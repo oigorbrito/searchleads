@@ -52,6 +52,8 @@ class NormalizationResult:
 
 Normalizer = Callable[[Any], tuple[Any, str]]
 _HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
+_NON_DIGITS_RE = re.compile(r"\D")
+_NON_IP_DIGITS_RE = re.compile(r"[0-9.]+")
 
 
 def _require_text(value: Any, label: str) -> str:
@@ -86,7 +88,7 @@ def _normalize_host(host: str) -> str:
     try:
         ip = ipaddress.ip_address(host)
     except ValueError:
-        if re.fullmatch(r"[0-9.]+", host):
+        if _NON_IP_DIGITS_RE.fullmatch(host):
             raise NormalizationError("host looks like an invalid IP literal")
         try:
             normalized = host.encode("idna").decode("ascii").lower()
@@ -152,7 +154,7 @@ def _normalize_phone(value: Any) -> tuple[str, str]:
     if not raw:
         raise NormalizationError("phone is blank")
     leading_plus = raw.startswith("+")
-    digits = re.sub(r"\D", "", raw)
+    digits = _NON_DIGITS_RE.sub("", raw)
     if len(digits) < 7:
         raise NormalizationError("phone has too few digits")
     normalized = ("+" if leading_plus else "") + digits
@@ -172,7 +174,7 @@ def _normalize_cnae(value: Any) -> tuple[str, str]:
     if isinstance(value, bool) or not isinstance(value, (str, int)):
         raise NormalizationError("CNAE code must be text or integer")
     text = str(value)
-    digits = re.sub(r"\D", "", text)
+    digits = _NON_DIGITS_RE.sub("", text)
     if len(digits) != 7:
         raise NormalizationError("CNAE code must contain exactly 7 digits")
     return digits, "cnae_digits7_v1"
