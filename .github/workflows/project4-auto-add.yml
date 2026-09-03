@@ -1,0 +1,22 @@
+name: Project 4 auto-add
+
+on:
+  issues:
+    types: [opened, reopened, transferred]
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue or pull request to Project 4
+        uses: actions/add-to-project@v2
+        with:
+          project-url: https://github.com/users/tihotm/projects/4
+          github-token: ${{ secrets.PROJECT4_ADD_PAT }}
