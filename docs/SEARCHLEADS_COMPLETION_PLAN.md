@@ -176,7 +176,7 @@ Purpose: master workstream plan and authority for the next unblocked capability.
 - verification: contract tests, deterministic compliance decisions, suppression checks, and pilot readiness evaluation
 - acceptance criteria: certification inventory, compliance contract, contact-use policy, suppression, and pilot readiness are all represented canonically
 - evidence: wave 07 operational contract tests and certification inventory helpers
-- blockers: live external certification, legal sign-off, and campaign authorization remain external
+- blockers: current CFO/CRO professional status evidence, legal sign-off, campaign authorization, and hosted CI/Project runtime remain external or human dependencies
 - exit criteria: internal pilot gate is explicit and audit-friendly without sending real campaigns
 - release impact: advances the product from operational control to externally governed commercial readiness
 - contract status: VERIFIED_PARTIAL
@@ -200,11 +200,12 @@ CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
 
 ## Next Unblocked Capability
 
-CAP-11 Live Certification, Compliance Contract, and Pilot Readiness
+- none on the current critical path; CAP-11 internal implementation is `VERIFIED_PARTIAL`, and its remaining acceptance work depends on the external/human blockers listed below.
 
 ## Blocked Capabilities
 
-- none
+- CAP-11 Live Certification, Compliance Contract, and Pilot Readiness — blocked on `CFO-CURRENT-STATUS-001` / `EXT-CFO-001`, `LEGAL-SIGNOFF-001`, and `CAMPAIGN-AUTH-001`.
+- Project 4 operational-memory runtime verification — blocked on `CI-INFRA-001`; `PROJECT4-TOKEN-001` remains `NOT_TESTED` until a runner executes the GraphQL step.
 
 ## New Evidence
 
