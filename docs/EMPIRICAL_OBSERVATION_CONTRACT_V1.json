@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "searchleads://schemas/empirical-observation-contract-v1",
+  "title": "SearchLeads Empirical Observation Contract V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version","observation_id","research_question","method","evidence_class","payload","validity_limits"],
+  "properties": {
+    "schema_version": {"const":"searchleads_empirical_observation_v1"},
+    "observation_id": {"type":"string","minLength":1,"pattern":"^[^/\\\\]+$"},
+    "research_question": {"type":"string","minLength":1},
+    "method": {"type":"string","minLength":1},
+    "evidence_class": {"enum":["STATIC_INSPECTION","FUNCTIONAL_PROBE","CONTROLLED_BENCHMARK","INTERNAL_REPRODUCTION","EXTERNAL_REPRODUCTION","LIVE_OPERATIONAL_EVIDENCE","HUMAN_OR_EXTERNAL_AUTHORITY"]},
+    "payload": {"type":"object"},
+    "validity_limits": {"type":"array","items":{"type":"string"}}
+  }
+}
