@@ -5,7 +5,12 @@ import json
 import sys
 from pathlib import Path
 
-from searchleads.governance_decision_io import (
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from searchleads.governance_decision_io import (  # noqa: E402
     campaign_authorization_from_mapping,
     campaign_authorization_to_mapping,
     compliance_signoff_from_mapping,
@@ -13,11 +18,13 @@ from searchleads.governance_decision_io import (
 )
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Validate and canonicalize a human governance-decision payload."
+    )
     parser.add_argument("kind", choices=("compliance-signoff", "campaign-authorization"))
     parser.add_argument("path", type=Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     try:
         payload = json.loads(args.path.read_text(encoding="utf-8"))
@@ -31,7 +38,7 @@ def main() -> int:
         print(f"INVALID: {exc}", file=sys.stderr)
         return 2
 
-    print(json.dumps(canonical, ensure_ascii=False, sort_keys=True))
+    print(json.dumps(canonical, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 
 
