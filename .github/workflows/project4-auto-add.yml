@@ -68,6 +68,10 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Done is fail-closed. If the completed Issue has closing PRs, every
+          # closing PR must be merged and the newest pull-request CI run for
+          # that exact PR head SHA must be completed/success. Any missing,
+          # queued, running, cancelled or failed CI leaves the item unchanged.
           if [[ "$TARGET_STATUS" == 'Done' ]]; then
             closing_prs="$({
               GH_TOKEN="$PROJECT_TOKEN" gh api graphql \
