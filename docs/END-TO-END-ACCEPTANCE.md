@@ -160,6 +160,14 @@ PYTHON_MODULE_COMPILE = PASS
 
 The tests cover the successful path and defensive failures including zero/multiple seeds, failed or empty structured acquisition, both legal-name normalization failures, unexpected fusion outcomes, non-AUTO ER, non-independent contact evidence, missing Person role, persistence replay mismatch, and forced export non-reproducibility.
 
+## Live-network certification update
+
+The original WU14 acceptance remained deterministic by design. Separately, a bounded live smoke was executed on 2026-09-03 from commit `9df9f6f9d15936796234fa969001e6175fd84780` in a network-capable Codex runtime using the production adapters and no fixture substitution.
+
+For known CNPJ `33.683.111/0002-80`, BrasilAPI returned HTTP **200** and persisted raw Evidence `evidence:brasilapi:9d499ad5b5acc5d0aad9ea653705b09a420c5e243e6e16362abd2cb0c133de61` before interpretation. The fixed SERPRO official-location page also returned HTTP **200** and persisted raw Evidence `evidence:official-company-location:aa714197fa9d6acce7e1edc55131bb02b70c876ed369c3d2f8c235b8630248b3` before extraction.
+
+This is a point-in-time certification of those exact acquisition boundaries. It does not alter deterministic WU14 semantics, imply continuous upstream availability, certify broader market coverage, or certify GitHub Actions runner health.
+
 ## Gate report
 
 ```text
@@ -178,21 +186,23 @@ SELECTIVE_REVIEW = PASS
 GAP_PLANNING = PASS
 EXPORT = PASS
 
-LIVE_BRASILAPI_HTTP = NOT_CERTIFIED_IN_EXECUTION_CONTAINER
-MULTI_SOURCE_COMPANY_ENRICHMENT = NOT_IMPLEMENTED_IN_CLEAN_STACK
+LIVE_BRASILAPI_HTTP_POINT_SMOKE = PASS_AT_9df9f6f_ON_2026-09-03
+LIVE_SERPRO_HTTP_POINT_SMOKE = PASS_AT_9df9f6f_ON_2026-09-03
+GITHUB_ACTIONS_EXECUTION = BLOCKED_BY_RUNNER_INFRASTRUCTURE
+MULTI_SOURCE_COMPANY_ENRICHMENT = IMPLEMENTED_POST_WU14
 ICP_DEFINED = NO
 COMMERCIAL_QUALIFICATION = BLOCKED_BY_UNDEFINED_ICP
 B2B_ASSUMPTION = PROVISIONAL
 ```
 
-## Why live network is separate
+## Why live network remains separate
 
-The execution environment used for the clean-stack work could not complete direct outbound DNS/network access for the live BrasilAPI smoke. WU14 therefore does not relabel deterministic transport execution as a live HTTP success.
+The deterministic acceptance harness remains fixture-based and reproducible. Live HTTP is maintained as a separate operational gate because upstream content and network availability can change independently of the deterministic contract.
 
-The adapter itself is exercised through its real transport boundary and persistence logic. A future environment with outbound access can run the separate live smoke without changing the acceptance semantics.
+The 2026-09-03 bounded smoke certifies successful point acquisition for the documented BrasilAPI CNPJ and fixed SERPRO page at the recorded commit. It does not relabel deterministic fixture behavior as live behavior, nor does it make a source-wide availability claim.
 
 ## Final original-handoff status
 
 `END_TO_END_ACCEPTANCE_V1` completes the original technical work-unit sequence for the clean stack.
 
-It does **not** close product/research blockers that require external evidence or business decisions: live-network certification, a defined ICP/qualification policy, broader multi-source enrichment, Person ER, or market-coverage measurement.
+It does **not** close product/research blockers that require external evidence or business decisions: a defined ICP/qualification policy, broader Person ER, or market-coverage measurement. The bounded live-network point-smoke blocker was subsequently satisfied on 2026-09-03, while GitHub Actions execution remains separately blocked by runner infrastructure.
