@@ -4,7 +4,7 @@ on:
   issues:
     types: [opened, reopened, transferred]
   pull_request:
-    types: [opened, reopened, ready_for_review, converted_to_draft]
+    types: [opened, reopened, ready_for_review, converted_to_draft, synchronize]
 
 permissions:
   contents: read
@@ -29,8 +29,15 @@ jobs:
             issues:opened|issues:reopened|issues:transferred)
               status='Backlog'
               ;;
-            pull_request:opened|pull_request:reopened|pull_request:converted_to_draft)
+            pull_request:converted_to_draft)
               status='In Progress'
+              ;;
+            pull_request:opened|pull_request:reopened|pull_request:synchronize)
+              if [[ "${{ github.event.pull_request.draft }}" == 'true' ]]; then
+                status='In Progress'
+              else
+                status='Review / Validation'
+              fi
               ;;
             pull_request:ready_for_review)
               status='Review / Validation'
