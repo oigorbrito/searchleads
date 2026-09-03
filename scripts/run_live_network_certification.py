@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import sys
+import os
+# Add src directory to PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 from dataclasses import asdict
 import json
 
