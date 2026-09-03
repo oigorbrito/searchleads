@@ -130,6 +130,17 @@ enrichment_only_fields=3 fields=activity_start_date,postal_code,street_address
 company_er=AUTO_MATCH
 ```
 
+## Live-network certification
+
+A bounded live smoke was executed on 2026-09-03 from commit `9df9f6f9d15936796234fa969001e6175fd84780` in a network-capable Codex runtime. The existing production adapters were exercised without fixture substitution for CNPJ `33.683.111/0002-80`.
+
+Observed point results:
+
+- BrasilAPI CNPJ v1: HTTP **200**; persisted raw Evidence `evidence:brasilapi:9d499ad5b5acc5d0aad9ea653705b09a420c5e243e6e16362abd2cb0c133de61`; content digest `sha256:72e48a1581c695f41ad00f2fd7ab376715cc0cf17f4748fc0d8120b7c013e86c`.
+- SERPRO official location page: HTTP **200**; persisted raw Evidence `evidence:official-company-location:aa714197fa9d6acce7e1edc55131bb02b70c876ed369c3d2f8c235b8630248b3`; content digest `sha256:f3ef2f0ea39d8a6cfa79014b7516ef8a39db89d5ffc92d45504441adbb187562`.
+
+This certifies only the exact observed point/page acquisition and evidence-persistence behavior at that commit and time. It is not a claim of continuous upstream availability, broad source coverage, or GitHub Actions runner health.
+
 ## Gates
 
 - `SECOND_COMPANY_SOURCE = YES`
@@ -143,7 +154,8 @@ company_er=AUTO_MATCH
 - `NEW_ENRICHMENT_FIELDS = 3`
 - `SOURCE_AUTHORITY_WEIGHTS = NO`
 - `GENERIC_CRAWLER = NO`
-- `LIVE_SOURCE_HTTP_IN_EXECUTION_CONTAINER = NOT_CERTIFIED`
+- `LIVE_SOURCE_HTTP_POINT_SMOKE = PASS_AT_9df9f6f_ON_2026-09-03`
+- `GITHUB_ACTIONS_EXECUTION = BLOCKED_BY_RUNNER_INFRASTRUCTURE`
 - `ICP_DEFINED = NO`
 - `COMMERCIAL_QUALIFICATION = BLOCKED`
 
