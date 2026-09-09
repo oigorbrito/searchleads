@@ -16,3 +16,4 @@ __pycache__/
 .tmp-*/
 .venv-*/
 storage/
+evaluation/runs/
