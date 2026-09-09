@@ -1,0 +1,15 @@
+version: 1
+benchmark_version: end_to_end_acceptance_v1
+functional:
+  required_flow_complete: true
+quality:
+  catastrophic_false_merge: 0
+  evidence_traceability: 1.0
+reproducibility:
+  clean_environment_execution: true
+  deterministic_test_suite: true
+regression:
+  critical_tests_failed: 0
+operational:
+  startup_success: true
+  persistence_roundtrip: true
