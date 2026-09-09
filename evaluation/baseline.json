@@ -1,0 +1,34 @@
+{
+  "benchmark_version": "end_to_end_acceptance_v1",
+  "commit": "473d55ec79fbc88a63faa594d306fc23ea99a833",
+  "environment": {
+    "benchmark_version": "end_to_end_acceptance_v1",
+    "commit_sha": "473d55ec79fbc88a63faa594d306fc23ea99a833",
+    "dependency_versions": {
+      "pytest": "9.1.1"
+    },
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.10",
+    "timestamp_utc": "2026-09-09T19:34:31.745431+00:00"
+  },
+  "metrics": {
+    "canonical_facts": 1,
+    "commercial_qualification": "BLOCKED_BY_UNDEFINED_ICP",
+    "conflicts": 1,
+    "discovered_seeds": 1,
+    "er_disposition": "AUTO_MATCH",
+    "evidence_records": 6,
+    "live_network_smoke": "NOT_EXECUTED_BY_DETERMINISTIC_ACCEPTANCE",
+    "multi_source_company_enrichment": "NOT_IMPLEMENTED_IN_CLEAN_STACK",
+    "people": 1,
+    "persistence_replay_ok": true,
+    "reproducible": true,
+    "review_items": 2,
+    "role_facts": 1,
+    "structured_snapshots": 2,
+    "technical_data_path": "PASS",
+    "validated_company_contacts": 1
+  },
+  "run_id": "20260909T193431745431Z",
+  "status": "BASELINE"
+}
