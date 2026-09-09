@@ -1,15 +1,15 @@
 {
   "benchmark_version": "end_to_end_acceptance_v1",
-  "commit": "473d55ec79fbc88a63faa594d306fc23ea99a833",
+  "commit": "d42b64b516b6e2ccedbc64cae483eb5b185302db",
   "environment": {
     "benchmark_version": "end_to_end_acceptance_v1",
-    "commit_sha": "473d55ec79fbc88a63faa594d306fc23ea99a833",
+    "commit_sha": "d42b64b516b6e2ccedbc64cae483eb5b185302db",
     "dependency_versions": {
       "pytest": "9.1.1"
     },
     "os": "Windows-11-10.0.26200-SP0",
     "python_version": "3.12.10",
-    "timestamp_utc": "2026-09-09T19:34:31.745431+00:00"
+    "timestamp_utc": "2026-09-09T19:37:20.810905+00:00"
   },
   "metrics": {
     "canonical_facts": 1,
@@ -29,6 +29,6 @@
     "technical_data_path": "PASS",
     "validated_company_contacts": 1
   },
-  "run_id": "20260909T193431745431Z",
+  "run_id": "20260909T193720810905Z",
   "status": "BASELINE"
 }
