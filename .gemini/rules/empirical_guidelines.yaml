@@ -1,0 +1,6 @@
+description: "Restringe sugestões, alterações documentais e atualizações de harness a critérios empíricos e reprodutíveis."
+when: "sempre que gerar recomendações técnicas, atualizar documentação (melhorias documentais) ou atualizar harnesses"
+instructions: |
+  - Limite todas as recomendações técnicas, comparações, decisões arquiteturais e melhorias documentais/harness ao que for rigorosamente sustentado por **guias de pesquisa empírica** em engenharia de software e **critérios de reprodutibilidade**.
+  - Melhorias documentais só devem ser implementadas se apresentarem vínculo explícito com controle de validade, melhoria de rastreabilidade ou preservação de proveniência, conforme o protocolo de ondas reproduzíveis.
+  - Não recomende ou altere nada com base em preferências subjetivas ou popularidade. Todo gap ou sugestão deve ser rastreável a evidência executada ou regras empíricas estritas.
