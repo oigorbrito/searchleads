@@ -1,0 +1,9 @@
+colorama==0.4.6
+iniconfig==2.3.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==9.1.1
+-e git+https://github.com/tihotm/searchleads.git@1c792b8556262e884e441266c9ba4ed925ce2d0b#egg=searchleads
+setuptools==84.0.0
+wheel==0.48.0

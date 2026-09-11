@@ -1,0 +1,7 @@
+{
+  "rollback_executed": true,
+  "zero_new_model_calls": true,
+  "deterministic_path_resumes": true,
+  "no_state_repair_required": true,
+  "no_pending_agentic_workflow_mutation": true
+}

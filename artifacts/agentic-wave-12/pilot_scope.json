@@ -1,0 +1,1 @@
+{"allowed_workflows": ["entity_disambiguation_review", "evidence_conflict_resolution"], "allowed_case_classes": ["C1", "C2", "C5"], "allowed_users_envs": ["pilot-tenant-01", "staging-environment"], "max_volume": "500 cases", "pilot_duration": "7 days", "authorized_provider_model": "gemini-3.5-flash"}

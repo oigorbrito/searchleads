@@ -1,0 +1,12 @@
+{
+  "auth": "PASS",
+  "model availability": "PASS",
+  "structured output": "PASS",
+  "tool calling": "PASS",
+  "authority boundary": "PASS",
+  "deterministic bypass": "PASS",
+  "safe failure": "PASS",
+  "budget enforcement": "PASS",
+  "observability": "PASS",
+  "replay/explainability": "PASS"
+}

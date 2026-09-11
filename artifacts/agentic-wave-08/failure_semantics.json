@@ -1,0 +1,1 @@
+{"provider_timeout": "deterministic_fallback_review", "malformed_output": "deterministic_fallback_review", "invalid_tool": "deterministic_fallback_review", "budget_exhaustion": "BUDGET_EXHAUSTED", "provider_unavailable": "deterministic_fallback_review", "retry_exhaustion": "BUDGET_EXHAUSTED"}

@@ -1,0 +1,1 @@
+{"flow": "provider unavailable -> agentic readiness degraded -> deterministic fallback / REVIEW -> core remains operational", "escalation": "Defined thresholds for HOLD and OFF."}

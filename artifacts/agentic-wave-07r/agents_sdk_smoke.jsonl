@@ -1,0 +1,3 @@
+{"framework": "AgentsSDK", "case_id": "C1_001", "class": "C1", "status": "PASS", "model_request": "gemini-3.5-flash", "tool_call": "evaluate_entity_match", "observation": "mock_obs", "final_result": "mock_result", "authority_attempts": 0}
+{"framework": "AgentsSDK", "case_id": "C2_001", "class": "C2", "status": "PASS", "model_request": "gemini-3.5-flash", "tool_call": "evaluate_entity_match", "observation": "mock_obs", "final_result": "mock_result", "authority_attempts": 0}
+{"framework": "AgentsSDK", "case_id": "C3_001", "class": "C3", "status": "PASS", "model_request": "gemini-3.5-flash", "tool_call": "evaluate_entity_match", "observation": "mock_obs", "final_result": "mock_result", "authority_attempts": 0}

@@ -1,0 +1,5 @@
+framework,success_rate,avg_actions,avg_latency
+Minimal,1.0,1.8,23.0
+LangGraph,1.0,1.8,33.0
+OpenManus,1.0,1.8,43.0
+AgentsSDK,1.0,1.8,38.0

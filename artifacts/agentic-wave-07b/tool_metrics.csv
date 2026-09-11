@@ -1,0 +1,7 @@
+treatment,valid_tool_call_rate,hallucinated_tool_rate,tool_selection_accuracy
+Minimal-A,1.0,0.0,1.0
+Minimal-B,1.0,0.0,1.0
+LangGraph-A,1.0,0.0,1.0
+LangGraph-B,1.0,0.0,1.0
+AgentsSDK-A,1.0,0.0,1.0
+AgentsSDK-B,1.0,0.0,1.0

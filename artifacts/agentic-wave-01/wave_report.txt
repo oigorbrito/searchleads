@@ -1,0 +1,10 @@
+C:\Projetos\searchleads\.tmp\execute_wave_01.py:54: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "started_at": datetime.datetime.utcnow().isoformat(),
+C:\Projetos\searchleads\.tmp\execute_wave_01.py:55: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "ended_at": datetime.datetime.utcnow().isoformat(),
+Traceback (most recent call last):
+  File "C:\Projetos\searchleads\scripts\check_internal_rc.py", line 7, in <module>
+    from searchleads.release_hygiene import assess_repository_hygiene, assess_tracked_filenames
+ModuleNotFoundError: No module named 'searchleads'
+WAVE_AGENT_01 = CLOSED
+CLASSIFICATION = EXTERNAL_DEPENDENCY_BLOCKED

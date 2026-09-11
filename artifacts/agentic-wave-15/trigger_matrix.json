@@ -1,0 +1,42 @@
+[
+  {
+    "trigger": "Docs-only",
+    "minimum_level": "R0"
+  },
+  {
+    "trigger": "Provider patch",
+    "minimum_level": "R1"
+  },
+  {
+    "trigger": "Retry/timeout change",
+    "minimum_level": "R2"
+  },
+  {
+    "trigger": "Prompt material change",
+    "minimum_level": "R2"
+  },
+  {
+    "trigger": "Tool schema compatible change",
+    "minimum_level": "R2"
+  },
+  {
+    "trigger": "Model change",
+    "minimum_level": "R3"
+  },
+  {
+    "trigger": "Tool authority change",
+    "minimum_level": "R3"
+  },
+  {
+    "trigger": "Core ER/Qualification change",
+    "minimum_level": "R3"
+  },
+  {
+    "trigger": "Critical incident",
+    "minimum_level": "R3"
+  },
+  {
+    "trigger": "SEND_READY integration change",
+    "minimum_level": "R3"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "git_head": "HEAD_OK",
+  "dataset_v2_hash": "a1b2c3d4",
+  "scorer_hash": "e5f6g7h8",
+  "prompt_hash": "i9j0k1l2",
+  "tool_contract_hash": "m3n4o5p6",
+  "selected_model": "gemini-3.5-flash",
+  "pricing_snapshot": "WAVE-07",
+  "parameters": "FROZEN_WAVE_07"
+}

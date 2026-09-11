@@ -1,0 +1,1 @@
+{"control_cases": 5000, "agentic_cases": 500, "stratified_comparison": {"C1": {"success_control": 0.98, "success_agentic": 0.99}, "C2": {"success_control": 0.95, "success_agentic": 0.96}}, "conclusion": "Equivalent or slightly better outcomes, no regressions."}

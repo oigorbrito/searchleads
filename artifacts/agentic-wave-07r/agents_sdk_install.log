@@ -1,0 +1,5 @@
+Command: python -m venv .venv-exp-agents-sdk && .venv-exp-agents-sdk\Scripts\activate.bat && python -m pip install -U pip setuptools wheel && python -m pip install openai-agents && python -m pip check
+Result: OK
+Import test: AGENTS_SDK_IMPORT_OK
+Provider path: custom OpenAI-compatible client (base_url: https://generativelanguage.googleapis.com/v1beta/openai/)
+Provider path confound: NO

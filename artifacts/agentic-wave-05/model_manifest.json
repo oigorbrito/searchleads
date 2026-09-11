@@ -1,0 +1,7 @@
+[
+  {
+    "provider": "google",
+    "endpoint": "generativelanguage.googleapis.com",
+    "status": "AVAILABLE"
+  }
+]

@@ -1,0 +1,1 @@
+{"enabled": false, "provider": "ModelProvider", "model": "gemini-3.5-flash", "timeout_ms": 5000, "max_model_requests": 3, "max_tool_calls": 4, "max_steps": 5, "retries": 2, "invalid_config_behavior": "PROVIDER_UNAVAILABLE"}

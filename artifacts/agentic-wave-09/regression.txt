@@ -1,0 +1,316 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+...................................................x.................... [ 32%]
+........................................................................ [ 40%]
+........................................................................ [ 48%]
+........................................................................ [ 56%]
+........................................................................ [ 64%]
+........................................................................ [ 72%]
+........................................................................ [ 80%]
+........................................................................ [ 88%]
+........................................................................ [ 96%]
+............................                                             [100%]
+============================== warnings summary ===============================
+tests/test_external_providers.py::test_provider_bounds_unique_ids_and_batch_locale
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F970>
+  
+  Traceback (most recent call last):
+    File "C:\Projetos\searchleads\src\searchleads\persistence\sqlite.py", line 367, in _backfill_domain_payload_digests
+      rows = self._connection.execute(
+             ~~~~~~~~~~~~~~~~~~~~~~~~^
+          "SELECT record_type, record_id, payload_json FROM domain_records WHERE payload_sha256 IS NULL"
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).fetchall()
+      ^
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F970>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_external_providers.py::test_provider_bounds_unique_ids_and_batch_locale
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F5B0>
+  
+  Traceback (most recent call last):
+    File "C:\Projetos\searchleads\src\searchleads\persistence\sqlite.py", line 367, in _backfill_domain_payload_digests
+      rows = self._connection.execute(
+             ~~~~~~~~~~~~~~~~~~~~~~~~^
+          "SELECT record_type, record_id, payload_json FROM domain_records WHERE payload_sha256 IS NULL"
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).fetchall()
+      ^
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F5B0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F880>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F880>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619D6C0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619D6C0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619DA80>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619DA80>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619FA60>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619FA60>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619D7B0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619D7B0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619DF30>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619DF30>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619ED40>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619ED40>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619DD50>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619DD50>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F970>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F970>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619EA70>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619EA70>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619E4D0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619E4D0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619E200>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619E200>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_field_fusion.py::test_fusion_provenance_derives_from_all_candidates
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F5B0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 254, in iterencode
+      _iterencode = c_make_encoder(
+          markers, self.default, _encoder, indent,
+          self.key_separator, self.item_separator, self.sort_keys,
+          self.skipkeys, self.allow_nan)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F5B0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_gap_execution.py::test_success_retries_finitely_then_caches
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619DF30>
+  
+  Traceback (most recent call last):
+    File "C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\logging.py", line 359, in __enter__
+      for logger in root_logger.manager.loggerDict.values():
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619DF30>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_gap_execution.py::test_success_retries_finitely_then_caches
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619FA60>
+  
+  Traceback (most recent call last):
+    File "C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\logging.py", line 359, in __enter__
+      for logger in root_logger.manager.loggerDict.values():
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619FA60>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_gap_execution.py::test_success_retries_finitely_then_caches
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619D7B0>
+  
+  Traceback (most recent call last):
+    File "C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\logging.py", line 359, in __enter__
+      for logger in root_logger.manager.loggerDict.values():
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619D7B0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_persistence_import_boundary.py::test_runtime_code_uses_public_persistence_facade
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C65C8A6B0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\ast.py", line 50, in parse
+      return compile(source, filename, mode, flags,
+                     _feature_version=feature_version, optimize=optimize)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C65C8A6B0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_persistence_import_boundary.py::test_runtime_code_uses_public_persistence_facade
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <sqlite3.Connection object at 0x0000023C6619F6A0>
+  
+  Traceback (most recent call last):
+    File "C:\Users\Igor B\AppData\Local\Programs\Python\Python313\Lib\ast.py", line 50, in parse
+      return compile(source, filename, mode, flags,
+                     _feature_version=feature_version, optimize=optimize)
+  ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000023C6619F6A0>
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+.venv-baseline\Lib\site-packages\_pytest\cacheprovider.py:469
+  C:\Projetos\searchleads\.venv-baseline\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: cache could not write path C:\Projetos\searchleads\.pytest_cache\v\cache\nodeids: [Errno 13] Permission denied: 'C:\\Projetos\\searchleads\\.pytest_cache\\v\\cache\\nodeids'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+XFAIL tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing - TEST_OBSOLETE: exact contract benchmark has been superseded by aggregate qualification analysis
+891 passed, 1 xfailed, 21 warnings in 4.85s

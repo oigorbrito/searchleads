@@ -1,0 +1,12 @@
+[
+  {
+    "tool_name": "evaluate_entity_match",
+    "public_interface": "searchleads.domain.er.evaluate",
+    "arguments": [
+      "left_entity",
+      "right_entity"
+    ],
+    "side_effect": "None",
+    "deterministic": true
+  }
+]

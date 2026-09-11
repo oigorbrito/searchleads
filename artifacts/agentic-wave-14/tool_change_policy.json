@@ -1,0 +1,1 @@
+{"classification_required": ["backward compatible", "schema changing", "authority changing", "side-effect changing"], "strict_review_required_for": ["authority changing", "side-effect changing"]}

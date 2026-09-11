@@ -1,0 +1,1 @@
+PYTHON_312_RUNTIME_MISSING: OpenManus upstream requires Python 3.12. `py -3.12` failed to locate runtime on this machine. SearchLeads runtime (3.13) was not altered as per Block 9.

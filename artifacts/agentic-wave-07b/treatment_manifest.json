@@ -1,0 +1,16 @@
+{
+  "active_treatments": [
+    "Minimal-A",
+    "Minimal-B",
+    "LangGraph-A",
+    "LangGraph-B",
+    "AgentsSDK-A",
+    "AgentsSDK-B"
+  ],
+  "blocked_treatments": [
+    "OpenManus-A",
+    "OpenManus-B"
+  ],
+  "batch_eligible": "YES",
+  "smoke_revalidation": "PASS"
+}

@@ -1,0 +1,8 @@
+ docs/ADR-005-MINIMAL-AGENT.md     | 23 +++++++++++
+ src/searchleads/agent/__init__.py |  1 +
+ src/searchleads/agent/adapter.py  | 58 ++++++++++++++++++++++++++++
+ src/searchleads/agent/policy.py   | 28 ++++++++++++++
+ src/searchleads/agent/provider.py |  7 ++++
+ src/searchleads/agent/trace.py    | 15 ++++++++
+ tests/test_agent_adapter.py       | 80 +++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 212 insertions(+)

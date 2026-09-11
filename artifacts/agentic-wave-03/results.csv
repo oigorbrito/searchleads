@@ -1,0 +1,12 @@
+Metric,T0,T1A,T1B
+task_success,21,21,21
+correct_abstention,3,3,3
+false_merge,0,0,0
+unsupported_assertions,0,0,0
+evidence_violations,0,0,0
+replay_violations,0,0,0
+unnecessary_actions,0,0,3
+agent_activations,0,12,21
+exceptions,0,0,0
+median_actions,1,2,2
+median_latency,12,14,14

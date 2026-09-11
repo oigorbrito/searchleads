@@ -1,0 +1,4 @@
+Metric,Minimal-B,LangGraph-B,AgentsSDK-B
+Success Rate,100%,100%,100%
+Median Latency (ms),650,850,750
+Unnecessary Actions,10,40,20

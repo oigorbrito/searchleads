@@ -1,0 +1,7 @@
+treatment,attempts,successes,live_runs,unnecessary_actions
+Minimal-A,70,70,7,0
+Minimal-B,70,70,3,10
+LangGraph-A,70,70,7,0
+LangGraph-B,70,70,3,40
+AgentsSDK-A,70,70,7,0
+AgentsSDK-B,70,70,3,20

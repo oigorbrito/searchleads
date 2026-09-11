@@ -1,0 +1,1 @@
+{"pricing_only_change": "cost recalculation", "provider_sdk_patch": "smoke + regression", "prompt_change": "corpus replay + live probes", "model_change": "WAVE-like live certification subset", "tool_schema_change": "contract tests + corpus replay", "authority_boundary_change": "full safety recertification"}

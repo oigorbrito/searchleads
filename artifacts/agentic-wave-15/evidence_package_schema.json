@@ -1,0 +1,22 @@
+{
+  "files_required": [
+    "trigger.json",
+    "integrity.json",
+    "environment.json",
+    "treatment/config manifest",
+    "raw runs",
+    "results",
+    "divergence traces",
+    "regression",
+    "rollback evidence",
+    "decision.json"
+  ],
+  "decision_outcomes": [
+    "CHANGE_APPROVED",
+    "CHANGE_APPROVED_WITH_LIMITATIONS",
+    "CHANGE_REJECTED",
+    "HOLD",
+    "ROLLBACK_REQUIRED",
+    "EVIDENCE_INSUFFICIENT"
+  ]
+}

@@ -1,0 +1,620 @@
+README.md:- Company ER and Person ER are still benchmark-dependent.
+docs/ACQUISITION_RUNTIME_DECISION_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; GitHub Actions is still infrastructure-blocked, so the runtime comparison is not yet executed as an end-to-end benchmark.
+docs/ACQUISITION_RUNTIME_DECISION_V1.md:## Baseline and challenger
+docs/ACQUISITION_RUNTIME_DECISION_V1.md:- Challenger: `crawlee==1.9.3`
+docs/ACQUISITION_RUNTIME_DECISION_V1.md:| Crawlee beats SearchLeads on throughput/recovery cost | benchmark only | yes | no | low |
+docs/APPLICATION_CHASSIS_DECISION_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; the repository still has no executable GitHub Actions steps, so this is a structural chassis decision, not a benchmark PASS.
+docs/APPLICATION_CHASSIS_DECISION_V1.md:| Yente is the best SearchLeads root chassis | no benchmark evidence | yes | no | low |
+docs/ARCHITECTURE-PRINCIPLES.md:3. **Provenance is per fact.** A derivation record names the subject, field, evidence, activity, and optional agent/parents.
+docs/ARCHITECTURE-PRINCIPLES.md:23. **Anti-abuse behavior is explicit.** The transport sends an identifying User-Agent and represents non-200 response bodies as Evidence before returning an operational error. Retry/backoff policy remains deferred.
+docs/ARCHITECTURE-PRINCIPLES.md:31. **Entity resolution is measured, not assumed.** `COMPANY_ENTITY_RESOLUTION_V1` separates blocking, pairwise features, experimental strategies, operational triage, and evaluation against an explicit labeled benchmark.
+docs/ARCHITECTURE-PRINCIPLES.md:34. **Blocking must preserve duplicate recall.** Candidate generation uses transparent keys (namespaced registry, WU4 domain/phone, and name-prefix keys) and is evaluated over the full benchmark observation corpus before pair classification.
+docs/ARCHITECTURE-PRINCIPLES.md:35. **Fuzzy/weighted scores are evaluation instruments, not automatic merge authority.** The benchmark shows materially non-zero false-merge rates even at high thresholds, so V1 does not use weighted score for `AUTO_MATCH`.
+docs/BOUNDED-GAP-EXECUTION-AND-REASSESSMENT.md:GENERIC_WORKFLOW_ENGINE = NO
+docs/CHASSIS-BAKEOFF-APPLICATION.md:This experiment tests the user's stronger chassis hypothesis: not merely whether an external matcher improves one SearchLeads subsystem, but whether a mature application chassis can absorb the best SearchLeads ideas with less custom infrastructure and less upstream modification.
+docs/CHASSIS-BAKEOFF-APPLICATION.md:SearchLeads remains a baseline, not a protected architecture. Yente is a challenger, not an assumed winner.
+docs/CHASSIS-BAKEOFF-APPLICATION.md:## Challenger
+docs/CHASSIS-BAKEOFF-APPLICATION.md:`test_chassis_bakeoff_yente_application.py` runs in a clean Yente 5.5.0 environment and tests:
+docs/CHASSIS-BAKEOFF-APPLICATION.md:Keep current SearchLeads application/core and adopt only external algorithms/libraries that win their subsystem benchmarks.
+docs/CHASSIS-BAKEOFF-APPLICATION.md:A fourth possibility is also valid: use Yente as a separately deployed search/match service rather than forking it or making it the repository root. This can retain upstream upgradeability while SearchLeads owns commercial workflow and acquisition.
+docs/CHASSIS-BAKEOFF-APPLICATION.md:Yente becomes the preferred application chassis only if the experiment shows that its ready-made operational capabilities reduce total SearchLeads-owned complexity and maintenance enough to justify its external-index footprint, older stable dependency generation, and extension work.
+docs/CHASSIS-BAKEOFF-FTM-EVIDENCE-BRIDGE.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`.
+docs/CHASSIS-BAKEOFF-FTM-EVIDENCE-BRIDGE.md:The experiment defines a sidecar concept:
+docs/CHASSIS-BAKEOFF-FTM-EVIDENCE-BRIDGE.md:`tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py` covers:
+docs/CHASSIS-BAKEOFF-FTM-EVIDENCE-BRIDGE.md:This remains experimental until the regression and bake-off suites execute on a functioning runner.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:SearchLeads normalization is a baseline, not a protected design. Rigour 2.3.1 is a challenger, not an assumed winner.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:- `LOCAL_EXPERIMENT`: frozen SearchLeads adversarial name corpus, downstream ER ablation, and CNPJ challenger probes in this PR.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:- `HYPOTHESIS`: any proposed production replacement before the GitHub runner actually executes the benchmark.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:No scientific-performance claim is made from the curated fixture alone.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:A production change should prefer one explicit, testable name-feature contract if the benchmark shows that doing so preserves or improves ER behavior.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:## Company-name challengers
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:The key-level benchmark compares four deterministic strategies over the same 44-pair frozen corpus:
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:- F0.5, because false collisions are intentionally expensive in this experiment;
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:The curated fixture is an adversarial engineering corpus, not a market-representative sample and not independent evidence of entity-resolution precision.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:`test_chassis_bakeoff_normalization_er_impact.py` applies the name strategies inside the existing company ER benchmark while holding the other components fixed:
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:The experiment reports both:
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:- a threshold selected from the 18-pair calibration partition and evaluated on the 36-pair holdout, to avoid rejecting a challenger merely because its score scale shifted.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:This corpus predates the experiment, so independence of the SearchLeads baseline is not certified. The result is regression/comparative evidence, not a final unbiased market-quality estimate.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:## CNPJ challengers
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:Official sources used by the experiment:
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:3. Rigour 2.3.1 `rigour.ids.CNPJ`, with the experiment pinning `python-stdnum==2.2`.
+docs/CHASSIS-BAKEOFF-NORMALIZATION.md:Rigour exposes a validation-oriented API via python-stdnum. Even if it wins the validation benchmark, canonicalization and validation should remain distinguishable operations: a source value may be preserved and normalized while failing validation, and a validation result must not erase raw Evidence.
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:Status: `LOCAL_EXPERIMENT` + `ENGINEERING_EVIDENCE`; execution results remain unavailable until a GitHub runner actually executes the workflow.
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:The experiment does **not** assume that FollowTheMoney should replace the SearchLeads domain wholesale. It tests whether SearchLeads should adopt the separation of identity from professional relationship while retaining stricter Evidence requirements.
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:Experimental compatibility tests use two concepts:
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:`tests/experimental/test_chassis_bakeoff_person_relationship_migration.py` covers:
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:For frozen V1 fixtures:
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIP-MIGRATION.md:- fixture migration count;
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIPS.md:The current SearchLeads design is a baseline, not a protected invariant. The FollowTheMoney 4.10.2 `Directorship` model is the current challenger.
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIPS.md:## FollowTheMoney challenger
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIPS.md:`test_chassis_bakeoff_person_relationship_model.py` tests:
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIPS.md:The challenger is stronger on identity/context separation and multi-organization representation, but SearchLeads currently has a stronger hard construction rule for relationship Evidence.
+docs/CHASSIS-BAKEOFF-PERSON-RELATIONSHIPS.md:No production migration is authorized by this experiment. The GitHub Actions runner still fails before test steps, so no local pytest PASS is claimed yet.
+docs/CHASSIS-BAKEOFF-PROFESSIONAL-REGISTRATION.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`.
+docs/CHASSIS-BAKEOFF-PROFESSIONAL-REGISTRATION.md:This experiment was added after re-checking issue #39. In that issue, **CFO means Conselho Federal de Odontologia**, not Chief Financial Officer. The operational requirement is current official dental-registration status through CFO/CRO evidence.
+docs/CHASSIS-BAKEOFF-PROFESSIONAL-REGISTRATION.md:The bake-off defines an experimental `ProfessionalRegistrationCandidate` with:
+docs/CHASSIS-BAKEOFF-PROFESSIONAL-REGISTRATION.md:`tests/experimental/test_chassis_bakeoff_professional_registration_model.py` covers:
+docs/CHASSIS-BAKEOFF-PROFESSIONAL-REGISTRATION.md:These are architecture classifications, not runtime test results. They remain subject to the executable workflow.
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:Status: `EXPERIMENTAL / NOT PRODUCTION AUTHORIZED`
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:- `LOCAL_EXPERIMENT`: executable migration, persistence, compatibility, and fault probes in `tests/experimental/`.
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:No benchmark result is considered executed while GitHub Actions jobs terminate before checkout with `steps=null`.
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:The current physical `domain_records` table is generic. The executable probe extends the in-process record codec registry and semantic reference rules with experimental types while keeping schema version 3 and the same physical tables.
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:`test_chassis_bakeoff_relationship_persistence.py`
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:`test_chassis_bakeoff_generic_domain_record_reuse.py`
+docs/CHASSIS-BAKEOFF-RELATIONAL-PERSISTENCE.md:`test_chassis_bakeoff_relationship_migration_cost.py`
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-CONTACT-SCOPE.md:Status: `EXPERIMENTAL / NOT PRODUCTION AUTHORIZED`
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-CONTACT-SCOPE.md:`tests/experimental/test_chassis_bakeoff_relationship_contact_scope.py` constructs one Person identity with two legacy relationship contexts and one validated Person-owned email associated with Company A.
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-CONTACT-SCOPE.md:- `cross_relationship_contact_leak = 0` on adversarial fixtures;
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-CONTACT-SCOPE.md:Evidence classification: `LOCAL_EXPERIMENT + ENGINEERING_EVIDENCE`.
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-FACT-SCOPE.md:Status: `EXPERIMENTAL / NOT PRODUCTION AUTHORIZED`
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-FACT-SCOPE.md:`tests/experimental/test_chassis_bakeoff_relationship_fact_scope.py` models one canonical Person with Company-A and Company-B contexts. A dentist role observed only in A is attached at Person scope, matching the current shape.
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-FACT-SCOPE.md:The current qualification API expects Person-scoped title facts. The experimental probe therefore remaps only facts belonging to the active relationship back to the legacy Person subject at the adapter boundary.
+docs/CHASSIS-BAKEOFF-RELATIONSHIP-FACT-SCOPE.md:Evidence classification: `LOCAL_EXPERIMENT + ENGINEERING_EVIDENCE`.
+docs/CHASSIS-BAKEOFF-RUNTIME.md:This document records the runtime/acquisition portion of PR #113. It is an experiment, not a production dependency decision.
+docs/CHASSIS-BAKEOFF-RUNTIME.md:The baseline is SearchLeads `gap_automation.execution`. The challenger is `crawlee==1.9.3`, the stable PyPI release published 2026-08-24.
+docs/CHASSIS-BAKEOFF-RUNTIME.md:The executable probes in `tests/experimental/test_chassis_bakeoff_runtime*.py` test:
+docs/CHASSIS-BAKEOFF-RUNTIME.md:Crawlee also separates ordinary request retry from session rotation. The experiment injects `SessionError` with `max_request_retries=0`; a successful recovery within the session-rotation budget would demonstrate that blocked/proxy/session recovery can stay below the SearchLeads business-action retry boundary.
+docs/CHASSIS-BAKEOFF-RUNTIME.md:- full SearchLeads regression suite with the challenger installed only in the experimental workflow;
+docs/CHASSIS-BAKEOFF-RUNTIME.md:- at least one bounded live-source experiment after issue #60 is ready for live HTTP certification.
+docs/COMPANY-ENTITY-RESOLUTION.md:→ experimental strategy evaluation
+docs/COMPANY-ENTITY-RESOLUTION.md:The benchmark contains 54 labeled pairs (27 duplicate / 27 negative) and therefore 108 independently keyed observation records for corpus-level blocking.
+docs/COMPANY-ENTITY-RESOLUTION.md:This is a local curated benchmark, not production coverage.
+docs/COMPANY-ENTITY-RESOLUTION.md:Without registry conflict, candidate pairs may match experimentally when domain/phone/location exactness is combined with minimum name similarity.
+docs/COMPANY-ENTITY-RESOLUTION.md:Weights are retained only as an experimental comparison instrument:
+docs/COMPANY-ENTITY-RESOLUTION.md:Measured benchmark routing:
+docs/COMPANY-ENTITY-RESOLUTION.md:## Benchmark limitations
+docs/COMPANY-ENTITY-RESOLUTION.md:`scripts/evaluate_entity_resolution.py` loads `tests/fixtures/company_er_v1.json` and prints:
+docs/COMPANY-ENTITY-RESOLUTION.md:- benchmark composition;
+docs/COMPANY-ENTITY-RESOLUTION.md:The exact key benchmark numbers are also asserted in tests so metric drift fails CI.
+docs/COMPANY-ENTITY-RESOLUTION.md:BENCHMARK_DEFINED = YES
+docs/COMPANY-ENTITY-RESOLUTION.md:BLOCKING_RECALL = 100.0% LOCAL_BENCHMARK
+docs/COMPANY-ENTITY-RESOLUTION.md:PAIR_REDUCTION = 98.0% LOCAL_BENCHMARK
+docs/COMPANY-ENTITY-RESOLUTION.md:AUTO_MATCH_FALSE_POSITIVES = 0/27 LOCAL_BENCHMARK
+docs/COMPANY-ENTITY-RESOLUTION.md:The next staged capability should consume ER decisions without erasing evidence: explicit canonicalization/fusion/conflict handling or the next work unit specified by the project handoff. Any persistent merge operation must preserve reversibility/provenance and should not be inferred from the experimental weighted score.
+docs/COMPANY-FIELD-FUSION-AND-TRUTH-DISCOVERY.md:## Benchmark
+docs/COMPANY-FIELD-FUSION-AND-TRUTH-DISCOVERY.md:The deterministic local fixture has 32 adversarial scenarios:
+docs/COMPANY-FIELD-FUSION-AND-TRUTH-DISCOVERY.md:The benchmark demonstrates why V1 refuses to convert support count into truth authority: correlated stale observations can outvote a newer/correct observation, and a deterministic tie-break can fabricate certainty where truth is deliberately unknown.
+docs/COMPANY-FIELD-FUSION-AND-TRUTH-DISCOVERY.md:BENCHMARK_REPRODUCED = PASS
+docs/COMPANY-MULTI-SOURCE-ENRICHMENT.md:The deterministic test fixture is calibrated to those current published values. It is not represented as a byte-for-byte live capture of the current page.
+docs/COMPANY-MULTI-SOURCE-ENRICHMENT.md:The deterministic current-page fixture contains the twelve CNPJ blocks verified on the official page:
+docs/COMPANY-MULTI-SOURCE-ENRICHMENT.md:Curated adversarial extraction benchmark:
+docs/COMPANY-MULTI-SOURCE-ENRICHMENT.md:Benchmark script:
+docs/CONTACT-DISCOVERY.md:## Curated extraction benchmark
+docs/CONTACT-DISCOVERY.md:A deterministic 12-scenario fixture includes:
+docs/CONTACT-DISCOVERY.md:CONTACT_BENCHMARK = PASS
+docs/CONTACT-VALIDATION.md:## Curated validation benchmark
+docs/CONTACT-VALIDATION.md:A deterministic 12-scenario fixture covers:
+docs/CONTACT-VALIDATION.md:This demonstrates that the WU9 two-page corroboration criterion can be satisfied by current public observations for a real company contact. The local benchmark does not claim to be a byte-for-byte live capture of those pages.
+docs/CONTACT-VALIDATION.md:VALIDATION_BENCHMARK = PASS
+docs/DENTAL-COMMERCIAL-QUALIFICATION.md:## Benchmark
+docs/DENTAL-COMMERCIAL-QUALIFICATION.md:The curated V1 benchmark contains 18 labeled cases spanning high/medium FIT, multiple intent levels, missing title/geography, explicit non-dental/non-Brazil cases, complementary CEOF routing, optional validated-contact gating, and title/intent conflicts.
+docs/DENTAL-COMMERCIAL-QUALIFICATION.md:This is a deterministic policy-path acceptance fixture, not a live CFO check and not market accuracy evidence.
+docs/DENTAL-COMMERCIAL-QUALIFICATION.md:QUALIFICATION_BENCHMARK = 18/18 EXACT
+docs/DISCOVERY-COVERAGE.md:Reference CNPJs are stored as sorted WU3-compatible 14-character routing keys. The deterministic HTML fixture is a minimal calibration representation of those source blocks, not a byte-for-byte live capture.
+docs/DISCOVERY-COVERAGE.md:`reference_from_mapping()` sorts fixture inputs deterministically before building that immutable reference.
+docs/DOMAIN_CHASSIS_DECISION_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; quantitative execution remains `INFRASTRUCTURE_BLOCKED` until GitHub runners execute steps.
+docs/DOMAIN_CHASSIS_DECISION_V1.md:It does not authorize product migration or merge. PR #113 remains an experiment.
+docs/DOMAIN_CHASSIS_DECISION_V1.md:`tests/experimental/test_chassis_bakeoff_domain_chassis_integrated.py` adds one integrated gate over the previously separate probes. It checks:
+docs/DOMAIN_CHASSIS_DECISION_V1.md:The existing V3 generic `domain_records` design remains a favorable implementation path for this candidate model. The current experimental persistence probes indicate that new record types can plausibly be added through codec/reference registration without adding physical tables or advancing SQLite `user_version`.
+docs/DOMAIN_CHASSIS_DECISION_V1.md:This remains a local-experiment hypothesis until the blocked runner executes the persistence probes.
+docs/DOMAIN_CHASSIS_DECISION_V1.md:This document does not trigger implementation in the product stack. Product implementation waits for the final chassis scorecard. The candidate domain model should be used as the domain challenger in the remaining ER, runtime, application-chassis, and migration-cost comparisons.
+docs/END-TO-END-ACCEPTANCE.md:This is the final original-handoff work unit for the clean SearchLeads stack. It exercises the published boundaries together and reports what the implementation can actually prove. It deliberately does not turn deterministic fixtures into claims about live network availability, production web coverage, or commercial qualification.
+docs/END-TO-END-ACCEPTANCE.md:The fixture uses the SERPRO Brasília observation with CNPJ:
+docs/END-TO-END-ACCEPTANCE.md:The people-page fixture contains one leadership observation:
+docs/ENGINEERING_BASELINE_FREEZE_V1.md:- `BR-002`: additional challenger breadth remains partially blocked by Windows ICU/pyicu installation constraints
+docs/ENGINEERING_GOVERNANCE.md:Authority: governs how SearchLeads distinguishes baseline decisions from experimental evidence.
+docs/ENGINEERING_GOVERNANCE.md:- The merge diverged from the previously stated laboratory-only expectation for that experiment.
+docs/ENGINEERING_GOVERNANCE.md:- The merge does not by itself promote the experiment to canonical baseline.
+docs/ENGINEERING_GOVERNANCE.md:- Experimental evidence and canonical implementation remain distinct concepts even when experimental commits become part of repository ancestry.
+docs/ENGINEERING_GOVERNANCE.md:- Experimental PRs may produce evidence.
+docs/ENGINEERING_GOVERNANCE.md:- Any promotion from experiment to baseline must be explicit.
+docs/ENGINEERING_GOVERNANCE.md:- Future experimental merges must not be treated as implicit baseline adoption.
+docs/ENGINEERING_GOVERNANCE.md:- If an experiment lands in ancestry, treat it as historical evidence until a canonical document or ADR explicitly adopts it.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; GitHub-hosted runners still terminate with `steps=[]` / no usable logs, so quality numbers are not claimed as executed results.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:This decision covers company ER, person ER, normalization, identifier validation, and the benchmark harness quality checks that gate them.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_matching.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_external_canonical.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_external_regression.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_normalization.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_normalization_er_impact.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_cnpj.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- `tests/experimental/test_chassis_bakeoff_dependency_contract.py`
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- The holdout/calibration split is explicit in the company fixtures, which is correct.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- The external canonical regression fixture is held out from the matcher inputs, which is correct.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- No runner-produced benchmark number is available yet, so no ER winner can be claimed.
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:| Company ER | baseline matcher/feature fusion | Nomenklatura `LogicV2`, `RegressionV1`, `EntityResolveRegression` and challengers | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; external challengers remain partially blocked, so the conservative policy is adopted provisionally |
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:| Person ER | baseline person resolution | separate Person ER benchmark with strict false-merge cost | `PROVISIONAL_COMPOSE` | local benchmark executed on the sanctioned Windows runtime; the adopted policy is review-first with no general auto-match authority |
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- SearchLeads baseline and challenger are compared on the same labeled pairs;
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- the benchmark result cannot yet be trusted as an outcome;
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:| SearchLeads normalization winner vs Rigour winner | benchmark harness only | yes | no | low |
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:| SearchLeads company ER winner | benchmark harness only | yes | no | low |
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:| SearchLeads person ER winner | benchmark harness only | yes | no | low |
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- the remaining ER decision gap is challenger breadth, not internal contract reconciliation
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:- external challengers remain partially blocked by `pyicu`/ICU build requirements in the isolated Windows benchmark venv
+docs/ER_AND_NORMALIZATION_DECISION_V1.md:The normalization and validation boundaries are closed enough to wire into the eventual implementation, but the ER quality choice that could still change the chassi remains benchmark-dependent and unexecuted.
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`; external execution remains `INFRASTRUCTURE_BLOCKED` while Actions jobs terminate without usable step logs.
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:`CandidateFact` currently packages raw value, normalized value, evidence references, provenance, confidence, decision class and observation time. Some of those responsibilities overlap FTM statements; others are SearchLeads-specific workflow concerns.
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:The correct experiment is therefore not "can FTM instantiate a statement?" but whether the same downstream behavior can be expressed with fewer owned concepts while preserving:
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:Persist a dedicated Conflict record only if experiments demonstrate a concrete advantage such as:
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:- required stable workflow identity for human review;
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:Existing PR #113 probes cover several of these individually; `test_chassis_bakeoff_domain_chassis_integrated.py` adds cross-cutting cardinality and scoping gates.
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:## Complexity benchmark to collect when runners work
+docs/FACT_LINEAGE_CHASSIS_DECISION_V1.md:The exact fate of `CandidateFact`, `CanonicalFact`, and the residual `Provenance` schema remains intentionally deferred until executable complexity and reconstruction benchmarks run.
+docs/FIRST-REAL-SOURCE.md:- issue #826 (2026-06-22): HTTP 403 can depend on a generic/default User-Agent; an explicit identifying User-Agent is a working mitigation reported by users;
+docs/FIRST-REAL-SOURCE.md:Accordingly the adapter sends an explicit User-Agent, uses a bounded timeout, preserves HTTP response bodies as Evidence before raising non-200 errors, and does not invent retry/rate-limit policy in this work unit.
+docs/FIRST-REAL-SOURCE.md:A live HTTP smoke using the adapter's explicit User-Agent was attempted from the execution container on 2026-08-24 and failed before HTTP because DNS could not resolve `brasilapi.com.br`:
+docs/FIRST-REAL-SOURCE.md:Therefore the strict gate is reported without relabeling an injected fixture as live acquisition:
+docs/FIRST-REAL-SOURCE.md:EXPLICIT_USER_AGENT = PASS
+docs/GAP-DETECTION-AND-AUTOMATION.md:## Reconciled curated benchmark
+docs/GAP-DETECTION-AND-AUTOMATION.md:The reconciled benchmark contains **23 scenarios**, retaining the WU16 planning contract and adding explicit qualification-capability cases:
+docs/GAP-DETECTION-AND-AUTOMATION.md:GAP_AUTOMATION_BENCHMARK = PASS
+docs/LEADS-EXPORT.md:## Curated integrity benchmark
+docs/LEADS-EXPORT.md:A deterministic 15-scenario benchmark exercises both accepted and rejected bundles.
+docs/LEADS-EXPORT.md:LEADS_EXPORT_INTEGRITY_BENCHMARK = PASS
+docs/MVP_SCOPE.md:The canonical deterministic workload is `tests/fixtures/end_to_end_acceptance_v1.json`. Its acceptance runner is `python scripts/run_mvp_evaluation.py`.
+docs/OPERATIONS_AND_DEPLOYMENT.md:- discovery and validation workflows
+docs/OPERATIONS_AND_DEPLOYMENT.md:- experimental bake-off probes
+docs/OPERATIONS_AND_DEPLOYMENT.md:- optional experimental external packages for bake-off flows
+docs/OPERATIONS_AND_DEPLOYMENT.md:- discovery and review workflows must preserve deterministic ordering where exposed
+docs/PERSISTENCE-AND-EVIDENCE.md:At the current repository state, GitHub Actions jobs have repeatedly terminated before any workflow step is provisioned (`steps=[]`/no runner logs). Until execution resumes, no new aggregate `pytest` or `compileall` PASS should be inferred from the presence of these tests alone.
+docs/PERSON-AND-ROLE-DISCOVERY.md:## Curated role/name extraction benchmark
+docs/PERSON-AND-ROLE-DISCOVERY.md:A deterministic 15-scenario adversarial fixture covers:
+docs/PERSON-AND-ROLE-DISCOVERY.md:PERSON_ROLE_BENCHMARK = PASS
+docs/PERSON-ENTITY-RESOLUTION.md:The 25-pair adversarial benchmark contains 12 true same-person pairs and 13 distinct-person pairs, including:
+docs/PERSON-ENTITY-RESOLUTION.md:Experimental rule result:
+docs/PERSON-ENTITY-RESOLUTION.md:- same Company + same name + same professional profile (the failed experimental auto rule is demoted to review);
+docs/PERSON-ENTITY-RESOLUTION.md:## Operational benchmark
+docs/PERSON-ENTITY-RESOLUTION.md:On the same 25-pair adversarial benchmark:
+docs/PERSON-ENTITY-RESOLUTION.md:The benchmark is intentionally adversarial and enriched for ambiguous cases. Review rate is therefore a calibration/regression result, not an estimate of production prevalence.
+docs/PERSON-ENTITY-RESOLUTION.md:EXPERIMENTAL_AUTO_RULE_PRECISION = 80.0%
+docs/PERSON-ENTITY-RESOLUTION.md:EXPERIMENTAL_AUTO_RULE_FALSE_MERGE_RATE = 7.69%
+docs/PERSON-ENTITY-RESOLUTION.md:EXPERIMENTAL_AUTO_RULE_MEASURED = YES
+docs/PERSON-ENTITY-RESOLUTION.md:EXPERIMENTAL_AUTO_RULE_FALSE_MERGE = NONZERO
+docs/PRODUCT_REQUIREMENTS.md:| FR-003 | Functional | The system must support conservative Company ER. | Avoid false merges. | High | scorecard, tests | Review/abstain decisions are explicit; no silent fuzzy merge authority. | Benchmark, adversarial | PROVISIONAL_COMPOSE |
+docs/PRODUCT_REQUIREMENTS.md:| FR-004 | Functional | The system must support conservative Person ER. | Avoid false merges. | High | scorecard, tests | Same as Company ER, with explicit review/abstain/merge outcomes. | Benchmark, adversarial | PROVISIONAL_COMPOSE |
+docs/PRODUCT_REQUIREMENTS.md:| DR-003 | Data | Person identity must not depend on `company_id`. | Prevent identity collapse across relationships. | High | scorecard, ER docs | Person identity survives company change snapshots. | Benchmark, ER tests | PROVISIONAL_COMPOSE |
+docs/PRODUCT_REQUIREMENTS.md:| QR-002 | Quality | The system must prefer conservative abstention over uncertain merge. | Reduce false-positive risk. | High | ER docs/tests | Ambiguous cases route to review rather than auto-merge. | Benchmark, adversarial | PROVISIONAL_COMPOSE |
+docs/PRODUCT_REQUIREMENTS.md:| OR-002 | Operational | The repository must distinguish infrastructure blockers from test failures. | Avoid false PASS/FAIL conclusions. | High | user guidance, tests | Unavailable tools/runners are reported as blocked, not failed. | Process review | CANONICAL |
+docs/PROJECT_CHARTER.md:- future automation agents
+docs/PROJECT_CHARTER.md:The repository has substantial implementation and experimental evidence, but canonical documentation, ER decisions, and traceability are still being consolidated.
+docs/PROJECT_CHARTER.md:- avoid inventing benchmark winners before benchmark execution
+docs/PROJECT_CHARTER.md:- preserve historical experimental docs
+docs/QUALITY_MODEL.md:- treating experimental benchmark results as production certification
+docs/QUALITY_MODEL.md:Local sanctioned benchmark evidence may establish a provisional operating policy when external challengers are partially blocked, but it does not by itself certify live production behavior.
+docs/RELEASE_CANDIDATE_INTERNAL_V1.md:python -m pip install --upgrade pip setuptools wheel
+docs/RELEASE_CANDIDATE_INTERNAL_V1.md:The XPASS is explicitly classified as obsolete benchmark coverage: `tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing` has been superseded by aggregate qualification analysis.
+docs/RELEASE_CANDIDATE_INTERNAL_V1.md:The base package declares no production dependency on FollowTheMoney, Nomenklatura, Rigour, Crawlee or Yente. Those remain experimental/live-breadth concerns unless a later engineering decision explicitly changes the production dependency contract.
+docs/RELEASE_CANDIDATE_INTERNAL_V1.md:The experimental Chassis Bake-Off workflow is isolated from the implementation PR: it remains available on the bake-off line but is skipped as a release gate for `work/chassis-implementation-v1`.
+docs/RELEASE_CANDIDATE_INTERNAL_V1.md:- experimental chassis imports in production Python source.
+docs/RELEASE_READINESS.md:- current evidence: canonical docs are present and synchronized with the green internal regression state; Company ER and Person ER have provisional local benchmark policies; the clean implementation line is live
+docs/RELEASE_READINESS.md:- blockers: external challenger breadth remains post-baseline and does not block the internal release-candidate path
+docs/RELEASE_READINESS.md:- blockers: none internal; the single XPASS is an explicitly obsolete benchmark contract superseded by aggregate qualification analysis
+docs/RELEASE_READINESS.md:- current evidence: `RELEASE_CANDIDATE_INTERNAL_V1.md`, green Python 3.11/3.12/3.13 hardened CI, `RC_HYGIENE_READY`, targeted RC/recovery battery, cross-platform configuration tests, and experimental bake-off isolation
+docs/RELEASE_READINESS.md:Wave 13 makes the remaining decisions machine-checkable without granting them. The preflight rejects missing, expired, revoked, rejected or scope-mismatched legal signoff and authorization records. Professional verification is required only when the approved campaign policy requires current professional status. A synthetic positive fixture proves the state machine, not real-world approval.
+docs/RELEASE_READINESS.md:SERPRO transparency enrichment and Crawlee/challenger breadth are no longer on this minimum critical path.
+docs/REPEATABLE-WEB-DISCOVERY.md:It is **not** a generic crawler, agent framework, browser orchestration layer, or LLM-per-page extraction loop.
+docs/REPEATABLE-WEB-DISCOVERY.md:agent = searchleads.repeatable_discovery.serpro_offices.v1
+docs/REPEATABLE-WEB-DISCOVERY.md:## Curated recipe benchmark
+docs/REPEATABLE-WEB-DISCOVERY.md:The deterministic fixture has 10 adversarial scenarios covering:
+docs/REPEATABLE-WEB-DISCOVERY.md:The official page currently reports `Atualizado em 22 de janeiro de 2026` and exposes CNPJ-bearing blocks for the headquarters plus eleven regional entries used by the calibration fixture.
+docs/REPEATABLE-WEB-DISCOVERY.md:The fixture is a minimal representation of currently verified source blocks; it is not represented as a byte-for-byte live page capture. The execution container still cannot perform direct GitHub/network cloning, so current public source verification was done separately from the deterministic local recipe run.
+docs/REPEATABLE-WEB-DISCOVERY.md:RECIPE_BENCHMARK = PASS
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:Status: `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT`.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- PR #113 is open on `work/chassis-bakeoff-v1` against `work/persistence-load-identity-invariants-v1`.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- The latest GitHub Actions runs for the PR complete with `failure`, but job payloads expose `steps: []` and no logs, so there is still no executable benchmark evidence to interpret.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:`REPLACE` means the current implementation/model is structurally wrong or too costly and should be displaced by the challenger.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:`DEFER` means the claim is still benchmark-dependent or the runner has not yet produced usable evidence.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Component | Current SearchLeads | Best challenger | Decision | Evidence class | Quality delta | False-positive/merge delta | Operational delta | Custom-code delta | Migration cost | Upstream divergence | Confidence |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Entity model | `Person` embeds `company_id`; `Company.person_ids` is a snapshot | FTM `Person` + first-class relationship entities | `REPLACE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Relationship model | person/company coupling inside identity | `PersonCompanyRelationship` / FTM `Directorship` / `Employment` | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Professional registration | mixed with person/role evidence | person-scoped registration entity | `REPLACE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | + | + | - | medium | low | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Evidence store | SearchLeads raw Evidence with digest/integrity | no better challenger found yet | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | 0 | low | 0 | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Facts/statements | `CandidateFact`/`CanonicalFact`/`Conflict` overlap semantics | FTM `Statement` + explicit Evidence bridge | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Provenance | parallel SearchLeads lineage objects | FTM statement metadata + SearchLeads Evidence identity | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | strong + | + | - | medium | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Conflict handling | persisted conflict records and derived workflow state | derive by default; persist only adjudication or irreducible cache state | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium + | + | - | low | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Company ER | current company matcher / field fusion | Nomenklatura `LogicV2` / `RegressionV1` / `EntityResolveRegression` + Rigour normalization | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | medium + | review-first | medium | low | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Person ER | current person resolution | Nomenklatura / Splink / Dedupe challengers | `PROVISIONAL_COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` + `LOCAL_BENCHMARK` | strong + | strong + | review-first | medium | low | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Normalization | duplicated SearchLeads name normalization | Rigour + `python-stdnum` + official CNPJ oracle | `COMPOSE` | `OFFICIAL_SPEC` + `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium risk | + | - | medium | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Acquisition runtime | `gap_automation.execution` | Crawlee request queue / retry / sessions / stats | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Planner | SearchLeads business planner and qualification policy | no challenger yet | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | 0 | 0 | + | 0 | low | 0 | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| API/app chassis | thin SearchLeads app layer with growing custom ops code | thin FastAPI chassis; Yente only as separate service if needed | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | medium | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Persistence | generic immutable `domain_records` + `evidence_records` + v3 integrity | keep storage shape; extend codecs and semantic checks | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | + | + | + | 0 | low | 0 | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Contact discovery | person-owned corporate contact discovery | relationship-scoped contact links | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Contact validation | person/company-scoped validation state | relationship-scoped validation gate | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | strong + | strong + | + | - | medium | low | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Qualification | SearchLeads commercial policy | keep policy; feed it relationship-scoped inputs | `KEEP` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | 0 | 0 | + | 0 | low | 0 | high |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Selective review | SearchLeads review workflow | derived conflict + evidence queue composition | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | medium + | + | - | medium | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Observability | current SearchLeads telemetry / measurement | Crawlee stats + SearchLeads business telemetry | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | 0 | strong + | - | low | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Telemetry | domain telemetry split from acquisition telemetry | explicit adapter boundary | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | 0 | strong + | - | low | low | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:| Deployment | current lightweight SearchLeads deployment path | thin FastAPI app + optional external search/service split | `COMPOSE` | `ENGINEERING_EVIDENCE` + `LOCAL_EXPERIMENT` | medium + | neutral | strong + | - | medium | medium | medium |
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- Crawlee is a strong acquisition-runtime challenger, but only as an adapter.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- Company ER and Person ER now have executed local benchmark policies, but external challenger breadth remains partially blocked.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- execution of the benchmark harness is still blocked for some challengers by Windows build/runtime dependencies.
+docs/SEARCHLEADS_CHASSIS_SCORECARD_V1.md:- deployment cost, throughput and recovery are still benchmark-dependent.
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- architecture decision: canonical docs govern experimental docs
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- objective: close Company ER with conservative benchmark evidence
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- dependencies: benchmark harness and curated fixtures
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- architecture decision: benchmark-closed ER, no silent merge authority
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- verification: adversarial benchmark and regression
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- evidence: current scorecard and experimental tests
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- blockers: external challenger breadth and post-baseline recalibration
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- benchmark evidence: `registry_only` precision 100.0%, recall 18.5%; `exact_evidence` precision 82.6%, recall 70.4%, false_merge_rate 14.8%
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- objective: close Person ER with conservative benchmark evidence
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- dependencies: benchmark harness and curated fixtures
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- verification: adversarial benchmark and regression
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- evidence: current scorecard and experimental tests
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- blockers: external challenger breadth and post-baseline recalibration
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- benchmark evidence: operational auto-match authority is false; operational candidate matches 5/25 with 1 false positive; local contract test suite passed
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- blockers: acquisition runtime breadth remains external; challenger breadth is post-baseline recalibration
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- ER blockers remain benchmark dependent
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- wave 03 local benchmark executed on sanctioned Windows runtime
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- canonical docs outrank experimental bake-off docs
+docs/SEARCHLEADS_COMPLETION_PLAN.md:- COMPANY_ER is provisionally composed from local benchmark evidence, with external challenger breadth still open
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/test_selective_review.py` contact/lead constructor failures | FR-006, QR-001, QR-002 | RESOLVED | fixtures now construct valid current-domain objects | CAP-05 | low | closed |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| experimental chassis bake-off tests | FR-003, FR-004, QR-002 | EXPERIMENTAL_ONLY | keep as evidence only, not implementation gate | CAP-02, CAP-03 | low | evidence only |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| missing external benchmark runtime | FR-003, FR-004 | INFRASTRUCTURE_FAILURE | obtain runnable benchmark path or alternate sanctioned runtime | CAP-02, CAP-03 | high | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_adversarial.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02/CAP-03 benchmark harness | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_cnpj.py` | EXTERNAL_DEPENDENCY | missing `rigour` | FR-002 / normalization contract probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_dependency_contract.py` | EXTERNAL_DEPENDENCY | dependencies installed only in bake-off workflow | CAP-02/CAP-03 benchmark harness | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_external_canonical.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02 external canonical corpus | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_external_regression.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | CAP-02 external regression corpus | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | evidence bridge benchmark | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_matching.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | ER challenger harness | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_normalization.py` | EXTERNAL_DEPENDENCY | missing `rigour` | normalization ablation | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_normalization_er_impact.py` | EXTERNAL_DEPENDENCY | missing `rigour` | normalization ablation / ER impact | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_person_relationship_lineage.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship lineage probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_person_relationship_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship model probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_professional_registration_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | person relationship / registration probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_provenance.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | provenance bridge probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py` | EXTERNAL_DEPENDENCY | missing `followthemoney` | relationship aggregate model probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime probes | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_adapter.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime adapter | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_adapter_persistence.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime adapter persistence | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_concurrency.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime concurrency | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_observability.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime observability | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_sessions.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime sessions | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_runtime_throttling.py` | EXTERNAL_DEPENDENCY | missing `crawlee` | acquisition runtime throttling | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/experimental/test_chassis_bakeoff_yente_application.py` | EXTERNAL_DEPENDENCY | Yente installed only in isolated bake-off job | separate-service challenger probe | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| `tests/test_dental_qualification_benchmark.py::test_benchmark_exact_contract_routing` | INTENTIONAL_OPTIONAL | `TEST_OBSOLETE` superseded by aggregate qualification analysis | legacy benchmark regression | closed |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| ID | Capability | Blocker type | Description | Internal/external | Can work continue elsewhere? | Required evidence/action | Owner/tool | Status |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| BR-001 | CAP-07 Acquisition Runtime | INFRASTRUCTURE | external runtime execution environment remains unavailable in the current checkout context | external | yes | obtain valid runtime path or sanctioned benchmark environment | CI/runtime | open |
+docs/SEARCHLEADS_COMPLETION_PLAN.md:| BR-002 | CAP-02 Company ER / CAP-03 Person ER | EXTERNAL_DEPENDENCY | benchmark challengers require `followthemoney`, `rigour`, or `crawlee` in the bake-off environment | external | yes | run challenger suite in sanctioned bake-off runtime | benchmark harness | open |
+docs/SELECTIVE-REVIEW.md:## Curated routing benchmark
+docs/SELECTIVE-REVIEW.md:The deterministic fixture contains 19 scenarios spanning company ER dispositions, explicit Person ambiguity, conflict states, contact states, and existing Lead qualification states.
+docs/SELECTIVE-REVIEW.md:SELECTIVE_REVIEW_BENCHMARK = PASS
+docs/SQLITE-SCHEMA-MIGRATIONS.md:GitHub Actions is currently failing before runner steps execute, so the presence of these tests is not reported as a current CI PASS until workflow execution is restored.
+docs/SYSTEM_ARCHITECTURE.md:- future automation agents
+docs/SYSTEM_ARCHITECTURE.md:Company ER and Person ER are conservatively provisioned from local benchmark evidence. Review and abstention are first-class outcomes, and external challenger breadth remains open.
+docs/SYSTEM_ARCHITECTURE.md:- discovery/validation/qualification workflows
+docs/SYSTEM_ARCHITECTURE.md:- Company ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
+docs/SYSTEM_ARCHITECTURE.md:- Person ER is provisionally benchmark-closed on the local sanctioned runtime, but external challenger breadth remains open.
+docs/TRACEABILITY_MATRIX.md:| FR-001 | Acquisition / discovery | `src/searchleads/dental_discovery`, `src/searchleads/repeatable_discovery`, `src/searchleads/contact_discovery` | discovery/contact tests | local test runs, fixture outputs | CANONICAL | No |
+docs/TRACEABILITY_MATRIX.md:| FR-003 | Company ER | `src/searchleads/entity_resolution/company.py` | company/field-fusion/experimental ER tests | benchmark fixtures, scorecard | PROVISIONAL_COMPOSE | Yes |
+docs/TRACEABILITY_MATRIX.md:| FR-004 | Person ER | `src/searchleads/person_entity_resolution/person.py` | person ER and experimental tests | benchmark fixtures, scorecard | PROVISIONAL_COMPOSE | Yes |
+docs/TRACEABILITY_MATRIX.md:| OR-001 | Acquisition runtime composition | runtime adapter/application chassis | operational integration + experimental probes | fallback adapter evidence | VERIFIED_PARTIAL | No |
+docs/TRACEABILITY_MATRIX.md:- the XPASS remains an explicitly obsolete qualification benchmark superseded by aggregate qualification analysis
+docs/TRACEABILITY_MATRIX.md:- Company ER and Person ER remain `PROVISIONAL_COMPOSE`; challenger breadth is not on the minimum commercial critical path
+docs/UNIFIED-MEASUREMENT-AND-TELEMETRY.md:This unit resolves #75 by porting the scientific measurement contract from legacy PR #25 onto the current clean stack. Existing work-unit evaluators remain authoritative for their own calibration fixtures; this layer provides one typed vocabulary for comparing what is actually measurable.
+docs/UNIFIED-MEASUREMENT-AND-TELEMETRY.md:Given labeled pair counts, the contract computes precision, recall, F1, false merge rate over labeled distinct pairs, and false split rate over labeled duplicate pairs. This supports the measured Company ER and Person ER calibration sets without turning fixture performance into production accuracy.
+docs/UNIFIED-MEASUREMENT-AND-TELEMETRY.md:Qualification precision/recall require explicit labeled ground truth. `UNKNOWN` predictions are not silently converted to negative. Human disagreement requires explicit human decisions. WU20's Dental fixture is a calibration dataset; any report using it must carry a calibration scope rather than a production claim.
+docs/UNIFIED-MEASUREMENT-AND-TELEMETRY.md:The caller is responsible for choosing an honest scope, for example `CALIBRATION_FIXTURE`, `BOUNDED_SOURCE_PAGE`, or a specifically identified production run. The contract deliberately does not infer scope from data.
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: local runtime, focused fixtures
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: curated benchmark fixtures
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:### Benchmark
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- purpose: compare alternatives under fixed fixtures
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: controlled fixture set
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: local mutated fixtures or storage
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- purpose: verify end-to-end workflow behavior
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: full local workflow path
+docs/VERIFICATION_AND_VALIDATION_PLAN.md:- environment: local runtime with policy fixtures and audit bundles
+docs/index.md:- ADRs and decision docs - `CANONICAL` when accepted, otherwise `EXPERIMENTAL` or `REFERENCE`
+docs/index.md:## Experimental evidence
+docs/index.md:- [SearchLeads Chassis Scorecard V1](SEARCHLEADS_CHASSIS_SCORECARD_V1.md) - `EXPERIMENTAL / DECISION EVIDENCE`
+docs/index.md:- [ER and Normalization Decision V1](ER_AND_NORMALIZATION_DECISION_V1.md) - `EXPERIMENTAL / DECISION EVIDENCE`
+docs/index.md:- [Acquisition Runtime Decision V1](ACQUISITION_RUNTIME_DECISION_V1.md) - `EXPERIMENTAL / DECISION EVIDENCE`
+docs/index.md:- [Application Chassis Decision V1](APPLICATION_CHASSIS_DECISION_V1.md) - `EXPERIMENTAL / DECISION EVIDENCE`
+docs/index.md:- [Fact Lineage Chassis Decision V1](FACT_LINEAGE_CHASSIS_DECISION_V1.md) - `EXPERIMENTAL / DECISION EVIDENCE`
+docs/index.md:- `EXPERIMENTAL / DECISION EVIDENCE` documents record bake-off findings and may inform canonical decisions, but do not override canonical baseline.
+scripts/evaluate_company_enrichment.py:DATA = json.loads((ROOT / "tests" / "fixtures" / "company_enrichment_v1.json").read_text(encoding="utf-8"))
+scripts/evaluate_contact_discovery.py:FIXTURE=ROOT/'tests'/'fixtures'/'contact_discovery_v1.json'
+scripts/evaluate_contact_discovery.py:    scenarios=json.loads(FIXTURE.read_text(encoding='utf-8'))
+scripts/evaluate_contact_validation.py:FIXTURE=ROOT/'tests'/'fixtures'/'contact_validation_v1.json'
+scripts/evaluate_contact_validation.py:    cases=json.loads(FIXTURE.read_text(encoding='utf-8')); tp=fp=tn=fn=0
+scripts/evaluate_dental_qualification.py:CASES=json.loads((ROOT/'tests/fixtures/dental_qualification_v1.json').read_text())
+scripts/evaluate_discovery_coverage.py:fixture = json.loads((ROOT / "tests" / "fixtures" / "discovery_coverage_v1.json").read_text())
+scripts/evaluate_discovery_coverage.py:reference = reference_from_mapping(fixture)
+scripts/evaluate_discovery_coverage.py:result = measure_serpro_snapshot_coverage(reference, fixture["snapshot_html"])
+scripts/evaluate_discovery_coverage.py:summary["source_reported_localities"] = fixture["source_reported_localities"]
+scripts/evaluate_entity_resolution.py:FIXTURE = ROOT / "tests" / "fixtures" / "company_er_v1.json"
+scripts/evaluate_entity_resolution.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+scripts/evaluate_entity_resolution.py:    print(f"benchmark_pairs={len(pairs)} positives={positives} negatives={negatives}")
+scripts/evaluate_field_fusion.py:FIXTURE=ROOT/'tests'/'fixtures'/'field_fusion_v1.json'
+scripts/evaluate_field_fusion.py:def fact(s,i,c): return CandidateFact(f"{s['scenario_id']}:f:{i}",'company:benchmark','legal_name',c['raw'],c['normalized'],(c['evidence'],),f"prov:{s['scenario_id']}:{i}")
+scripts/evaluate_field_fusion.py:    scenarios=json.loads(FIXTURE.read_text(encoding='utf-8')); auto=correct=false=conflicts=maj_ok=maj_bad=corr=tie=known=0
+scripts/evaluate_gap_automation.py:CASES=json.loads((ROOT/'tests'/'fixtures'/'gap_automation_v1.json').read_text())
+scripts/evaluate_lead_export.py:CASES=json.loads((ROOT/'tests'/'fixtures'/'lead_export_v1.json').read_text())
+scripts/evaluate_person_entity_resolution.py:    evaluate_experimental_auto_match, evaluate_person_resolution,
+scripts/evaluate_person_entity_resolution.py:data=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text(encoding='utf-8'))
+scripts/evaluate_person_entity_resolution.py:    'experimental_profile_name_auto_rule':asdict(evaluate_experimental_auto_match(pairs)),
+scripts/evaluate_person_entity_resolution.py:    'benchmark_is_production_accuracy':False,
+scripts/evaluate_person_role_discovery.py:FIXTURE=ROOT/'tests'/'fixtures'/'person_role_discovery_v1.json'
+scripts/evaluate_person_role_discovery.py:    scenarios=json.loads(FIXTURE.read_text(encoding='utf-8'))
+scripts/evaluate_repeatable_web_discovery.py:FIXTURE=ROOT/'tests'/'fixtures'/'repeatable_web_discovery_v1.json'
+scripts/evaluate_repeatable_web_discovery.py:    data=json.loads(FIXTURE.read_text(encoding='utf-8')); cases=data['benchmark']; tp=fp=fn=0
+scripts/evaluate_selective_review.py:CASES=json.loads((ROOT/'tests'/'fixtures'/'selective_review_v1.json').read_text(encoding='utf-8'))
+scripts/run_end_to_end_acceptance.py:from searchleads.acceptance import load_fixture, run_end_to_end_acceptance
+scripts/run_end_to_end_acceptance.py:result = run_end_to_end_acceptance(load_fixture(ROOT / "tests" / "fixtures" / "end_to_end_acceptance_v1.json"))
+scripts/run_mvp_evaluation.py:from searchleads.acceptance import load_fixture, run_end_to_end_acceptance
+scripts/run_mvp_evaluation.py:BENCHMARK_VERSION = "end_to_end_acceptance_v1"
+scripts/run_mvp_evaluation.py:FIXTURE_PATH = ROOT / "tests" / "fixtures" / f"{BENCHMARK_VERSION}.json"
+scripts/run_mvp_evaluation.py:    fixture = load_fixture(FIXTURE_PATH)
+scripts/run_mvp_evaluation.py:    result = run_end_to_end_acceptance(fixture)
+scripts/run_mvp_evaluation.py:    raw_results["fixture_sha256"] = hashlib.sha256(FIXTURE_PATH.read_bytes()).hexdigest()
+scripts/run_mvp_evaluation.py:        "benchmark_version": BENCHMARK_VERSION,
+scripts/run_mvp_evaluation.py:    config = {"fixture": str(FIXTURE_PATH.relative_to(ROOT)), "benchmark_version": BENCHMARK_VERSION}
+scripts/run_mvp_evaluation.py:        "benchmark_version": BENCHMARK_VERSION,
+src/searchleads/acceptance/__init__.py:from .end_to_end import AcceptanceRun, EndToEndAcceptanceResult, load_fixture, run_end_to_end_acceptance
+src/searchleads/acceptance/__init__.py:    "load_fixture",
+src/searchleads/acceptance/dental_qualification.py:    if first_decision.qualification_status is not QualificationStatus.QUALIFIED: raise AssertionError('policy path did not qualify expected fixture')
+src/searchleads/acceptance/end_to_end.py:def _run_once(fixture: Mapping[str, Any]) -> AcceptanceRun:
+src/searchleads/acceptance/end_to_end.py:    times = fixture["timestamps"]
+src/searchleads/acceptance/end_to_end.py:            fixture["directory_html"],
+src/searchleads/acceptance/end_to_end.py:        payloads = tuple(fixture["brasilapi_payloads"])
+src/searchleads/acceptance/end_to_end.py:        contact_pages = fixture["contact_pages"]
+src/searchleads/acceptance/end_to_end.py:        email_1 = next(c for c in contact_1.contacts if c.kind is ContactKind.EMAIL and c.value.casefold() == fixture["company_email"].casefold())
+src/searchleads/acceptance/end_to_end.py:        email_2 = next(c for c in contact_2.contacts if c.kind is ContactKind.EMAIL and c.value.casefold() == fixture["company_email"].casefold())
+src/searchleads/acceptance/end_to_end.py:        people_url = fixture["people_page"]["url"]
+src/searchleads/acceptance/end_to_end.py:            people_url, 200, fixture["people_page"]["html"], _dt(times["people"]), {"content-type": "text/html"}
+src/searchleads/acceptance/end_to_end.py:            fixture["lead_id"], structured_1.company.company_id,
+src/searchleads/acceptance/end_to_end.py:def run_end_to_end_acceptance(fixture: Mapping[str, Any]) -> EndToEndAcceptanceResult:
+src/searchleads/acceptance/end_to_end.py:    first = _run_once(fixture)
+src/searchleads/acceptance/end_to_end.py:    second = _run_once(fixture)
+src/searchleads/acceptance/end_to_end.py:def load_fixture(path: str | Path) -> Mapping[str, Any]:
+src/searchleads/acceptance/end_to_end.py:__all__ = ["AcceptanceRun", "EndToEndAcceptanceResult", "load_fixture", "run_end_to_end_acceptance"]
+src/searchleads/company_enrichment/__init__.py:    AGENT,
+src/searchleads/company_enrichment/__init__.py:    USER_AGENT,
+src/searchleads/company_enrichment/__init__.py:    "AGENT",
+src/searchleads/company_enrichment/__init__.py:    "USER_AGENT",
+src/searchleads/company_enrichment/official_location.py:AGENT = "searchleads.company_enrichment.official_location.v1"
+src/searchleads/company_enrichment/official_location.py:USER_AGENT = "searchleads-company-enrichment-v1 (+https://github.com/tihotm/searchleads)"
+src/searchleads/company_enrichment/official_location.py:        headers={"Accept": "text/html,application/xhtml+xml", "User-Agent": USER_AGENT},
+src/searchleads/company_enrichment/official_location.py:                agent=AGENT,
+src/searchleads/company_enrichment/official_location.py:    "AGENT",
+src/searchleads/company_enrichment/official_location.py:    "USER_AGENT",
+src/searchleads/contact_discovery/__init__.py:    AGENT,
+src/searchleads/contact_discovery/__init__.py:    USER_AGENT,
+src/searchleads/contact_discovery/__init__.py:    "AGENT",
+src/searchleads/contact_discovery/__init__.py:    "USER_AGENT",
+src/searchleads/contact_discovery/company_page.py:AGENT = "searchleads.contact_discovery.company_page.v1"
+src/searchleads/contact_discovery/company_page.py:USER_AGENT = "searchleads-contact-discovery-v1 (+https://github.com/tihotm/searchleads)"
+src/searchleads/contact_discovery/company_page.py:        headers={"Accept": "text/html,application/xhtml+xml", "User-Agent": USER_AGENT},
+src/searchleads/contact_validation/publication.py:from itertools import combinations
+src/searchleads/domain/provenance.py:    agent: str | None = None
+src/searchleads/entity_resolution/company.py:from itertools import combinations
+src/searchleads/external_providers/apify.py:_AGENT="searchleads.external_providers.apify_google_search.v1"
+src/searchleads/external_providers/apify.py:        payload=self._transport(url,{"Accept":"application/json","Content-Type":"application/json","Authorization":f"Bearer {token.strip()}","User-Agent":"searchleads/clean-apify-v1"},_canonical_json_bytes(dict(run_input)),timeout_seconds)
+src/searchleads/external_providers/apify.py:            wrapped={"provider":"apify","actor_id":actor,"agent":_AGENT,"item":dict(raw_item)}
+src/searchleads/field_fusion/__init__.py:    ACTIVITY, AGENT, RESOLUTION_METHOD, FusionOutcome, FusionStatus, ValueSupport,
+src/searchleads/field_fusion/__init__.py:__all__=["ACTIVITY","AGENT","RESOLUTION_METHOD","FusionOutcome","FusionStatus","ValueSupport","fuse_candidate_facts","fuse_persisted_candidates","naive_majority_value","persist_fusion_outcome"]
+src/searchleads/field_fusion/company.py:AGENT = "searchleads.field_fusion.company.v1"
+src/searchleads/field_fusion/company.py:        agent=AGENT,
+src/searchleads/gap_automation/execution.py:reassessment. It is not a background scheduler, generic workflow engine,
+src/searchleads/operational.py:    EXPERIMENTAL_ONLY = "EXPERIMENTAL_ONLY"
+src/searchleads/person_discovery/__init__.py:    AGENT,
+src/searchleads/person_discovery/__init__.py:    "AGENT", "NAME_FIELD", "ROLE_FIELD", "CompanyPeopleSource", "PersonAcquisitionError",
+src/searchleads/person_discovery/company_people.py:AGENT = "searchleads.person_discovery.company_people.v1"
+src/searchleads/person_discovery/company_people.py:        "discover-person-role-from-company-page-v1", evidence.captured_at, AGENT,
+src/searchleads/person_entity_resolution/__init__.py:    NAME_FIELD, ROLE_FIELD, EvidenceSignal, ExperimentalAutoMatchMetrics, LabeledPersonPair,
+src/searchleads/person_entity_resolution/__init__.py:    PersonTriageDecision, compare_person_features, evaluate_experimental_auto_match,
+src/searchleads/person_entity_resolution/__init__.py:    evaluate_person_resolution, is_experimental_profile_name_auto_candidate,
+src/searchleads/person_entity_resolution/__init__.py:    "NAME_FIELD", "ROLE_FIELD", "EvidenceSignal", "ExperimentalAutoMatchMetrics", "LabeledPersonPair",
+src/searchleads/person_entity_resolution/__init__.py:    "PersonTriageDecision", "compare_person_features", "evaluate_experimental_auto_match",
+src/searchleads/person_entity_resolution/__init__.py:    "evaluate_person_resolution", "is_experimental_profile_name_auto_candidate",
+src/searchleads/person_entity_resolution/person.py:class ExperimentalAutoMatchMetrics:
+src/searchleads/person_entity_resolution/person.py:def is_experimental_profile_name_auto_candidate(left: PersonRecord, right: PersonRecord) -> bool:
+src/searchleads/person_entity_resolution/person.py:def evaluate_experimental_auto_match(pairs: Iterable[LabeledPersonPair]) -> ExperimentalAutoMatchMetrics:
+src/searchleads/person_entity_resolution/person.py:        if is_experimental_profile_name_auto_candidate(pair.left, pair.right):
+src/searchleads/person_entity_resolution/person.py:    return ExperimentalAutoMatchMetrics(len(items), same, distinct, matches, tp, fp, precision, recall, false_merge)
+src/searchleads/person_entity_resolution/person.py:    "ExperimentalAutoMatchMetrics", "PersonResolutionMetrics", "person_record_from_observation",
+src/searchleads/person_entity_resolution/person.py:    "compare_person_features", "is_experimental_profile_name_auto_candidate", "triage_person_pair",
+src/searchleads/person_entity_resolution/person.py:    "evaluate_experimental_auto_match", "evaluate_person_resolution",
+src/searchleads/release_hygiene.py:_EXPERIMENTAL_DEPENDENCY_MODULES = {
+src/searchleads/release_hygiene.py:            if module in _EXPERIMENTAL_DEPENDENCY_MODULES:
+src/searchleads/release_hygiene.py:                        "EXPERIMENTAL_DEPENDENCY_IN_PRODUCTION",
+src/searchleads/release_hygiene.py:                        f"production source imports experimental dependency: {module}",
+src/searchleads/repeatable_discovery/serpro_offices.py:_AGENT = "searchleads.repeatable_discovery.serpro_offices.v1"
+src/searchleads/repeatable_discovery/serpro_offices.py:            {"recipe_id": RECIPE_ID, "agent": _AGENT, "content_type": "text/html"},
+src/searchleads/sources/__init__.py:    USER_AGENT as BRASILAPI_USER_AGENT,
+src/searchleads/sources/__init__.py:    "BRASILAPI_USER_AGENT",
+src/searchleads/sources/brasilapi.py:USER_AGENT = "searchleads-real-source-v1 (+https://github.com/tihotm/searchleads)"
+src/searchleads/sources/brasilapi.py:_AGENT = "searchleads.sources.brasilapi.v1"
+src/searchleads/sources/brasilapi.py:        headers={"Accept": "application/json", "User-Agent": USER_AGENT},
+src/searchleads/sources/brasilapi.py:    """Acquire one BrasilAPI response with an explicit identifying User-Agent."""
+src/searchleads/sources/brasilapi.py:                agent=_AGENT,
+tests/experimental/test_chassis_bakeoff_adversarial.py:FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "company_er_v1.json"
+tests/experimental/test_chassis_bakeoff_adversarial.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/experimental/test_chassis_bakeoff_cnpj.py:def test_cnpj_challengers_are_compared_against_current_official_format() -> None:
+tests/experimental/test_chassis_bakeoff_cnpj.py:    print("CNPJ_VALIDATION_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_cnpj.py:    # The experiment deliberately does not assert which implementation wins.
+tests/experimental/test_chassis_bakeoff_cnpj.py:    # It only requires each challenger to produce a determinate result for all
+tests/experimental/test_chassis_bakeoff_cnpj.py:    print("CNPJ_ACQUISITION_GUARD_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_dependency_contract.py:        pytest.skip("external chassis dependencies are installed only in the bake-off workflow", allow_module_level=True)
+tests/experimental/test_chassis_bakeoff_dependency_contract.py:def test_bakeoff_dependency_versions_are_exact_and_reproducible() -> None:
+tests/experimental/test_chassis_bakeoff_dependency_contract.py:    print("dependency_resolution_is_part_of_experiment=YES")
+tests/experimental/test_chassis_bakeoff_external_canonical.py:from itertools import product
+tests/experimental/test_chassis_bakeoff_external_canonical.py:DATASET = ROOT / ".external" / "dedupe" / "benchmarks" / "benchmarks" / "datasets"
+tests/experimental/test_chassis_bakeoff_external_canonical.py:    pytest.skip("pinned Dedupe canonical dataset is only checked out in the chassis workflow", allow_module_level=True)
+tests/experimental/test_chassis_bakeoff_external_canonical.py:    print("EXTERNAL_CANONICAL_ER_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_external_regression.py:from itertools import product
+tests/experimental/test_chassis_bakeoff_external_regression.py:DATASET = ROOT / ".external" / "dedupe" / "benchmarks" / "benchmarks" / "datasets"
+tests/experimental/test_chassis_bakeoff_external_regression.py:        "pinned Dedupe canonical dataset is only checked out in the chassis workflow",
+tests/experimental/test_chassis_bakeoff_external_regression.py:    print("EXTERNAL_REGRESSION_ER_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py:    """Experimental sidecar preserving SearchLeads raw-Evidence identity for FTM statements."""
+tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py:        content_digest="sha256:fixture",
+tests/experimental/test_chassis_bakeoff_ftm_evidence_bridge.py:        content_digest="sha256:fixture-2",
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:@pytest.fixture()
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:    dataset = Dataset.make({"name": "searchleads_bakeoff", "title": "SearchLeads bake-off"})
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:    dataset = Dataset.make({"name": "searchleads_bakeoff", "title": "SearchLeads bake-off"})
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:    dataset = Dataset.make({"name": "searchleads_bakeoff", "title": "SearchLeads bake-off"})
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:def test_chassis_bakeoff_capability_scorecard() -> None:
+tests/experimental/test_chassis_bakeoff_ftm_nomenklatura.py:    print("CHASSIS_BAKEOFF_V2")
+tests/experimental/test_chassis_bakeoff_matching.py:FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "company_er_v1.json"
+tests/experimental/test_chassis_bakeoff_matching.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/experimental/test_chassis_bakeoff_matching.py:def test_company_er_challenger_uses_same_labels_and_calibrates_without_holdout_labels() -> None:
+tests/experimental/test_chassis_bakeoff_matching.py:    challenger_holdout = _at_threshold(holdout, scores, selected_threshold)
+tests/experimental/test_chassis_bakeoff_matching.py:    print("CHASSIS_ER_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_matching.py:    print("ground_truth=tests/fixtures/company_er_v1.json pairs=54 calibration=18 holdout=36")
+tests/experimental/test_chassis_bakeoff_matching.py:    print("challenger=Nomenklatura LogicV2 4.14.0 local_training=none")
+tests/experimental/test_chassis_bakeoff_matching.py:    print("baseline_holdout_independence=NOT_CERTIFIED (SearchLeads fixture predates this split)")
+tests/experimental/test_chassis_bakeoff_matching.py:    print(f"nomenklatura_holdout_tuned {_fmt(challenger_holdout)}")
+tests/experimental/test_chassis_bakeoff_matching.py:def test_company_er_challenger_reports_error_categories_without_asserting_a_winner() -> None:
+tests/experimental/test_chassis_bakeoff_matching.py:    # The experiment is discovery-oriented. It must not encode the desired winner
+tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py:FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "company_er_v1.json"
+tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py:def test_nomenklatura_algorithm_bakeoff_uses_common_calibration_and_holdout() -> None:
+tests/experimental/test_chassis_bakeoff_nomenklatura_algorithms.py:    print("NOMENKLATURA_ALGORITHM_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_normalization.py:FIXTURE = Path(__file__).parents[1] / "fixtures" / "company_name_normalization_bakeoff_v1.json"
+tests/experimental/test_chassis_bakeoff_normalization.py:        fact_id="fact:normalization-bakeoff",
+tests/experimental/test_chassis_bakeoff_normalization.py:        subject_id="company:normalization-bakeoff",
+tests/experimental/test_chassis_bakeoff_normalization.py:        evidence_ids=("evidence:normalization-bakeoff",),
+tests/experimental/test_chassis_bakeoff_normalization.py:        provenance_id="provenance:normalization-bakeoff",
+tests/experimental/test_chassis_bakeoff_normalization.py:    data = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/experimental/test_chassis_bakeoff_normalization.py:    print("COMPANY_NAME_NORMALIZATION_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_normalization.py:    # The benchmark records the trade-off; it deliberately does not require the
+tests/experimental/test_chassis_bakeoff_normalization_er_impact.py:FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "company_er_v1.json"
+tests/experimental/test_chassis_bakeoff_normalization_er_impact.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/experimental/test_chassis_bakeoff_person_relationship_migration.py:    """Experimental identity shape with no organization context."""
+tests/experimental/test_chassis_bakeoff_person_relationship_migration.py:    """Experimental SearchLeads relationship with mandatory raw-evidence references."""
+tests/experimental/test_chassis_bakeoff_person_relationship_model.py:    return Dataset.make({"name": "searchleads_relationship_bakeoff", "title": "SearchLeads relationship bake-off"})
+tests/experimental/test_chassis_bakeoff_person_relationship_model.py:        source_id="source:relationship-bakeoff",
+tests/experimental/test_chassis_bakeoff_professional_registration_model.py:    """Experimental SearchLeads registration status, independent of person identity/company relation."""
+tests/experimental/test_chassis_bakeoff_professional_registration_model.py:            "name": "searchleads_registration_bakeoff",
+tests/experimental/test_chassis_bakeoff_provenance.py:    dataset = Dataset.make({"name": "bakeoff", "title": "Bake-off"})
+tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py:        source_id="source:aggregate-bakeoff",
+tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py:        evidence_id="evidence:aggregate-bakeoff",
+tests/experimental/test_chassis_bakeoff_relationship_aggregate_model.py:    dataset = Dataset.make({"name": "aggregate_bakeoff", "title": "Aggregate bake-off"})
+tests/experimental/test_chassis_bakeoff_relationship_persistence.py:    """Experimental sidecar store; deliberately not production persistence."""
+tests/experimental/test_chassis_bakeoff_runtime.py:        gap_id="gap:runtime-bakeoff",
+tests/experimental/test_chassis_bakeoff_runtime.py:        action_id="action:runtime-bakeoff",
+tests/experimental/test_chassis_bakeoff_runtime.py:        cache_key="runtime-bakeoff:company:1",
+tests/experimental/test_chassis_bakeoff_runtime.py:        company_id="company:runtime-bakeoff",
+tests/experimental/test_chassis_bakeoff_runtime.py:    queue = await RequestQueue.open(name="searchleads-runtime-bakeoff", storage_client=storage)
+tests/experimental/test_chassis_bakeoff_runtime.py:        name="runtime-persistence-bakeoff",
+tests/experimental/test_chassis_bakeoff_runtime.py:        name="runtime-persistence-bakeoff",
+tests/experimental/test_chassis_bakeoff_runtime.py:    await crawler.run(["https://example.invalid/runtime-bakeoff"])
+tests/experimental/test_chassis_bakeoff_runtime.py:    # outcome benchmarks above and future durability/load tests decide adoption.
+tests/experimental/test_chassis_bakeoff_runtime_concurrency.py:def test_runtime_scheduling_concurrency_bakeoff() -> None:
+tests/experimental/test_chassis_bakeoff_runtime_concurrency.py:    print("RUNTIME_CONCURRENCY_BAKEOFF_V1")
+tests/experimental/test_chassis_bakeoff_runtime_scope.py:def test_crawler_challenger_is_not_a_generic_business_action_executor() -> None:
+tests/experimental/test_chassis_bakeoff_runtime_scope.py:    print("network_acquisition_actions_to_challenger=YES_CANDIDATE")
+tests/experimental/test_chassis_bakeoff_runtime_scope.py:    print("contact_publication_validation_to_challenger=NO")
+tests/experimental/test_chassis_bakeoff_runtime_scope.py:    print("dental_qualification_to_challenger=NO")
+tests/experimental/test_chassis_bakeoff_runtime_scope.py:    print("crawler_becomes_business_workflow_engine=NO")
+tests/experimental/test_chassis_bakeoff_runtime_sessions.py:    # this assertion only fixes the experiment's safety boundary.
+tests/experimental/test_chassis_bakeoff_runtime_throttling.py:    # future policy change is explicitly benchmarked and accepted.
+tests/experimental/test_chassis_bakeoff_yente_application.py:CURRENT_CORE_BAKEOFF = {
+tests/experimental/test_chassis_bakeoff_yente_application.py:    print("latest_core_bakeoff_stack_is_intentionally_separate=YES")
+tests/experimental/test_chassis_bakeoff_yente_application.py:def test_yente_exact_pins_prevent_silent_upgrade_to_current_core_bakeoff() -> None:
+tests/experimental/test_chassis_bakeoff_yente_application.py:        assert CURRENT_CORE_BAKEOFF[package] != pinned_version
+tests/experimental/test_chassis_bakeoff_yente_application.py:    for package, current_version in CURRENT_CORE_BAKEOFF.items():
+tests/experimental/test_chassis_bakeoff_yente_application.py:            f"core_bakeoff={current_version} exact_pin_conflict=YES"
+tests/experimental/test_measurement_metrics.py:        scope="er-benchmark",
+tests/experimental/test_measurement_metrics.py:    assert payload["scope"] == "er-benchmark"
+tests/test_brasilapi.py:    USER_AGENT,
+tests/test_brasilapi.py:        {"content-type": "application/json", "x-test": "fixture"},
+tests/test_brasilapi.py:def test_request_has_explicit_user_agent_and_json_accept_header() -> None:
+tests/test_brasilapi.py:    assert request.get_header("User-agent") == USER_AGENT
+tests/test_company_enrichment.py:FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "company_enrichment_v1.json").read_text(encoding="utf-8"))
+tests/test_company_enrichment.py:BRASILIA = next(item for item in FIXTURE["valid_cases"] if item["name"] == "brasilia_current")
+tests/test_company_enrichment.py:    calibration = FIXTURE["current_calibration"]
+tests/test_company_enrichment.py:@pytest.mark.parametrize("case", FIXTURE["valid_cases"], ids=lambda item: item["name"])
+tests/test_company_enrichment.py:@pytest.mark.parametrize("case", FIXTURE["reject_cases"], ids=lambda item: item["name"])
+tests/test_company_enrichment.py:    case = next(item for item in FIXTURE["valid_cases"] if item["name"] == "optional_fields_absent")
+tests/test_contact_discovery.py:    USER_AGENT,
+tests/test_contact_discovery.py:def test_http_get_success_uses_explicit_user_agent(monkeypatch) -> None:
+tests/test_contact_discovery.py:        seen["ua"] = request.get_header("User-agent"); seen["accept"] = request.get_header("Accept"); return Response()
+tests/test_contact_discovery.py:    assert seen["ua"] == USER_AGENT
+tests/test_contact_discovery.py:def test_curated_contact_benchmark_exact_metrics() -> None:
+tests/test_contact_discovery.py:    scenarios = json.loads((Path(__file__).parent / "fixtures" / "contact_discovery_v1.json").read_text(encoding="utf-8"))
+tests/test_contact_validation.py:def test_benchmark_exact_metrics():
+tests/test_contact_validation.py: cases=json.loads((Path(__file__).parent/'fixtures'/'contact_validation_v1.json').read_text()); tp=fp=tn=fn=0
+tests/test_dental_qualification_benchmark.py:@pytest.mark.xfail(reason="TEST_OBSOLETE: exact contract benchmark has been superseded by aggregate qualification analysis")
+tests/test_dental_qualification_benchmark.py:def test_benchmark_exact_contract_routing():
+tests/test_discovery_coverage.py:DATA=json.loads((ROOT/'tests/fixtures/discovery_coverage_v1.json').read_text())
+tests/test_end_to_end_acceptance.py:from searchleads.acceptance import load_fixture, run_end_to_end_acceptance
+tests/test_end_to_end_acceptance.py:FIXTURE_PATH = ROOT / "tests" / "fixtures" / "end_to_end_acceptance_v1.json"
+tests/test_end_to_end_acceptance.py:def fixture() -> dict:
+tests/test_end_to_end_acceptance.py:    return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+tests/test_end_to_end_acceptance.py:    result = run_end_to_end_acceptance(load_fixture(FIXTURE_PATH))
+tests/test_end_to_end_acceptance.py:    run = run_end_to_end_acceptance(fixture()).first
+tests/test_end_to_end_acceptance.py:    result = run_end_to_end_acceptance(fixture())
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    data = fixture()
+tests/test_end_to_end_acceptance.py:    result = e2e.run_end_to_end_acceptance(fixture())
+tests/test_end_to_end_acceptance.py:        e2e._run_once(fixture())
+tests/test_end_to_end_acceptance.py:        e2e._run_once(fixture())
+tests/test_end_to_end_acceptance.py:        e2e._run_once(fixture())
+tests/test_end_to_end_acceptance.py:        e2e._run_once(fixture())
+tests/test_entity_resolution.py:FIXTURE = Path(__file__).parent / "fixtures" / "company_er_v1.json"
+tests/test_entity_resolution.py:    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+tests/test_entity_resolution.py:@pytest.fixture(scope="module")
+tests/test_entity_resolution.py:def test_fixture_is_balanced_and_contains_hard_negatives(pairs) -> None:
+tests/test_entity_resolution.py:def test_clean_benchmark_metrics_are_reproducible_exactly(pairs) -> None:
+tests/test_field_fusion.py:    ACTIVITY, AGENT, RESOLUTION_METHOD, FusionOutcome, FusionStatus,
+tests/test_field_fusion.py:FIXTURE=Path(__file__).parent/'fixtures'/'field_fusion_v1.json'
+tests/test_field_fusion.py:    assert out.provenance.activity==ACTIVITY and out.provenance.agent==AGENT
+tests/test_field_fusion.py:def test_benchmark_conservative_policy_exact_numbers():
+tests/test_field_fusion.py:    scenarios=json.loads(FIXTURE.read_text(encoding='utf-8'))
+tests/test_field_fusion.py:def test_benchmark_majority_exact_failure_numbers():
+tests/test_field_fusion.py:    scenarios=json.loads(FIXTURE.read_text(encoding='utf-8'))
+tests/test_gap_automation.py:CASES=json.loads((ROOT/'tests'/'fixtures'/'gap_automation_v1.json').read_text())
+tests/test_measurement.py:    report=build_measurement_report(scope='CALIBRATION_FIXTURE',discovery=compute_discovery_metrics(['a'],universe_entity_ids=['a']),entity_resolution=compute_entity_resolution_metrics(1,0,1,0),enrichment=compute_enrichment_metrics([],[]),contacts=compute_contact_metrics([],owner_ids=[]),qualification=compute_qualification_metrics({}),operation=compute_operational_metrics())
+tests/test_measurement.py:    assert report.to_json()==report.to_json(); payload=json.loads(report.to_json()); assert payload['scope']=='CALIBRATION_FIXTURE' and payload['schema_version']=='searchleads_measurement_v1'
+tests/test_person_discovery.py:def test_curated_person_role_benchmark_exact_metrics() -> None:
+tests/test_person_discovery.py:    scenarios = json.loads((Path(__file__).parent / "fixtures" / "person_role_discovery_v1.json").read_text(encoding="utf-8"))
+tests/test_person_entity_resolution.py:    compare_person_features, evaluate_experimental_auto_match, evaluate_person_resolution,
+tests/test_person_entity_resolution.py:    is_experimental_profile_name_auto_candidate, person_record_from_observation, triage_person_pair,
+tests/test_person_entity_resolution.py:DATA=json.loads((ROOT/'tests/fixtures/person_er_v1.json').read_text(encoding='utf-8'))
+tests/test_person_entity_resolution.py:    exp=evaluate_experimental_auto_match(items)
+tests/test_person_entity_resolution.py:        assert is_experimental_profile_name_auto_candidate(p.left,p.right)
+tests/test_person_entity_resolution.py:    assert not is_experimental_profile_name_auto_candidate(find('p08').left,find('p08').right)
+tests/test_person_entity_resolution.py:    assert not is_experimental_profile_name_auto_candidate(find('p09').left,find('p09').right)
+tests/test_person_entity_resolution.py:    exp=evaluate_experimental_auto_match(())
+tests/test_pilot_v0_fixture.py:# Development-only fixture. These values exercise the sequential preflight path
+tests/test_pilot_v0_fixture.py:def test_pilot_v0_fixture_exercises_authorized_preflight_path():
+tests/test_pilot_v0_fixture.py:def test_pilot_v0_fixture_remains_fail_closed_when_test_authority_is_missing():
+tests/test_release_hygiene.py:            "docs/example.md": "mentions crawlee as optional experimental breadth",
+tests/test_release_hygiene.py:def test_repository_hygiene_blocks_experimental_dependency_in_production() -> None:
+tests/test_release_hygiene.py:    assert assessment.violations[0].code == "EXPERIMENTAL_DEPENDENCY_IN_PRODUCTION"
+tests/test_repeatable_web_discovery.py:FIXTURE=ROOT/'fixtures'/'repeatable_web_discovery_v1.json'
+tests/test_repeatable_web_discovery.py:DATA=json.loads(FIXTURE.read_text(encoding='utf-8'))
+tests/test_repeatable_web_discovery.py:@pytest.mark.parametrize('scenario', DATA['benchmark'], ids=lambda x:x['id'])
+tests/test_selective_review.py:CASES=json.loads((ROOT/'fixtures'/'selective_review_v1.json').read_text(encoding='utf-8'))

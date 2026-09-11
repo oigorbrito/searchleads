@@ -1,0 +1,1 @@
+C:\Users\Igor B\AppData\Local\Programs\Python\Python313\python.exe: No module named pytest

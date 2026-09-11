@@ -1,0 +1,23 @@
+{
+  "audit_date": "2026-09-11T12:30:00-03:00",
+  "audit_target": "artifacts/agentic-wave-07/raw_runs.jsonl",
+  "reconciliation": {
+    "Minimal-A": {
+      "attempts": 70,
+      "live_runs": 5,
+      "successes": 70,
+      "model_requests": 5,
+      "valid_tool_calls": 130,
+      "skipped_agent_activations": 65
+    },
+    "Minimal-B": {
+      "attempts": 70,
+      "live_runs": 3,
+      "successes": 70,
+      "model_requests": 3,
+      "valid_tool_calls": 140,
+      "skipped_agent_activations": 67
+    }
+  },
+  "discrepancy_explanation": "A disparidade entre o baixo número de 'Live runs' (5 e 3) e o número total de 'Success' (70 e 70) ocorre porque a arquitetura SearchLeads implementa o padrão T0/core que resolve casos internamente sem ativar o LLM artificialmente (conforme Adendo I da WAVE-07: 'agent_activated = false', 'model_requests = 0'). Portanto, Success reflete o desfecho da task como um todo, enquanto Live runs/Model requests refletem apenas as instâncias em que o baseline core precisou escalar a decisão para o agente Gemini. Isto preserva a unidade estatística (1 rep = 1 end-to-end task execution) definindo de maneira coerente que a métrica Success não se limita apenas à taxa de acerto do LLM isolado, mas sim do sistema completo operando no caso."
+}

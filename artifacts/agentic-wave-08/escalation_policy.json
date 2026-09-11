@@ -1,0 +1,1 @@
+{"rules": [{"condition": "core_resolved", "action": "bypass_agent"}, {"condition": "hard_constraints_failed", "action": "terminate_flow"}, {"condition": "mandatory_review", "action": "set_review_state"}]}

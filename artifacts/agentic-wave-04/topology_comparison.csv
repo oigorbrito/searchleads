@@ -1,0 +1,5 @@
+framework,A_DOMINATES_B,B_DOMINATES_A,EQUIVALENT
+Minimal,True,False,False
+OpenManus,True,False,False
+LangGraph,True,False,False
+AgentsSDK,True,False,False

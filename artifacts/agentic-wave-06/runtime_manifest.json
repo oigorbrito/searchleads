@@ -1,0 +1,11 @@
+{
+  "ollama": {
+    "installed": false
+  },
+  "lmstudio": {
+    "installed": false
+  },
+  "vllm": {
+    "installed": false
+  }
+}

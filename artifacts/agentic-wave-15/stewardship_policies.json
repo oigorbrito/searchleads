@@ -1,0 +1,30 @@
+{
+  "Champion_Challenger": "Challenger never substitutes champion automatically. Requires required level execution, invariant preservation, divergence comparison, cost/latency check, and documented promotion.",
+  "Frozen_Corpus": "Never overwrite previous benchmark corpus, gold set, or scorer. Changes require dataset_vN+1 with new hash and rationale.",
+  "Prompt_Versioning": [
+    "version",
+    "SHA-256",
+    "author/change source",
+    "rationale",
+    "timestamp",
+    "associated certification"
+  ],
+  "Tool_Contract_Versioning": [
+    "old schema hash",
+    "new schema hash",
+    "compatibility classification",
+    "authority delta",
+    "side-effect delta",
+    "required revalidation level"
+  ],
+  "Model_Provider_Fingerprint": [
+    "provider",
+    "model ID",
+    "endpoint class",
+    "SDK version",
+    "provider-path",
+    "runtime configuration",
+    "temperature",
+    "token limits"
+  ]
+}

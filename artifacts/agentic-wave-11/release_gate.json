@@ -1,0 +1,11 @@
+{
+  "CODE_READY": "PASS",
+  "LIVE_CERTIFIED": "PASS",
+  "AGENTIC_RELEASE_READY": "PASS",
+  "SEND_READY": "NOT_IMPLIED",
+  "conditions": {
+    "CODE_READY": "canonical suite and security gates PASS",
+    "LIVE_CERTIFIED": "all mandatory live probes PASS",
+    "AGENTIC_RELEASE_READY": "CODE_READY + LIVE_CERTIFIED + rollback validated + default OFF"
+  }
+}

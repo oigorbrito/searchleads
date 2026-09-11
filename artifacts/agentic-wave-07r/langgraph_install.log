@@ -1,0 +1,4 @@
+Command: python -m venv .venv-exp-langgraph && .venv-exp-langgraph\Scripts\activate.bat && python -m pip install -U pip setuptools wheel && python -m pip install langgraph && python -m pip check
+Result: OK
+Import test: LANGGRAPH_IMPORT_OK
+Provider path: google-genai integration (langchain-google-genai)

@@ -1,0 +1,23 @@
+{
+  "tool_name": "searchleads_evaluate",
+  "arguments_schema": {
+    "type": "object",
+    "properties": {
+      "left": {
+        "type": "object"
+      },
+      "right": {
+        "type": "object"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "string"
+  },
+  "side_effects": [
+    "cache_read",
+    "ledger_write"
+  ],
+  "authority_boundary": "SearchLeads domain authority; agent cannot mutate state directly",
+  "determinism": true
+}

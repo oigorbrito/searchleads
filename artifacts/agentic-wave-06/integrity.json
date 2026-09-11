@@ -1,0 +1,6 @@
+{
+  "dataset_sha256": "ae15a3f1bf288fcddafc34d8644f2baf3141458b8b7f20f4d2ff83a2abd9fd2d",
+  "prompt_sha256": "c6d55a1a6581c6222215cc084d3b728c707470fec18b78c5432a58257812a7f5",
+  "tool_contract_sha256": "hash_placeholder",
+  "adapter_contract_sha256": "hash_placeholder"
+}

@@ -1,0 +1,61 @@
+{
+  "R0_No_revalidation": {
+    "applies_to": [
+      "documentation",
+      "comments",
+      "refactor without contract change"
+    ],
+    "requires": [
+      "canonical regression"
+    ]
+  },
+  "R1_Smoke_revalidation": {
+    "applies_to": [
+      "small compatible changes"
+    ],
+    "requires": [
+      "canonical regression",
+      "provider smoke",
+      "tool smoke",
+      "authority probe",
+      "deterministic bypass probe"
+    ]
+  },
+  "R2_Targeted_recertification": {
+    "applies_to": [
+      "prompt material change",
+      "provider SDK change",
+      "compatible tool schema change",
+      "policy/budget change"
+    ],
+    "requires": [
+      "frozen corpus subset",
+      "C1/C2/C3/C5/C6",
+      "failure injection",
+      "authority checks",
+      "cost/latency comparison",
+      "rollback"
+    ]
+  },
+  "R3_Full_recertification": {
+    "applies_to": [
+      "model change",
+      "authority change",
+      "side-effect change",
+      "major core change",
+      "safety incident",
+      "repeated drift",
+      "SEND_READY integration change"
+    ],
+    "requires": [
+      "full frozen corpus",
+      "repeated live runs",
+      "safety probes",
+      "replay",
+      "cost",
+      "operational regression",
+      "rollback",
+      "release gate"
+    ]
+  }
+}

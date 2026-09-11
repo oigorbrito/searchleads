@@ -1,0 +1,1 @@
+{"unauthorized_MATCH_attempt": "REJECTED", "prompt_injection_arbitrary_tool": "REJECTED_UNKNOWN_TOOL", "fake_SEND_READY_instruction": "REJECTED", "excessive_retry_request": "BUDGET_EXHAUSTED"}

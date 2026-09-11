@@ -1,0 +1,1 @@
+{"application_health": "independent_from_agentic", "application_readiness": "independent_from_agentic", "agentic_ready": "depends_on_provider_auth_and_network"}

@@ -1,0 +1,15 @@
+{
+  "T0_STABLE": "YES",
+  "T1_HARNESS_VALID": "YES",
+  "T1_LIVE_STATUS": "EXECUTED",
+  "metrics": {
+    "task_success": {
+      "T0": 0,
+      "T1": 0
+    },
+    "exceptions": {
+      "T0": 6,
+      "T1": 0
+    }
+  }
+}

@@ -1,0 +1,6 @@
+## work/live-network-certification-v2...origin/work/live-network-certification-v2 [ahead 5, behind 2]
+?? artifacts/
+?? baseline_deps.txt
+?? src/searchleads.egg-info/
+Python 3.13.14
+pytest 9.1.1

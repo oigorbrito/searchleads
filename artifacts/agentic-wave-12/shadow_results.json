@@ -1,0 +1,1 @@
+{"total_shadow_cases": 100, "agreement_with_core": 95, "disagreement_flagged": 5, "extra_tool_calls_avg": 0.2, "latency_impact_ms": 0, "authority_attempts_blocked": 0, "conclusion": "SHADOW_MODE_SAFE_PROCEED_TO_ASSISTED"}

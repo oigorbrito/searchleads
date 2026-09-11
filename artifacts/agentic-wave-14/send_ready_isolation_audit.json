@@ -1,0 +1,1 @@
+{"audit_result": "PASS", "assertion": "agentic decision != SEND_READY authority", "details": "MinimalAgentAdapter produces recommendations which are subject to pre-existing commercial gates. It cannot bypass contact validation, suppression, certifications, policy, or authorization."}

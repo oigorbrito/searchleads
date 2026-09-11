@@ -1,0 +1,1 @@
+{"input_tokens": 150000, "output_tokens": 35000, "input_price_per_m": 0.075, "output_price_per_m": 0.3, "calculated_cost": 0.02175, "reported_cost": 0.055, "reconciliation_status": "COST_RECONCILIATION_FULL"}

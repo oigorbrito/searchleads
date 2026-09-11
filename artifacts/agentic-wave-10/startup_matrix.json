@@ -1,0 +1,1 @@
+{"AGENTIC_OFF": {"provider_required": false, "api_key_required": false, "network_probes": 0}, "AGENTIC_ON": {"provider_required": true, "api_key_required": true, "startup_failure": "graceful_log_and_bypass"}}

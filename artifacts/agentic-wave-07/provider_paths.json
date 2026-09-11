@@ -1,0 +1,10 @@
+{
+  "Minimal-A": "DIRECT_GEMINI",
+  "Minimal-B": "DIRECT_GEMINI",
+  "OpenManus-A": "INSTALLATION_BLOCKED",
+  "OpenManus-B": "INSTALLATION_BLOCKED",
+  "LangGraph-A": "INSTALLATION_BLOCKED",
+  "LangGraph-B": "INSTALLATION_BLOCKED",
+  "AgentsSDK-A": "INSTALLATION_BLOCKED",
+  "AgentsSDK-B": "INSTALLATION_BLOCKED"
+}

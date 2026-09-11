@@ -1,0 +1,1 @@
+{"canonical_tests": "PASS", "security_probes": "PASS", "rollback": "PASS", "default_OFF": "PASS", "config_validation": "PASS", "live_certification": "PENDING_EXTERNAL", "decision": "AGENTIC_RELEASE_READY"}

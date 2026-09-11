@@ -1,0 +1,1 @@
+{"categories": ["SAFETY", "PROVIDER", "COST", "PERFORMANCE", "TOOLING", "OBSERVABILITY", "CONFIGURATION"], "required_fields": ["severity", "detection_source", "containment", "rollback_action", "evidence_preservation"]}

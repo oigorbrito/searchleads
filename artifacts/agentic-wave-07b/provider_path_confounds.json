@@ -1,0 +1,10 @@
+{
+  "TOOL_SCHEMA_CONFOUND": "NO",
+  "tool_parity_check": "Semantically identical tools exposed across all frameworks.",
+  "PROVIDER_PATH_CONFOUND": "YES",
+  "provider_paths": {
+    "Minimal": "DIRECT_GEMINI",
+    "LangGraph": "langchain-google-genai",
+    "AgentsSDK": "custom OpenAI-compatible client (generativelanguage.googleapis.com/v1beta/openai/)"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "dataset_sha256": "ae15a3f1bf288fcddafc34d8644f2baf3141458b8b7f20f4d2ff83a2abd9fd2d",
+  "prompt_sha256": "c6d55a1a6581c6222215cc084d3b728c707470fec18b78c5432a58257812a7f5",
+  "historic_result": "WAVE_AGENT_06 = MODEL_RESOURCE_INCOMPATIBLE",
+  "git_head": "1c792b8556262e884e441266c9ba4ed925ce2d0b"
+}

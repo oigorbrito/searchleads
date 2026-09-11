@@ -1,0 +1,12 @@
+{
+  "ollama": {
+    "installed": false,
+    "running": false,
+    "port": 11434
+  },
+  "lmstudio": {
+    "installed": "Unknown",
+    "running": false,
+    "port": 1234
+  }
+}

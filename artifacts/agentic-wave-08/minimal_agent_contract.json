@@ -1,0 +1,1 @@
+{"ModelProvider": {"methods": ["generate()", "tool_call()", "usage()", "model_id()"], "reference_implementation": "Gemini 3.5 Flash"}}

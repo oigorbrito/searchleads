@@ -1,0 +1,14 @@
+{
+  "LangGraph": {
+    "env_dir": ".venv-exp-langgraph",
+    "python": "3.13.14"
+  },
+  "AgentsSDK": {
+    "env_dir": ".venv-exp-agents-sdk",
+    "python": "3.13.14"
+  },
+  "OpenManus": {
+    "env_dir": ".venv-exp-openmanus",
+    "python": "MISSING_3.12"
+  }
+}

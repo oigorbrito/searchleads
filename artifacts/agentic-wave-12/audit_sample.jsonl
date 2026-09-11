@@ -1,0 +1,1 @@
+{"trace_id": "t-001", "escalation_reason": "conflict", "tool_sequence": ["eval_conflict"], "final_decision": "REVIEW", "authority_compliance": "PASS"}\n{"trace_id": "t-002", "escalation_reason": "ambiguity", "tool_sequence": ["eval_match"], "final_decision": "MATCH", "authority_compliance": "PASS"}\n

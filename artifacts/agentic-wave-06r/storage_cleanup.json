@@ -1,0 +1,7 @@
+{
+  "removed_items": [
+    ".tmp",
+    ".pytest_cache"
+  ],
+  "space_freed_mb": 0
+}

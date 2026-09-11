@@ -1,0 +1,4 @@
+?? .tmp/
+?? artifacts/
+?? baseline_deps.txt
+?? src/searchleads.egg-info/

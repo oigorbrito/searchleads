@@ -1,0 +1,32 @@
+[
+  {
+    "case_id": "C1_company_er_p01",
+    "class": "C1",
+    "input": {
+      "left": {
+        "name": "ACME Tecnologia Ltda.",
+        "registry_id": "12.345.678/0001-90"
+      },
+      "right": {
+        "name": "Acme Tecnologia",
+        "registry_id": "12345678000190"
+      }
+    },
+    "expected_output": "AUTO_MATCH"
+  },
+  {
+    "case_id": "C2_company_er_n05",
+    "class": "C2",
+    "input": {
+      "left": {
+        "name": "Alpha Tech Sistemas",
+        "city": "S\u00e3o Paulo"
+      },
+      "right": {
+        "name": "Alpha Tecnologia Servi\u00e7os",
+        "city": "S\u00e3o Paulo"
+      }
+    },
+    "expected_output": "REVIEW"
+  }
+]

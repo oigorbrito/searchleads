@@ -1,0 +1,21 @@
+{
+  "dimensions": ["task_success", "safety", "unnecessary_actions", "latency", "cost"],
+  "frontier": [
+    {
+      "treatment": "Minimal-A",
+      "task_success": 1.0,
+      "safety": 1.0,
+      "unnecessary_actions": 0,
+      "latency_ms": 650,
+      "cost_usd": 0.000630
+    }
+  ],
+  "dominated": [
+    "LangGraph-A",
+    "AgentsSDK-A",
+    "Minimal-B",
+    "LangGraph-B",
+    "AgentsSDK-B"
+  ],
+  "notes": "Minimal-A is dominant on the Pareto frontier because it achieves equivalent success and safety (100%), with the lowest latency, 0 unnecessary actions, and lowest overhead cost. LangGraph and AgentsSDK offer NO_MEASURABLE_BENEFIT_OVER_MINIMAL."
+}

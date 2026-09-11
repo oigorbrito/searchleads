@@ -1,0 +1,1 @@
+{"fields": ["trace_id", "case_id", "model", "prompt_hash", "reason_for_escalation", "actions", "tools", "observations", "final_state", "authority_attempts", "usage", "latency"], "secrets_policy": "OMIT_ALL_SECRETS"}

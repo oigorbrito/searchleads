@@ -1,0 +1,11 @@
+{
+  "C1": {
+    "T1A_DOMINATES": false,
+    "T1B_DOMINATES": false,
+    "EQUIVALENT_ON_MEASURED_METRICS": true
+  },
+  "C2": {
+    "T1A_DOMINATES": true,
+    "reason": "T1A achieved same task success and correct abstention with fewer actions (1 vs 2) than T1B."
+  }
+}

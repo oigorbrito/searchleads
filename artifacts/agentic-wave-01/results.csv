@@ -1,0 +1,11 @@
+Métrica,T0,T1A,T1B
+task_success,6,6,6
+false_merge,0,0,0
+unsupported_assertion,0,0,0
+correct_abstention,3,3,3
+evidence_integrity_violation,0,0,0
+replay/invariant_violation,0,0,0
+unnecessary_actions,0,0,0
+median_actions,1,1,2
+median_latency,10,12,15
+exceptions,0,0,0

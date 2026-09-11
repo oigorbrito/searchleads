@@ -1,0 +1,1 @@
+{"secret_leakage": "Mitigated", "arbitrary_tool_invocation": "Mitigated via strict allowlist"}

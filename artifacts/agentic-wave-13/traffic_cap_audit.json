@@ -1,0 +1,1 @@
+{"cap_definition": "50 model_requests / hour", "actual_activations_peak": 45, "model_requests_peak": 48, "tool_calls_peak": 60, "audit_result": "CONSISTENT_CAP_APPLIED"}

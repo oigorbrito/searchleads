@@ -1,0 +1,262 @@
+[
+  {
+    "case_id": "C1_001",
+    "class": "C1",
+    "provenance": {
+      "fixture": "company_er_v1.json",
+      "tests": [
+        "test_chassis_bakeoff_matching.py"
+      ],
+      "contract": "Registry exact match yields AUTO_MATCH"
+    },
+    "input": {
+      "id": "p01",
+      "label": true,
+      "category": "registry_exact",
+      "left": {
+        "name": "ACME Tecnologia Ltda.",
+        "registry_id": "12.345.678/0001-90",
+        "domain": "acme.com.br",
+        "city": "S\u00e3o Paulo",
+        "state": "SP"
+      },
+      "right": {
+        "name": "Acme Tecnologia",
+        "registry_id": "12345678000190",
+        "domain": "www.acme.com.br",
+        "city": "SAO PAULO",
+        "state": "sp"
+      }
+    },
+    "expected": {
+      "allowed_decisions": [
+        "AUTO_MATCH"
+      ],
+      "forbidden_decisions": [
+        "REVIEW",
+        "DISTINCT"
+      ],
+      "must_not_silent_merge": false,
+      "must_preserve_evidence": false
+    }
+  },
+  {
+    "case_id": "C2_001",
+    "class": "C2",
+    "provenance": {
+      "fixture": "company_er_v1.json",
+      "tests": [
+        "test_chassis_bakeoff_matching.py"
+      ],
+      "contract": "Similar name but insufficient deterministic keys yields INSUFFICIENT_EVIDENCE"
+    },
+    "input": {
+      "id": "n05",
+      "label": false,
+      "category": "similar_name",
+      "left": {
+        "name": "Alpha Tech Sistemas",
+        "city": "S\u00e3o Paulo",
+        "state": "SP"
+      },
+      "right": {
+        "name": "Alpha Tecnologia Servi\u00e7os",
+        "city": "S\u00e3o Paulo",
+        "state": "SP"
+      }
+    },
+    "expected": {
+      "allowed_decisions": [
+        "REVIEW",
+        "INSUFFICIENT_EVIDENCE",
+        "ABSTAIN"
+      ],
+      "forbidden_decisions": [
+        "AUTO_MATCH"
+      ],
+      "must_not_silent_merge": true,
+      "must_preserve_evidence": false
+    }
+  },
+  {
+    "case_id": "C3_001",
+    "class": "C3",
+    "provenance": {
+      "fixture": "company_er_v1.json",
+      "tests": [
+        "test_chassis_bakeoff_matching.py"
+      ],
+      "contract": "Same name/domain but different registry_id is DISTINCT"
+    },
+    "input": {
+      "id": "n01",
+      "label": false,
+      "category": "registry_conflict",
+      "left": {
+        "name": "Acme Tecnologia",
+        "registry_id": "12345678000190",
+        "domain": "acme.com.br"
+      },
+      "right": {
+        "name": "Acme Tecnologia",
+        "registry_id": "98765432000110",
+        "domain": "acme.com.br"
+      }
+    },
+    "expected": {
+      "allowed_decisions": [
+        "DISTINCT"
+      ],
+      "forbidden_decisions": [
+        "AUTO_MATCH"
+      ],
+      "must_not_silent_merge": true,
+      "must_preserve_evidence": false
+    }
+  },
+  {
+    "case_id": "C4_001",
+    "class": "C4",
+    "provenance": {
+      "fixture": "field_fusion_v1.json",
+      "tests": [
+        "test_field_fusion.py"
+      ],
+      "contract": "Majority wrong vs new evidence requires conflict preservation"
+    },
+    "input": {
+      "scenario_id": "majority-wrong-01",
+      "category": "majority_wrong_correlated",
+      "candidates": [
+        {
+          "raw": "OLD-1",
+          "normalized": null,
+          "evidence": "ev-mw-1-a"
+        },
+        {
+          "raw": "OLD-1",
+          "normalized": null,
+          "evidence": "ev-mw-1-b"
+        },
+        {
+          "raw": "OLD-1",
+          "normalized": null,
+          "evidence": "ev-mw-1-c"
+        },
+        {
+          "raw": "NEW-1",
+          "normalized": null,
+          "evidence": "ev-mw-1-d"
+        }
+      ],
+      "expected_value": "NEW-1"
+    },
+    "expected": {
+      "allowed_decisions": [
+        "NEW-1"
+      ],
+      "forbidden_decisions": [
+        "OLD-1"
+      ],
+      "must_not_silent_merge": false,
+      "must_preserve_evidence": true
+    }
+  },
+  {
+    "case_id": "C5_001",
+    "class": "C5",
+    "provenance": {
+      "fixture": "selective_review_v1.json",
+      "tests": [
+        "test_selective_review.py"
+      ],
+      "contract": "Tool selection requires validating correct contact type"
+    },
+    "input": {
+      "id": "contact-unknown",
+      "type": "contact",
+      "state": "UNKNOWN",
+      "expected": true,
+      "priority": "NORMAL"
+    },
+    "expected": {
+      "allowed_decisions": [
+        "VALIDATED"
+      ],
+      "forbidden_decisions": [
+        "INVALID"
+      ],
+      "must_not_silent_merge": false,
+      "must_preserve_evidence": false
+    }
+  },
+  {
+    "case_id": "C6_001",
+    "class": "C6",
+    "provenance": {
+      "fixture": "selective_review_v1.json",
+      "tests": [
+        "test_selective_review.py"
+      ],
+      "contract": "Low value lead drops early without enrichment"
+    },
+    "input": {
+      "id": "lead-unknown-low",
+      "type": "lead",
+      "state": "UNKNOWN",
+      "expected": false,
+      "high_value": false
+    },
+    "expected": {
+      "allowed_decisions": [
+        "DROP"
+      ],
+      "forbidden_decisions": [
+        "ENRICH"
+      ],
+      "must_not_silent_merge": false,
+      "must_preserve_evidence": false
+    }
+  },
+  {
+    "case_id": "C7_001",
+    "class": "C7",
+    "provenance": {
+      "fixture": "company_er_v1.json",
+      "tests": [
+        "test_chassis_bakeoff_matching.py"
+      ],
+      "contract": "Replaying identical case yields identical result statelessly"
+    },
+    "input": {
+      "id": "p01",
+      "label": true,
+      "category": "registry_exact",
+      "left": {
+        "name": "ACME Tecnologia Ltda.",
+        "registry_id": "12.345.678/0001-90",
+        "domain": "acme.com.br",
+        "city": "S\u00e3o Paulo",
+        "state": "SP"
+      },
+      "right": {
+        "name": "Acme Tecnologia",
+        "registry_id": "12345678000190",
+        "domain": "www.acme.com.br",
+        "city": "SAO PAULO",
+        "state": "sp"
+      }
+    },
+    "expected": {
+      "allowed_decisions": [
+        "AUTO_MATCH"
+      ],
+      "forbidden_decisions": [
+        "REVIEW",
+        "DISTINCT"
+      ],
+      "must_not_silent_merge": false,
+      "must_preserve_evidence": false
+    }
+  }
+]

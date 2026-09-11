@@ -1,0 +1,28 @@
+{
+  "Safety_Fast_Path": {
+    "triggers": [
+      "false merge agentic",
+      "critical authority violation",
+      "SEND_READY bypass",
+      "evidence integrity violation"
+    ],
+    "actions": [
+      "1. enabled=false",
+      "2. preserve traces",
+      "3. confirm zero new model calls",
+      "4. validate core deterministic",
+      "5. classify incident",
+      "6. open R3"
+    ]
+  },
+  "Drift_Fast_Path": {
+    "triggers": [
+      "non-critical drift"
+    ],
+    "actions": [
+      "HOLD before rollback",
+      "investigate data mix, model/provider behavior, prompt/tool drift, incidents, anomalies",
+      "If cause unknown, escalate to R2 or R3"
+    ]
+  }
+}

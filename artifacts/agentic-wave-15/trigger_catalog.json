@@ -1,0 +1,60 @@
+{
+  "MODEL_CHANGE": [
+    "model ID",
+    "model version",
+    "quantization",
+    "provider-side behavior material"
+  ],
+  "PROVIDER_CHANGE": [
+    "API",
+    "SDK",
+    "endpoint",
+    "authentication",
+    "function-calling semantics",
+    "availability characteristics"
+  ],
+  "PROMPT_CHANGE": [
+    "functional prompt",
+    "system instructions"
+  ],
+  "TOOL_CHANGE": [
+    "schema",
+    "side effects",
+    "authority",
+    "output semantics"
+  ],
+  "POLICY_CHANGE": [
+    "escalation policy",
+    "allowlist",
+    "budget",
+    "retry",
+    "timeout",
+    "rollout stage logic"
+  ],
+  "CORE_CHANGE": [
+    "Entity Resolution",
+    "Qualification",
+    "Evidence",
+    "Review/Abstention",
+    "Persistence",
+    "SEND_READY gates"
+  ],
+  "INCIDENT": [
+    "false merge agentic",
+    "critical authority violation",
+    "evidence corruption",
+    "rollback failure",
+    "uncontrolled repeated calls",
+    "security incident"
+  ],
+  "DRIFT_SIGNAL": [
+    "activation rate",
+    "fallback rate",
+    "provider failures",
+    "malformed tool calls",
+    "unnecessary actions",
+    "latency",
+    "cost",
+    "disagreement rate"
+  ]
+}

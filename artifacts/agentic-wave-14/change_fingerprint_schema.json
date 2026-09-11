@@ -1,0 +1,1 @@
+{"model_identifier": "string", "provider_path": "string", "prompt_hash": "string", "tool_contract_hash": "string", "escalation_policy_version": "string", "budget_policy_version": "string", "searchleads_commit": "string", "configuration_version": "string"}

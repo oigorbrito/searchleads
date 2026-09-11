@@ -1,0 +1,1 @@
+{"MODEL_DRIFT": "Change of behavior without SearchLeads changes.", "PROVIDER_DRIFT": "Change in API, latency, availability, or tool semantics.", "PROMPT_DRIFT": "Change of prompt/version.", "TOOL_DRIFT": "Change of schema or tool implementation.", "DATA_DRIFT": "Change in operational mix of cases/evidence.", "POLICY_DRIFT": "Change of escalation, allowlist, or budget."}

@@ -1,0 +1,5 @@
+{
+  "model_identifier": "none",
+  "status": "MODEL_RESOURCE_INCOMPATIBLE",
+  "reason": "Disk free space is 3.44 GB, insufficient to install runtime + 7B/8B model weights required for function calling."
+}

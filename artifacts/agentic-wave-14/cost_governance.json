@@ -1,0 +1,1 @@
+{"daily_cost_tracking": true, "anomaly_detection": true, "budget_ceiling": "TBD", "emergency_cutoff": true, "rule": "Do not link cost to SEND_READY."}
