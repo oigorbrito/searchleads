@@ -1,0 +1,64 @@
+{
+  "wave": "WAVE_AGENT_34",
+  "title": "EXPLICIT_HUMAN_CONFLICT_RESOLUTION",
+  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "scope": {
+    "human_resolution_persistence": true,
+    "exact_bundle_binding": ["audit_id", "bundle_sha256"],
+    "exact_review_set_binding": ["review_ids", "review_set_sha256"],
+    "current_conflict_required_before_record": true,
+    "new_review_invalidates_prior_resolution": "STALE_RESOLUTION",
+    "contradictory_resolutions": "RESOLUTION_CONFLICT",
+    "automatic_conflict_resolution": false,
+    "latest_resolution_is_metadata_only": true
+  },
+  "states": [
+    "NO_RESOLUTION",
+    "RESOLVED",
+    "RESOLUTION_CONFLICT",
+    "STALE_RESOLUTION"
+  ],
+  "artifacts": {
+    "service": "src/searchleads/governance_evidence_review_resolution.py",
+    "cli": "scripts/resolve_governance_evidence_review.py",
+    "service_tests": "tests/test_governance_evidence_review_resolution.py",
+    "cli_tests": "tests/test_governance_evidence_review_resolution_cli.py",
+    "runbook": "docs/GOVERNANCE_EVIDENCE_REVIEW_RESOLUTION_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "persistence_contract": {
+    "immutable_resolution_id": true,
+    "idempotent_exact_replay": true,
+    "payload_sha256_integrity": true,
+    "tamper_detection": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "resolution_is_campaign_authorization": false,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "wave_33_ci_observation": {
+    "run_id": 34670247153,
+    "functional_head": "d00f4ef8b154d1f772333d2b6484089a597f1321",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "steps_observed": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "external_runner_blocker": "BLK-CI-001"
+}
