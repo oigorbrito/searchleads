@@ -1,0 +1,49 @@
+{
+  "wave": "WAVE_AGENT_33",
+  "title": "CONSOLIDATED_HUMAN_REVIEW_STATE",
+  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "scope": {
+    "read_only_consolidation": true,
+    "binding": ["audit_id", "bundle_sha256"],
+    "full_history_preserved": true,
+    "deterministic_latest_review": "max(reviewed_at, review_id)",
+    "automatic_conflict_resolution": false
+  },
+  "states": [
+    "NO_REVIEW",
+    "APPROVED",
+    "REJECTED",
+    "MORE_REVIEW_REQUIRED",
+    "CONFLICT"
+  ],
+  "conflict_semantics": {
+    "distinct_decisions_for_exact_bundle": "CONFLICT",
+    "latest_review_is_metadata_only": true,
+    "latest_review_overrides_conflict": false,
+    "human_resolution_required": true
+  },
+  "artifacts": {
+    "service": "src/searchleads/governance_evidence_review_status.py",
+    "cli": "scripts/show_governance_evidence_review_status.py",
+    "service_tests": "tests/test_governance_evidence_review_status.py",
+    "cli_tests": "tests/test_governance_evidence_review_status_cli.py",
+    "runbook": "docs/GOVERNANCE_EVIDENCE_REVIEW_STATUS_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "review_is_campaign_authorization": false,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "external_runner_blocker": "BLK-CI-001"
+}
