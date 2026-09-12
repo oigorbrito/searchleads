@@ -265,6 +265,22 @@ class GovernanceAuditRepository:
         """Verify the full append-only chain and return the number of valid entries."""
         return len(self.list_entries())
 
+    def load_snapshot_mapping(self, audit_id: str) -> dict[str, Any]:
+        """Return the historical snapshot payload after verifying the full audit chain."""
+        if not audit_id.strip():
+            raise ValueError("audit_id must not be blank")
+        self.verify_chain()
+        row = self._connection.execute(
+            "SELECT snapshot_json FROM governance_snapshot_audit WHERE audit_id = ?",
+            (audit_id,),
+        ).fetchone()
+        if row is None:
+            raise KeyError(audit_id)
+        payload = json.loads(row["snapshot_json"])
+        if not isinstance(payload, dict):
+            raise GovernanceAuditIntegrityError("snapshot payload must be a JSON object")
+        return payload
+
 
 def governance_audit_entry_to_mapping(entry: GovernanceAuditEntry) -> dict[str, Any]:
     return {
