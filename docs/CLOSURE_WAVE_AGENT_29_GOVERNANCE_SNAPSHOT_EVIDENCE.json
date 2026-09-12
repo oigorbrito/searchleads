@@ -1,0 +1,71 @@
+{
+  "wave": "WAVE_AGENT_29",
+  "mission": "produce one read-only auditable operational snapshot from persisted governance state, including exact gate status, provenance and blocking rationale, without campaign dispatch",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "baseline_main_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "historical_handoff_sha_status": {
+    "sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+    "connected_repository_resolution": "UNRESOLVED"
+  },
+  "implemented": {
+    "snapshot_service": "src/searchleads/governance_snapshot.py",
+    "service_tests": "tests/test_governance_snapshot.py",
+    "cli": "scripts/show_governance_snapshot.py",
+    "cli_tests": "tests/test_governance_snapshot_cli.py",
+    "runbook": "docs/GOVERNANCE_SNAPSHOT_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "snapshot_contract": {
+    "operational_gates": [
+      "EXT-BRASILAPI-001",
+      "LEGAL-001",
+      "EXT-CFO-001",
+      "AUTH-CAMPAIGN-001"
+    ],
+    "gate_statuses": [
+      "SATISFIED",
+      "BLOCKED",
+      "NOT_REQUIRED"
+    ],
+    "provenance_fields": [
+      "decision_id",
+      "authority_reference",
+      "evidence_refs"
+    ],
+    "global_fields": [
+      "preflight_state",
+      "pilot_release_state",
+      "blockers",
+      "send_authorized"
+    ],
+    "send_authorized": false
+  },
+  "fail_closed_contracts": [
+    "missing required governance records are reported as blocked gates",
+    "latest negative professional verification remains visible and blocks EXT-CFO-001",
+    "professional gate is NOT_REQUIRED only when the exact policy scope does not require it",
+    "brasilapi_fresh=false blocks EXT-BRASILAPI-001 independently of human approvals",
+    "expired/revoked/invalid persisted records remain blocked through existing preflight validity rules",
+    "naive evaluation timestamps are rejected",
+    "snapshot operation is read-only"
+  ],
+  "integration_contract": {
+    "reads_from": "GovernanceDecisionRepository",
+    "assembles_with": "build_campaign_preflight_inputs",
+    "evaluates_with": "evaluate_campaign_preflight",
+    "release_mapping_with": "evaluate_pilot_release",
+    "mutation": "NONE",
+    "network_access": "NONE",
+    "campaign_dispatch": "NONE"
+  },
+  "negative_scope": {
+    "real_send": "NOT_AUTHORIZED",
+    "send_ready_operational_state": "NOT_PROMOTED",
+    "live_certification": "NOT_PROMOTED",
+    "new_provider_scraping": "NOT_IMPLEMENTED",
+    "human_decision_invention": "PROHIBITED"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "external_runner_blocker": "BLK-CI-001"
+}
