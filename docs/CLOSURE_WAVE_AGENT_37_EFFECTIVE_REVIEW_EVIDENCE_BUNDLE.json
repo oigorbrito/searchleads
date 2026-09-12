@@ -1,7 +1,7 @@
 {
   "wave": "WAVE_AGENT_37",
   "title": "EFFECTIVE_HUMAN_REVIEW_EVIDENCE_BUNDLE",
-  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
   "scope": {
     "deterministic_offline_verifiable_export": true,
     "schema_version": "effective-review-evidence-bundle/v1",
@@ -9,7 +9,8 @@
     "exact_binding": ["audit_entry_id", "audit_id", "bundle_sha256"],
     "chain_prefix_embedded": true,
     "canonical_evidence_sha256": true,
-    "offline_database_independent_verification": true
+    "offline_database_independent_verification": true,
+    "negative_scope_verified_independently_of_digest": true
   },
   "artifacts": {
     "service": "src/searchleads/governance_effective_review_evidence_bundle.py",
@@ -26,6 +27,7 @@
     "final_header_matches_selected_entry": true,
     "binding_mismatch_detected": true,
     "authority_claims_rejected": true,
+    "negative_scope_rewrite_with_recomputed_digest_rejected": true,
     "tampering_detected": true
   },
   "negative_scope": {
@@ -55,7 +57,35 @@
     "product_regression_evidence": false,
     "pass_evidence": false
   },
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "initial_wave_37_ci_observation": {
+    "run_id": 34674476172,
+    "functional_head": "f4bb665541991a582fbdb4d5459a787fa6fcbe2a",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103501750784,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "ci_observation": {
+    "run_id": 34674536993,
+    "functional_head": "efe2f842ec05cceb2fc6c1f443d7a41622c1158c",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103501910958,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "external_runner_blocker": "BLK-CI-001"
 }
