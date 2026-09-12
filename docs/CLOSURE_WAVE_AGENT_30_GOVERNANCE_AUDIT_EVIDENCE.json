@@ -48,7 +48,17 @@
     "live_certification": "NOT_PROMOTED",
     "human_decision_invention": "PROHIBITED"
   },
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "ci_observation": {
+    "run_id": 34669220883,
+    "functional_head": "bc48ae1a0d107f75bb79bc53799f55558c640e46",
+    "conclusion": "failure",
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "runner_id": 0,
+    "steps": [],
+    "executed_test_evidence": "NOT_AVAILABLE"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "external_runner_blocker": "BLK-CI-001"
 }
