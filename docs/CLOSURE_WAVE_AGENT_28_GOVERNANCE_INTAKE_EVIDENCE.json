@@ -1,0 +1,81 @@
+{
+  "wave": "WAVE_AGENT_28",
+  "mission": "close the bounded operational human-governance intake path from validated payload through persistence and preflight evaluation without campaign execution",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "baseline_main_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "historical_handoff_sha_status": {
+    "sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+    "connected_repository_resolution": "UNRESOLVED"
+  },
+  "implemented": {
+    "service": "src/searchleads/governance_intake.py",
+    "cli": "scripts/process_governance_intake.py",
+    "service_tests": "tests/test_governance_intake.py",
+    "cli_tests": "tests/test_governance_intake_cli.py",
+    "runbook": "docs/GOVERNANCE_INTAKE_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "operation_chain": [
+    "validate canonical human decision payload",
+    "bind decision to exact CampaignPreflightScope before persistence",
+    "persist immutable decision with existing SHA-256 storage integrity",
+    "recover persisted exact-scope decisions",
+    "construct CampaignPreflightInputs",
+    "evaluate existing fail-closed campaign preflight",
+    "emit GovernanceIntakeReceipt with canonical payload digest"
+  ],
+  "supported_kinds": [
+    "compliance-signoff",
+    "professional-verification",
+    "campaign-authorization"
+  ],
+  "fail_closed_contracts": [
+    "cross-campaign compliance signoff rejected before persistence",
+    "cross-person professional verification rejected before persistence",
+    "cross-policy campaign authorization rejected before persistence",
+    "negative professional decision remains persisted and blocks EXT-CFO-001",
+    "brasilapi_fresh=false keeps EXT-BRASILAPI-001 blocked regardless of human governance records",
+    "naive evaluation timestamp rejected before persistence",
+    "exact replay is idempotent while conflicting immutable IDs remain rejected by persistence"
+  ],
+  "receipt_contract": {
+    "fields": [
+      "kind",
+      "decision_id",
+      "storage_action",
+      "payload_sha256",
+      "evaluated_at",
+      "preflight_state",
+      "blockers",
+      "send_authorized"
+    ],
+    "send_authorized": false,
+    "ready_state_semantics": "READY_FOR_AUTHORIZED_EXECUTION is a preflight result only and does not authorize dispatch"
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NOT_IMPLEMENTED",
+    "real_send": "NOT_AUTHORIZED",
+    "live_certification": "NOT_PROMOTED",
+    "send_ready_operational_state": "NOT_PROMOTED",
+    "new_provider_scraping": "NOT_IMPLEMENTED"
+  },
+  "ci_policy": {
+    "targeted_external_governance_gate": [
+      "tests/test_external_governance.py",
+      "tests/test_campaign_preflight.py",
+      "tests/test_governance_decision_io.py",
+      "tests/test_professional_verification_io.py",
+      "tests/test_governance_persistence.py",
+      "tests/test_governance_preflight.py",
+      "tests/test_governance_intake.py",
+      "tests/test_governance_intake_cli.py",
+      "tests/test_pilot_release.py",
+      "tests/test_operational_readiness.py"
+    ],
+    "python_matrix": ["3.11", "3.12", "3.13"],
+    "external_runner_blocker": "BLK-CI-001"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "real_send": "NOT_AUTHORIZED"
+}
