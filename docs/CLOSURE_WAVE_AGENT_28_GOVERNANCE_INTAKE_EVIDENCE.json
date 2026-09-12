@@ -73,7 +73,10 @@
       "tests/test_operational_readiness.py"
     ],
     "python_matrix": ["3.11", "3.12", "3.13"],
-    "external_runner_blocker": "BLK-CI-001"
+    "external_runner_blocker": "BLK-CI-001",
+    "observed_run_id": 34668320124,
+    "observed_run_status": "QUEUED",
+    "observed_run_conclusion": null
   },
   "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
   "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
