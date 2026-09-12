@@ -1,7 +1,7 @@
 {
   "wave": "WAVE_AGENT_35",
   "title": "EFFECTIVE_HUMAN_REVIEW_STATE",
-  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
   "scope": {
     "read_only_effective_status": true,
     "combines_unanimous_reviews_and_explicit_resolution": true,
@@ -56,7 +56,21 @@
     "product_regression_evidence": false,
     "pass_evidence": false
   },
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "ci_observation": {
+    "run_id": 34670803073,
+    "functional_head": "be76be7d06e27e4440ebd8dda24cbaf3861c651f",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103491667062,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "external_runner_blocker": "BLK-CI-001"
 }
