@@ -10,7 +10,8 @@
     "canonical_status_sha256": true,
     "entry_hash_chain": true,
     "list_verifies_full_chain": true,
-    "idempotent_exact_replay": true
+    "idempotent_exact_replay": true,
+    "replay_integrity_verified_before_idempotence": true
   },
   "artifacts": {
     "service": "src/searchleads/governance_effective_review_audit.py",
@@ -27,7 +28,8 @@
     "predecessor_tampering_detected": true,
     "sequence_discontinuity_detected": true,
     "binding_mismatch_detected": true,
-    "non_authorization_invariants_verified": true
+    "non_authorization_invariants_verified": true,
+    "tampered_existing_entry_cannot_be_accepted_as_idempotent_replay": true
   },
   "negative_scope": {
     "campaign_dispatch": "NONE",
@@ -57,12 +59,12 @@
     "pass_evidence": false
   },
   "ci_observation": {
-    "run_id": 34671714430,
-    "functional_head": "21062459a8b9913a9cae0782d56752ef1b52132f",
+    "run_id": 34671792670,
+    "functional_head": "702be44a336c1fe48b1b09de7e33f794aa28c4b3",
     "status": "completed",
     "conclusion": "failure",
     "python_jobs": ["3.11", "3.12", "3.13"],
-    "inspected_job_id": 103494176951,
+    "inspected_job_id": 103494402848,
     "steps": [],
     "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
     "blocker": "BLK-CI-001",
