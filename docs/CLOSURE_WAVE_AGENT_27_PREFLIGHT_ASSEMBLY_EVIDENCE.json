@@ -1,0 +1,51 @@
+{
+  "wave": 27,
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "base_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "head_sha": "92cd91ee06f8b76b1f271e0ebeba2b8e61073a68",
+  "pull_request": 139,
+  "mission": "assemble exact-scope CampaignPreflightInputs from persisted human governance decisions without changing send or dispatch behavior",
+  "implemented": {
+    "module": "src/searchleads/governance_preflight.py",
+    "tests": "tests/test_governance_preflight.py",
+    "scope_record": "CampaignPreflightScope",
+    "assembler": "build_campaign_preflight_inputs"
+  },
+  "behavior": {
+    "compliance_signoff": "latest exact campaign/policy/jurisdiction/channel record is recovered",
+    "professional_verification": "latest person-specific record is recovered only when policy requires it",
+    "campaign_authorization": "latest exact campaign/policy record is recovered",
+    "validity_authority": "evaluate_campaign_preflight remains the sole authority for expiry, revocation, rejection and readiness",
+    "latest_negative_precedence": "preserved; assembler does not bypass a newer negative decision with an older approval",
+    "missing_decisions": "remain fail-closed through existing preflight blockers"
+  },
+  "test_cases_added": [
+    "all exact-scope persisted decisions can assemble a READY_FOR_AUTHORIZED_EXECUTION preflight fixture",
+    "missing persisted decisions produce LEGAL-001, EXT-CFO-001 and AUTH-CAMPAIGN-001",
+    "cross-campaign decisions do not leak into another campaign",
+    "newer legal rejection is not bypassed by an older approval",
+    "professional lookup is skipped when approved policy does not require it",
+    "professional-required scope rejects missing person_id"
+  ],
+  "verification": {
+    "static_delta": "5 commits ahead of connected main at pre-evidence head; no files modified outside governance persistence/preflight/tests/docs",
+    "ci_run_id": 34668096767,
+    "ci_status_at_recording": "QUEUED",
+    "executed_test_evidence": "NOT_YET_AVAILABLE",
+    "regression_claim": "NOT_MADE"
+  },
+  "governance_invariants": {
+    "real_send": "NOT_AUTHORIZED",
+    "live_certification": "BLOCKED",
+    "send_ready_operational_state": "BLOCKED",
+    "provider_scraping_added": false,
+    "dispatch_path_changed": false,
+    "ready_preflight_means_send_authorized": false
+  },
+  "external_constraints": {
+    "BLK-CI-001": "ACTIVE_ACCEPTED_EXTERNAL_CONSTRAINT",
+    "historical_runner_symptom": "runner_id=0 with no workflow steps executed"
+  },
+  "baseline_identity_note": "handoff SHA d2448f2f9994e171ccffad2cf51c790c82f5944d remains unresolved in connected repositories; work is scoped to connected main f30df977e544c493379fc528318da8596ec6ec2b",
+  "state": "IMPLEMENTED_AWAITING_EXECUTABLE_CI_EVIDENCE"
+}
