@@ -993,7 +993,9 @@ def evaluate_send_ready_proof(
 ) -> SendReadyProof:
     assessment = evaluate_send_ready(inputs)
     authorization_ref = authorization.authorization_id if authorization is not None else None
-    if authorization is not None and not authorization.active:
+    if authorization is None:
+        assessment = SendReadyAssessment(SendReadyState.COMPLIANCE_BLOCKED, False, ("authorization absent",), ("authorization absent",))
+    elif not authorization.active:
         assessment = SendReadyAssessment(SendReadyState.COMPLIANCE_BLOCKED, False, ("authorization inactive",), ("authorization inactive",))
     suppression_decision_id = suppression_rule.suppression_id if suppression_rule is not None else None
     proof = SendReadyProof(
