@@ -1,7 +1,7 @@
 {
   "wave": "WAVE_AGENT_40",
   "title": "EFFECTIVE_REVIEW_VERIFICATION_AUDIT_EVIDENCE_BUNDLE",
-  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
   "scope": {
     "deterministic_offline_verifiable_export": true,
     "schema_version": "effective-review-verification-audit-evidence-bundle/v1",
@@ -59,7 +59,21 @@
     "product_regression_evidence": false,
     "pass_evidence": false
   },
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "ci_observation": {
+    "run_id": 34676936998,
+    "functional_head": "fa6e36c983bd25c5c5d8940960e92c53eec0c0a5",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103508343508,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "external_runner_blocker": "BLK-CI-001"
 }
