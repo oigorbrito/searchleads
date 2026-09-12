@@ -1,0 +1,54 @@
+{
+  "wave": "WAVE_AGENT_30",
+  "mission": "record and verify an append-only tamper-evident audit trail of governance operational snapshots without changing governance authority or campaign execution state",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "baseline_main_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "historical_handoff_sha_status": {
+    "sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+    "connected_repository_resolution": "UNRESOLVED"
+  },
+  "implemented": {
+    "audit_repository": "src/searchleads/governance_audit.py",
+    "repository_tests": "tests/test_governance_audit.py",
+    "cli": "scripts/audit_governance_snapshot.py",
+    "cli_tests": "tests/test_governance_audit_cli.py",
+    "runbook": "docs/GOVERNANCE_AUDIT_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "audit_contract": {
+    "append_only": true,
+    "immutable_audit_id": true,
+    "snapshot_sha256": true,
+    "previous_entry_hash": true,
+    "entry_hash": true,
+    "chain_verification": true,
+    "decision_id_provenance": true,
+    "scope_fields": [
+      "campaign_id",
+      "policy_id",
+      "policy_version",
+      "jurisdiction",
+      "channel"
+    ],
+    "send_authorized": false
+  },
+  "fail_closed_contracts": [
+    "reused audit_id is rejected",
+    "snapshot payload tampering causes verification failure",
+    "predecessor hash tampering causes verification failure",
+    "entry hash mismatch causes verification failure",
+    "list verifies the complete chain before returning entries",
+    "audit operations do not modify persisted governance decisions",
+    "audit operations do not change gate validity or release state"
+  ],
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_ready_operational_state": "NOT_PROMOTED",
+    "live_certification": "NOT_PROMOTED",
+    "human_decision_invention": "PROHIBITED"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "external_runner_blocker": "BLK-CI-001"
+}
