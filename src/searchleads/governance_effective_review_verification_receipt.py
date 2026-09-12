@@ -83,6 +83,8 @@ def receipt_from_mapping(payload: Mapping[str, Any]) -> EffectiveReviewVerificat
     for field in ("send_authorized", "verification_is_campaign_authorization", "verification_is_human_approval"):
         if payload.get(field, False) is not False:
             raise ValueError("verification receipt cannot authorize send/campaign or represent human approval")
+    if payload.get("receipt_is_observational_only", True) is not True:
+        raise ValueError("verification receipt must remain observational only")
     return EffectiveReviewVerificationReceipt(
         receipt_id=text("receipt_id"),
         evidence_sha256=text("evidence_sha256"),

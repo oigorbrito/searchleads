@@ -116,6 +116,10 @@ def test_binding_mismatch_and_authority_claims_fail_closed(tmp_path) -> None:
         authority["verification_is_human_approval"] = True
         with pytest.raises(ValueError, match="cannot authorize"):
             process_verification_receipt(repository=repository, evidence_bundle=evidence, receipt_payload=authority)
+        non_observational = _receipt(evidence)
+        non_observational["receipt_is_observational_only"] = False
+        with pytest.raises(ValueError, match="observational only"):
+            process_verification_receipt(repository=repository, evidence_bundle=evidence, receipt_payload=non_observational)
 
 
 def test_tampered_evidence_cannot_produce_receipt(tmp_path) -> None:
