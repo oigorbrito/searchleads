@@ -75,8 +75,7 @@
     "python_matrix": ["3.11", "3.12", "3.13"],
     "external_runner_blocker": "BLK-CI-001",
     "last_observed_executable_candidate_run_id": 34668320124,
-    "last_observed_executable_candidate_status": "QUEUED",
-    "final_documentation_head_run": "NOT_REQUIRED_FOR_IMPLEMENTATION_CLOSURE"
+    "last_observed_executable_candidate_status": "QUEUED"
   },
   "wave_execution_state": "EXECUTABLE_WORK_COMPLETE",
   "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
