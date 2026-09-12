@@ -1,0 +1,65 @@
+{
+  "wave": "WAVE_AGENT_40",
+  "title": "EFFECTIVE_REVIEW_VERIFICATION_AUDIT_EVIDENCE_BUNDLE",
+  "state": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "scope": {
+    "deterministic_offline_verifiable_export": true,
+    "schema_version": "effective-review-verification-audit-evidence-bundle/v1",
+    "historical_receipt_not_recomputed": true,
+    "exact_binding": ["audit_entry_id", "receipt_id", "evidence_sha256"],
+    "chain_prefix_embedded": true,
+    "canonical_export_sha256": true,
+    "offline_database_independent_verification": true,
+    "negative_scope_verified_independently_of_digest": true
+  },
+  "artifacts": {
+    "service": "src/searchleads/governance_effective_review_verification_audit_evidence_bundle.py",
+    "cli": "scripts/export_governance_effective_review_verification_audit_evidence.py",
+    "service_tests": "tests/test_governance_effective_review_verification_audit_evidence_bundle.py",
+    "cli_tests": "tests/test_governance_effective_review_verification_audit_evidence_bundle_cli.py",
+    "runbook": "docs/GOVERNANCE_EFFECTIVE_REVIEW_VERIFICATION_AUDIT_EVIDENCE_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "verification_contract": {
+    "export_digest_verified": true,
+    "receipt_digest_verified": true,
+    "full_exported_chain_prefix_verified": true,
+    "final_header_matches_selected_entry": true,
+    "binding_mismatch_detected": true,
+    "authority_claims_rejected": true,
+    "negative_scope_rewrite_with_recomputed_digest_rejected": true,
+    "tampering_detected": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "evidence_is_campaign_authorization": false,
+    "evidence_is_human_approval": false,
+    "evidence_is_observational_only": true,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "wave_39_ci_observation": {
+    "run_id": 34675902581,
+    "functional_head": "5b5ecd55251fea6fb20fac699675263aa4bb5d30",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103505595464,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
+  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "external_runner_blocker": "BLK-CI-001"
+}
