@@ -1,0 +1,66 @@
+{
+  "wave": "WAVE_AGENT_31",
+  "mission": "export deterministic offline-verifiable governance evidence bundles from historical audited snapshots without changing authority, release state or campaign execution",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "baseline_main_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "historical_handoff_sha_status": {
+    "sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+    "connected_repository_resolution": "UNRESOLVED"
+  },
+  "implemented": {
+    "historical_snapshot_read": "GovernanceAuditRepository.load_snapshot_mapping",
+    "bundle_service": "src/searchleads/governance_evidence_bundle.py",
+    "service_tests": "tests/test_governance_evidence_bundle.py",
+    "cli": "scripts/export_governance_evidence.py",
+    "cli_tests": "tests/test_governance_evidence_bundle_cli.py",
+    "runbook": "docs/GOVERNANCE_EVIDENCE_BUNDLE_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "bundle_contract": {
+    "schema_version": "governance-evidence-bundle/v1",
+    "historical_snapshot": true,
+    "selected_audit_entry": true,
+    "chain_headers_from_genesis": true,
+    "decision_provenance": true,
+    "bundle_sha256": true,
+    "offline_verification": true,
+    "send_authorized": false
+  },
+  "verification_contracts": [
+    "full bundle digest is recomputed",
+    "historical snapshot digest must match selected audit entry",
+    "audit headers are recomputed from sequence 1 through selected entry",
+    "previous_entry_hash continuity is verified",
+    "final chain header must match selected audit entry",
+    "provenance decision IDs must match audit entry decision IDs",
+    "top-level and nested send_authorized values must remain false"
+  ],
+  "determinism_contract": {
+    "same_verified_audit_entry_produces_same_bundle": true,
+    "export_does_not_recompute_current_governance_state": true,
+    "export_does_not_mutate_audit_chain": true,
+    "verification_does_not_require_original_database": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_ready_operational_state": "NOT_PROMOTED",
+    "live_certification": "NOT_PROMOTED",
+    "human_decision_invention": "PROHIBITED",
+    "provider_scraping": "NONE"
+  },
+  "ci_observation": {
+    "functional_head": "315cdbb9f32e33bea9490c90ea3ae6fb574c395a",
+    "run_id": 34669645368,
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "runner_id": 0,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
+  "external_runner_blocker": "BLK-CI-001"
+}

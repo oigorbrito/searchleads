@@ -1,0 +1,91 @@
+{
+  "wave": "WAVE_AGENT_37",
+  "title": "EFFECTIVE_HUMAN_REVIEW_EVIDENCE_BUNDLE",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "scope": {
+    "deterministic_offline_verifiable_export": true,
+    "schema_version": "effective-review-evidence-bundle/v1",
+    "historical_status_not_recomputed": true,
+    "exact_binding": ["audit_entry_id", "audit_id", "bundle_sha256"],
+    "chain_prefix_embedded": true,
+    "canonical_evidence_sha256": true,
+    "offline_database_independent_verification": true,
+    "negative_scope_verified_independently_of_digest": true
+  },
+  "artifacts": {
+    "service": "src/searchleads/governance_effective_review_evidence_bundle.py",
+    "cli": "scripts/export_governance_effective_review_evidence.py",
+    "service_tests": "tests/test_governance_effective_review_evidence_bundle.py",
+    "cli_tests": "tests/test_governance_effective_review_evidence_bundle_cli.py",
+    "runbook": "docs/GOVERNANCE_EFFECTIVE_REVIEW_EVIDENCE_BUNDLE_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "verification_contract": {
+    "evidence_digest_verified": true,
+    "status_digest_verified": true,
+    "full_exported_chain_prefix_verified": true,
+    "final_header_matches_selected_entry": true,
+    "binding_mismatch_detected": true,
+    "authority_claims_rejected": true,
+    "negative_scope_rewrite_with_recomputed_digest_rejected": true,
+    "tampering_detected": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "evidence_is_campaign_authorization": false,
+    "evidence_is_observational_only": true,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "wave_36_ci_observation": {
+    "run_id": 34671792670,
+    "functional_head": "702be44a336c1fe48b1b09de7e33f794aa28c4b3",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "steps_observed": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "initial_wave_37_ci_observation": {
+    "run_id": 34674476172,
+    "functional_head": "f4bb665541991a582fbdb4d5459a787fa6fcbe2a",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103501750784,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "ci_observation": {
+    "run_id": 34674536993,
+    "functional_head": "efe2f842ec05cceb2fc6c1f443d7a41622c1158c",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103501910958,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
+  "external_runner_blocker": "BLK-CI-001"
+}

@@ -1,0 +1,70 @@
+{
+  "wave": "WAVE_AGENT_32",
+  "mission": "record immutable human review decisions bound to the exact governance evidence bundle that was reviewed, without converting evidence review into campaign authorization or send authority",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "baseline_main_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "historical_handoff_sha_status": {
+    "sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+    "connected_repository_resolution": "UNRESOLVED"
+  },
+  "implemented": {
+    "review_service_and_repository": "src/searchleads/governance_evidence_review.py",
+    "service_tests": "tests/test_governance_evidence_review.py",
+    "cli": "scripts/review_governance_evidence.py",
+    "cli_tests": "tests/test_governance_evidence_review_cli.py",
+    "runbook": "docs/GOVERNANCE_EVIDENCE_REVIEW_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "review_contract": {
+    "allowed_decisions": ["APPROVED", "REJECTED", "MORE_REVIEW_REQUIRED"],
+    "exact_bundle_binding": ["audit_id", "bundle_sha256"],
+    "verified_bundle_required_before_persistence": true,
+    "immutable_review_id": true,
+    "idempotent_exact_replay": true,
+    "persisted_payload_sha256": true,
+    "send_authorized": false,
+    "review_is_campaign_authorization": false
+  },
+  "fail_closed_contracts": [
+    "tampered or unverifiable bundle is rejected before review persistence",
+    "mismatched audit_id is rejected before persistence",
+    "mismatched bundle_sha256 is rejected before persistence",
+    "reused review_id with changed content is rejected",
+    "persisted review tampering is detected",
+    "naive reviewed_at timestamps are rejected",
+    "empty evidence references are rejected",
+    "send_authorized=true is rejected",
+    "review_is_campaign_authorization=true is rejected"
+  ],
+  "authority_semantics": {
+    "approved_review_meaning": "human reviewer approved the exact evidence artifact identified by bundle_sha256 and audit_id",
+    "satisfies_AUTH_CAMPAIGN_001": false,
+    "replaces_legal_signoff": false,
+    "closes_source_freshness_gate": false,
+    "authorizes_real_send": false
+  },
+  "ci_observation": {
+    "run_id": 34669819294,
+    "functional_head": "d546eed38caba076b8c543e4c7c421e3f7050fde",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "runner_id": 0,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_ready_operational_state": "NOT_PROMOTED",
+    "live_certification": "NOT_PROMOTED",
+    "human_decision_invention": "PROHIBITED",
+    "provider_scraping": "NONE"
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
+  "external_runner_blocker": "BLK-CI-001"
+}

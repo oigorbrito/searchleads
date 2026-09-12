@@ -1,0 +1,89 @@
+{
+  "wave": "WAVE_AGENT_38",
+  "title": "EFFECTIVE_REVIEW_VERIFICATION_RECEIPTS",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "scope": {
+    "immutable_technical_verification_receipts": true,
+    "requires_successful_wave_37_offline_verification": true,
+    "exact_binding": ["evidence_sha256", "audit_entry_id", "audit_id", "bundle_sha256"],
+    "idempotent_exact_replay": true,
+    "stored_payload_sha256_integrity": true,
+    "deterministic_listing": ["verified_at", "receipt_id"],
+    "receipt_observational_only_enforced": true
+  },
+  "artifacts": {
+    "service": "src/searchleads/governance_effective_review_verification_receipt.py",
+    "cli": "scripts/record_governance_effective_review_verification.py",
+    "service_tests": "tests/test_governance_effective_review_verification_receipt.py",
+    "cli_tests": "tests/test_governance_effective_review_verification_receipt_cli.py",
+    "runbook": "docs/GOVERNANCE_EFFECTIVE_REVIEW_VERIFICATION_RECEIPT_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "receipt_contract": {
+    "receipt_id_immutable": true,
+    "same_id_different_content_rejected": true,
+    "tampered_evidence_cannot_produce_valid_receipt": true,
+    "stored_receipt_tampering_detected": true,
+    "verification_failure_is_not_recorded_as_valid_receipt": true,
+    "non_observational_receipt_claim_rejected": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "verification_is_campaign_authorization": false,
+    "verification_is_human_approval": false,
+    "receipt_is_observational_only": true,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "wave_37_ci_observation": {
+    "run_id": 34674536993,
+    "functional_head": "efe2f842ec05cceb2fc6c1f443d7a41622c1158c",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "steps_observed": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "initial_wave_38_ci_observation": {
+    "run_id": 34675451014,
+    "functional_head": "b69ef16ef7dcbe7733cb7c40da6f3528915ed9b4",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103504391829,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "ci_observation": {
+    "run_id": 34675501156,
+    "functional_head": "41f7667e9a12e6c3847ccf01b8ca490f9d833120",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103504531061,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
+  "external_runner_blocker": "BLK-CI-001"
+}

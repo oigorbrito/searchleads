@@ -1,0 +1,78 @@
+{
+  "wave": "WAVE_AGENT_36",
+  "title": "EFFECTIVE_HUMAN_REVIEW_AUDIT",
+  "state": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "scope": {
+    "append_only_effective_review_audit": true,
+    "tamper_evident_hash_chain": true,
+    "historical_status_preserved": true,
+    "exact_binding": ["audit_id", "bundle_sha256"],
+    "canonical_status_sha256": true,
+    "entry_hash_chain": true,
+    "list_verifies_full_chain": true,
+    "idempotent_exact_replay": true,
+    "replay_integrity_verified_before_idempotence": true
+  },
+  "artifacts": {
+    "service": "src/searchleads/governance_effective_review_audit.py",
+    "cli": "scripts/audit_governance_effective_review.py",
+    "service_tests": "tests/test_governance_effective_review_audit.py",
+    "cli_tests": "tests/test_governance_effective_review_audit_cli.py",
+    "runbook": "docs/GOVERNANCE_EFFECTIVE_REVIEW_AUDIT_RUNBOOK_V1.md",
+    "ci_targeted_gate_updated": true
+  },
+  "audit_contract": {
+    "immutable_audit_entry_id": true,
+    "same_id_different_content_rejected": true,
+    "status_tampering_detected": true,
+    "predecessor_tampering_detected": true,
+    "sequence_discontinuity_detected": true,
+    "binding_mismatch_detected": true,
+    "non_authorization_invariants_verified": true,
+    "tampered_existing_entry_cannot_be_accepted_as_idempotent_replay": true
+  },
+  "negative_scope": {
+    "campaign_dispatch": "NONE",
+    "real_send": "NOT_AUTHORIZED",
+    "send_authorized": false,
+    "audit_is_campaign_authorization": false,
+    "audit_is_observational_only": true,
+    "changes_AUTH_CAMPAIGN_001": false,
+    "changes_preflight": false,
+    "changes_pilot_release": false,
+    "changes_legal_signoff": false,
+    "changes_professional_verification": false,
+    "changes_source_freshness": false,
+    "human_decision_invention": "PROHIBITED"
+  },
+  "wave_35_ci_observation": {
+    "run_id": 34670803073,
+    "functional_head": "be76be7d06e27e4440ebd8dda24cbaf3861c651f",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "steps_observed": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "ci_observation": {
+    "run_id": 34671792670,
+    "functional_head": "702be44a336c1fe48b1b09de7e33f794aa28c4b3",
+    "status": "completed",
+    "conclusion": "failure",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "inspected_job_id": 103494402848,
+    "steps": [],
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "blocker": "BLK-CI-001",
+    "executed_test_evidence": false,
+    "product_regression_evidence": false,
+    "pass_evidence": false
+  },
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
+  "external_runner_blocker": "BLK-CI-001"
+}

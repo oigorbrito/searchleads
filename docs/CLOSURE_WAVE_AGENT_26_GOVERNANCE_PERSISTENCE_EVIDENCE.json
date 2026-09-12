@@ -1,0 +1,60 @@
+{
+  "wave": "WAVE_AGENT_26",
+  "base_branch": "main",
+  "observable_base_sha": "f30df977e544c493379fc528318da8596ec6ec2b",
+  "handoff_sha_resolved_in_connected_repository": false,
+  "handoff_sha": "d2448f2f9994e171ccffad2cf51c790c82f5944d",
+  "branch": "work/wave-agent-26-professional-verification-ingestion-v1",
+  "implementation_head_sha": "cbab4e884f9a4a5132dcc60e8ae9af65fa1c46c5",
+  "pull_request": 139,
+  "mission": "persist externally supplied human governance decisions without adding provider scraping or enabling campaign dispatch",
+  "implemented": {
+    "module": "src/searchleads/governance_persistence.py",
+    "tests": "tests/test_governance_persistence.py",
+    "records": [
+      "ComplianceSignoffRecord",
+      "ProfessionalVerificationRecord",
+      "CampaignAuthorizationRecord"
+    ],
+    "properties": [
+      "append-only immutable decision IDs",
+      "idempotent identical replay",
+      "conflicting ID fail-closed",
+      "SHA-256 storage integrity verification",
+      "exact-scope latest lookup",
+      "separate governance persistence boundary outside canonical lead-domain codec"
+    ]
+  },
+  "explicit_non_scope": [
+    "SERPRO adapter",
+    "DNS/HTTP enrichment implementation",
+    "CFO/CRO web scraping",
+    "campaign dispatch",
+    "real send",
+    "live certification promotion"
+  ],
+  "github_ci": {
+    "run_id": 34665648647,
+    "head_sha": "cbab4e884f9a4a5132dcc60e8ae9af65fa1c46c5",
+    "python_jobs": ["3.11", "3.12", "3.13"],
+    "result": "BLOCKED_BEFORE_STEPS",
+    "observed": "all three jobs completed failure with runner_id=0 and steps=[]",
+    "product_regression_evidence": false,
+    "test_pass_evidence": false,
+    "blocker": "BLK-CI-001"
+  },
+  "state": {
+    "implementation": "IMPLEMENTED",
+    "verification": "UNVERIFIED_BY_EXTERNAL_CI",
+    "send_ready_runtime_capability": "UNCHANGED",
+    "send_ready_operational_state": "BLOCKED",
+    "live_certification": "BLOCKED",
+    "real_send": "NOT_AUTHORIZED"
+  },
+  "remaining_external_actions": [
+    "LEGAL-001 designated human legal/compliance decision for exact campaign scope",
+    "EXT-CFO-001 person-specific human professional verification when policy requires it",
+    "AUTH-CAMPAIGN-001 campaign-owner authorization after prerequisite gates close",
+    "EXT-BRASILAPI-001 bounded fresh revalidation immediately before approved use"
+  ]
+}
