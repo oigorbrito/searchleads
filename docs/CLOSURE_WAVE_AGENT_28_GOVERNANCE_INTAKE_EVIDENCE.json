@@ -74,11 +74,15 @@
     ],
     "python_matrix": ["3.11", "3.12", "3.13"],
     "external_runner_blocker": "BLK-CI-001",
-    "last_observed_executable_candidate_run_id": 34668320124,
-    "last_observed_executable_candidate_status": "QUEUED"
+    "observed_run_id": 34668320124,
+    "observed_run_status": "COMPLETED",
+    "observed_run_conclusion": "FAILURE_BEFORE_STEPS",
+    "runner_ids": [0, 0, 0],
+    "steps_executed": 0,
+    "classification": "CI_EXTERNAL_RUNNER_BLOCKED_NOT_PRODUCT_REGRESSION"
   },
   "wave_execution_state": "EXECUTABLE_WORK_COMPLETE",
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "real_send": "NOT_AUTHORIZED"
 }
