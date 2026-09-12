@@ -58,6 +58,13 @@
     "network_access": "NONE",
     "campaign_dispatch": "NONE"
   },
+  "ci": {
+    "run_id": 34669027613,
+    "head_sha": "175f751b4885676e572fc259ee5f4e719e414622",
+    "python_matrix": ["3.11", "3.12", "3.13"],
+    "result": "CI_EXTERNAL_RUNNER_BLOCKED",
+    "observed": "all jobs completed failure before any workflow step with runner_id=0 and steps=[]"
+  },
   "negative_scope": {
     "real_send": "NOT_AUTHORIZED",
     "send_ready_operational_state": "NOT_PROMOTED",
@@ -65,7 +72,7 @@
     "new_provider_scraping": "NOT_IMPLEMENTED",
     "human_decision_invention": "PROHIBITED"
   },
-  "verification_state_at_publication": "IMPLEMENTED_PENDING_EXECUTABLE_CI_EVIDENCE",
-  "regression_claim": "NOT_CLAIMED_WITHOUT_EXECUTED_TESTS",
+  "verification_state_at_publication": "IMPLEMENTED_UNVERIFIED_BY_EXTERNAL_CI",
+  "regression_claim": "NOT_TESTED_DUE_EXTERNAL_RUNNER_BLOCK",
   "external_runner_blocker": "BLK-CI-001"
 }
