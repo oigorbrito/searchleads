@@ -97,6 +97,7 @@ class EffectiveReviewAuditRepository:
         ).fetchone()
         if existing is not None:
             entry = self._row_to_entry(existing)
+            self._verify_entry(entry)
             if _canonical_json(entry.status) == status_json:
                 return entry, False
             raise EffectiveReviewAuditConflictError(f"audit_entry_id {audit_entry_id!r} already exists with different content")
