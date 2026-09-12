@@ -51,6 +51,12 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def _require_false_flags(payload: dict[str, Any], fields: tuple[str, ...], *, label: str) -> None:
+    for field in fields:
+        if payload.get(field) is not False:
+            raise EffectiveReviewEvidenceBundleError(f"{label} invariant {field} must be false")
+
+
 def _entry_hash_payload(header: dict[str, Any]) -> dict[str, Any]:
     return {
         "audit_entry_id": header.get("audit_entry_id"),
@@ -156,13 +162,25 @@ def effective_review_evidence_bundle_to_mapping(bundle: EffectiveReviewEvidenceB
 
 
 def verify_effective_review_evidence_bundle(payload: dict[str, Any]) -> None:
-    """Verify the bundle digest, historical status digest, exact binding, and audit-chain prefix offline."""
+    """Verify the bundle digest, historical status digest, authority invariants, binding, and audit-chain prefix offline."""
     if not isinstance(payload, dict):
         raise EffectiveReviewEvidenceBundleError("evidence bundle must be an object")
     if payload.get("schema_version") != EFFECTIVE_REVIEW_EVIDENCE_BUNDLE_SCHEMA_VERSION:
         raise EffectiveReviewEvidenceBundleError("unsupported effective-review evidence bundle schema version")
-    if payload.get("send_authorized") is not False or payload.get("evidence_is_campaign_authorization") is not False:
-        raise EffectiveReviewEvidenceBundleError("evidence bundle must not authorize send or campaign")
+    _require_false_flags(
+        payload,
+        (
+            "send_authorized",
+            "evidence_is_campaign_authorization",
+            "changes_auth_campaign_001",
+            "changes_preflight",
+            "changes_pilot_release",
+            "changes_legal_signoff",
+            "changes_professional_verification",
+            "changes_source_freshness",
+        ),
+        label="evidence bundle",
+    )
     if payload.get("evidence_is_observational_only") is not True:
         raise EffectiveReviewEvidenceBundleError("evidence bundle must be observational only")
 
@@ -173,8 +191,29 @@ def verify_effective_review_evidence_bundle(payload: dict[str, Any]) -> None:
         raise EffectiveReviewEvidenceBundleError("status and audit_entry must be objects")
     if not isinstance(chain_headers, list) or not chain_headers:
         raise EffectiveReviewEvidenceBundleError("chain_headers must be a non-empty list")
-    if status.get("send_authorized") is not False or status.get("review_is_campaign_authorization") is not False:
-        raise EffectiveReviewEvidenceBundleError("historical status violates non-authorization invariants")
+    _require_false_flags(
+        status,
+        (
+            "send_authorized",
+            "review_is_campaign_authorization",
+            "changes_auth_campaign_001",
+            "changes_preflight",
+            "changes_pilot_release",
+            "changes_legal_signoff",
+            "changes_professional_verification",
+            "changes_source_freshness",
+        ),
+        label="historical status",
+    )
+    if status.get("status_is_observational_only") is not True:
+        raise EffectiveReviewEvidenceBundleError("historical status must be observational only")
+    _require_false_flags(
+        audit_entry,
+        ("send_authorized", "audit_is_campaign_authorization"),
+        label="audit entry",
+    )
+    if audit_entry.get("audit_is_observational_only") is not True:
+        raise EffectiveReviewEvidenceBundleError("audit entry must be observational only")
 
     supplied_digest = payload.get("evidence_sha256")
     unsigned = dict(payload)

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+
 from searchleads.governance_effective_review_audit import EffectiveReviewAuditRepository
 from searchleads.governance_effective_review_evidence_bundle import (
     EFFECTIVE_REVIEW_EVIDENCE_BUNDLE_SCHEMA_VERSION,
@@ -37,6 +40,13 @@ def _status(*, audit_id: str, bundle_sha256: str, decision: str | None = None) -
         stale_resolution_ids=(),
         conflict=False,
     )
+
+
+def _redigest(payload: dict) -> None:
+    unsigned = dict(payload)
+    unsigned.pop("evidence_sha256", None)
+    canonical = json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    payload["evidence_sha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def test_builds_deterministic_offline_verifiable_bundle_for_historical_entry(tmp_path) -> None:
@@ -111,9 +121,27 @@ def test_tampering_status_chain_or_authority_claim_fails_closed(tmp_path) -> Non
     try:
         verify_effective_review_evidence_bundle(authority)
     except EffectiveReviewEvidenceBundleError as exc:
-        assert "must not authorize" in str(exc)
+        assert "must be false" in str(exc)
     else:
         raise AssertionError("authority claim must fail")
+
+
+def test_recomputed_digest_cannot_override_negative_scope_invariants(tmp_path) -> None:
+    db = tmp_path / "audit.sqlite"
+    with EffectiveReviewAuditRepository(db) as audit:
+        audit.append_status(audit_entry_id="entry-1", status=_status(audit_id="audit-4", bundle_sha256="d" * 64))
+        bundle = effective_review_evidence_bundle_to_mapping(
+            build_effective_review_evidence_bundle(audit_repository=audit, audit_entry_id="entry-1")
+        )
+
+    bundle["changes_preflight"] = True
+    _redigest(bundle)
+    try:
+        verify_effective_review_evidence_bundle(bundle)
+    except EffectiveReviewEvidenceBundleError as exc:
+        assert "changes_preflight must be false" in str(exc)
+    else:
+        raise AssertionError("negative-scope rewrite must fail even with recomputed digest")
 
 
 def test_unknown_audit_entry_is_rejected(tmp_path) -> None:
