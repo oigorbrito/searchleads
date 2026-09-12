@@ -73,6 +73,8 @@ jobs:
           tests/test_governance_effective_review_audit_cli.py
           tests/test_governance_effective_review_evidence_bundle.py
           tests/test_governance_effective_review_evidence_bundle_cli.py
+          tests/test_governance_effective_review_verification_receipt.py
+          tests/test_governance_effective_review_verification_receipt_cli.py
           tests/test_pilot_release.py
           tests/test_operational_readiness.py
       - name: Run opt-in BrasilAPI live revalidation
