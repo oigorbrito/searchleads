@@ -1,0 +1,3 @@
+## 2025-05-18 - Pre-compute `blocking_keys` in entity resolution corpus evaluation
+**Learning:** `blocking_keys` performs candidate fact normalization, regex regex replacements, NFKC string normalization, and dataclass instantiations. In corpus blocking evaluation (`evaluate_blocking_corpus`), invoking `is_blocked_candidate` inside the $O(N^2)$ pairwise combination loop recalculated `blocking_keys` $O(N^2)$ times instead of $O(N)$ times, taking ~13.8 seconds for just 400 records (~80,000 pairs).
+**Action:** When evaluating blocking or pairwise rules over a collection of records, pre-compute record properties or blocking keys once into a map ($O(N)$) before iterating over pairwise combinations ($O(N^2)$).
