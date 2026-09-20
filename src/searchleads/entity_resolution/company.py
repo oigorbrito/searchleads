@@ -273,20 +273,24 @@ def is_blocked_candidate(left: CompanyRecord, right: CompanyRecord) -> bool:
 
 
 def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
+    # Pre-evaluate pair blocking once per sequence element to avoid duplicate calls for positive pairs
     positives = [p for p in pairs if p.is_duplicate]
-    cp = sum(is_blocked_candidate(p.left, p.right) for p in positives)
-    candidates = sum(is_blocked_candidate(p.left, p.right) for p in pairs)
+    blocked_flags = [is_blocked_candidate(p.left, p.right) for p in pairs]
+    cp = sum(flag for p, flag in zip(pairs, blocked_flags) if p.is_duplicate)
+    candidates = sum(blocked_flags)
     return BlockingMetrics(len(positives), cp, cp / len(positives) if positives else 0.0,
                            len(pairs), candidates, 1 - candidates / len(pairs) if pairs else 0.0)
 
 
 def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     records = [record for p in pairs for record in (p.left, p.right)]
+    # Precompute blocking keys per record instance to avoid O(N^2) redundant normalizations/key extractions
+    record_keys = {id(record): blocking_keys(record) for record in records}
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if bool(record_keys[id(left)] & record_keys[id(right)]):
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
