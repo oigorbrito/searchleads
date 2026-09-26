@@ -379,18 +379,23 @@ class SQLiteRepository:
             )
 
     def _set_schema_version(self, version: int) -> None:
+        # PRAGMA user_version does not support parameter bindings in SQLite;
+        # explicitly cast version to int to prevent any query formatting risk.
+        version_int = int(version)
         self._connection.execute(
             "UPDATE schema_meta SET schema_version = ? WHERE singleton = 1",
-            (version,),
+            (version_int,),
         )
-        self._connection.execute(f"PRAGMA user_version = {version}")
+        self._connection.execute(f"PRAGMA user_version = {version_int}")
 
     def _columns(self, table: str) -> set[str]:
         if table not in {"schema_meta", "domain_records", "evidence_records", "schema_migrations"}:
             raise ValueError(f"unsupported schema table: {table!r}")
+        # Escape double quotes in table identifier for defense-in-depth SQL query safety
+        escaped_table = table.replace('"', '""')
         return {
             str(row[1])
-            for row in self._connection.execute(f'PRAGMA table_info("{table}")')
+            for row in self._connection.execute(f'PRAGMA table_info("{escaped_table}")')
         }
 
     @staticmethod
