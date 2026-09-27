@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import StrEnum
 import json
@@ -524,7 +524,8 @@ class OperationalConfiguration:
     backup_path: Path | None = None
     runtime_source_id: str | None = None
     runtime_source_url: str | None = None
-    secret_token: str | None = None
+    # Security: repr=False prevents secret token from leaking in string representation, logs, or error traces
+    secret_token: str | None = field(default=None, repr=False)
     schema_version: int = SQLITE_SCHEMA_VERSION
     deployment_mode: str = "local"
     log_level: str = "INFO"
