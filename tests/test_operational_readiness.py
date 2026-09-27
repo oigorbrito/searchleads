@@ -100,6 +100,8 @@ def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> N
         ConfigurationClassification.OPTIONAL,
         ConfigurationClassification.SECRET,
     )
+    assert configuration.secret_token == "secret-token"
+    assert "secret-token" not in repr(configuration)
 
     with pytest.raises(OperationalError) as missing_repo:
         OperationalConfiguration.from_mapping({"SEARCHLEADS_SCHEMA_VERSION": "3"})
