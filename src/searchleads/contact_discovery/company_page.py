@@ -87,6 +87,8 @@ def _require_page_url(url: str) -> None:
         raise ValueError("url must be an absolute http/https URL") from exc
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
         raise ValueError("url must be an absolute http/https URL")
+    if parsed.username or parsed.password:
+        raise ValueError("url must not contain embedded credentials")
 
 
 def _decode_body(body: bytes, headers: object) -> str:
