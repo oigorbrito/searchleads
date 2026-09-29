@@ -73,6 +73,20 @@ def _seed_repository(repository: SQLiteRepository) -> dict[str, object]:
     }
 
 
+def test_operational_configuration_repr_redacts_secret_token(tmp_path: Path) -> None:
+    repo_path = (tmp_path / "searchleads.sqlite").resolve()
+    config_with_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token="super_secret_value_123",
+    )
+    repr_str = repr(config_with_secret)
+    assert "super_secret_value_123" not in repr_str
+    assert "secret_token='***'" in repr_str
+
+    config_no_secret = OperationalConfiguration(repository_path=repo_path)
+    assert "secret_token=None" in repr(config_no_secret)
+
+
 def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> None:
     repo_path = (tmp_path / "searchleads.sqlite").resolve()
     backup_path = (tmp_path / "searchleads.backup.sqlite").resolve()
