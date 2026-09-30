@@ -595,6 +595,16 @@ class OperationalConfiguration:
     def __post_init__(self) -> None:
         self._validate()
 
+    def __repr__(self) -> str:
+        token_repr = "'***'" if self.secret_token is not None else "None"
+        return (
+            f"OperationalConfiguration(repository_path={self.repository_path!r}, "
+            f"backup_path={self.backup_path!r}, runtime_source_id={self.runtime_source_id!r}, "
+            f"runtime_source_url={self.runtime_source_url!r}, secret_token={token_repr}, "
+            f"schema_version={self.schema_version!r}, deployment_mode={self.deployment_mode!r}, "
+            f"log_level={self.log_level!r})"
+        )
+
     @classmethod
     def field_catalog(cls) -> tuple[ConfigurationField, ...]:
         return cls.FIELD_CATALOG
