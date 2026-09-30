@@ -134,6 +134,24 @@ def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> N
     assert unsupported_schema.value.failure_class is OperationalFailureClass.SCHEMA_ERROR
 
 
+def test_operational_configuration_repr_redacts_secret_token(tmp_path: Path) -> None:
+    repo_path = (tmp_path / "searchleads.sqlite").resolve()
+    config_with_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token="super-secret-12345",
+    )
+    repr_str = repr(config_with_secret)
+    assert "super-secret-12345" not in repr_str
+    assert "secret_token='***'" in repr_str
+
+    config_no_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token=None,
+    )
+    repr_no_secret = repr(config_no_secret)
+    assert "secret_token=None" in repr_no_secret
+
+
 def test_operational_runtime_health_readiness_and_failure_modes(tmp_path: Path) -> None:
     repository_path = tmp_path / "operational.sqlite"
     repository = SQLiteRepository(repository_path)
