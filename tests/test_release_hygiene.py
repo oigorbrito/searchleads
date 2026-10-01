@@ -48,6 +48,23 @@ def test_repository_hygiene_detects_strong_secret_without_echoing_value() -> Non
     assert "GITHUB_CLASSIC_PAT" in violation.detail
 
 
+def test_repository_hygiene_detects_apify_and_openai_secrets_without_echoing_values() -> None:
+    apify_secret = "apify_api_" + "x" * 32
+    openai_secret = "sk-proj-" + "y" * 32
+    assessment = assess_repository_hygiene(
+        {
+            "config.env": f"APIFY_TOKEN={apify_secret}\nOPENAI_KEY={openai_secret}\n"
+        }
+    )
+
+    assert not assessment.ready
+    patterns_found = {v.detail for v in assessment.violations}
+    assert apify_secret not in str(patterns_found)
+    assert openai_secret not in str(patterns_found)
+    assert any("APIFY_API_TOKEN" in d for d in patterns_found)
+    assert any("OPENAI_API_KEY" in d for d in patterns_found)
+
+
 def test_tracked_filename_hygiene_blocks_runtime_artifacts() -> None:
     assessment = assess_tracked_filenames(
         (
