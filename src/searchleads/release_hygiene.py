@@ -20,6 +20,8 @@ _STRONG_SECRET_PATTERNS = (
     ("AWS_ACCESS_KEY", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("GITHUB_CLASSIC_PAT", re.compile(r"\bghp_[A-Za-z0-9]{30,}\b")),
     ("GITHUB_FINE_GRAINED_PAT", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{40,}\b")),
+    ("APIFY_API_TOKEN", re.compile(r"\bapify_api_[A-Za-z0-9]{30,}\b")),
+    ("OPENAI_API_KEY", re.compile(r"\bsk-(?:proj-|live-)?[A-Za-z0-9_\-]{30,}\b")),
 )
 _FORBIDDEN_TRACKED_NAMES = (".env", ".coverage")
 _FORBIDDEN_TRACKED_SUFFIXES = (".sqlite", ".sqlite3", ".db", ".pyc")
