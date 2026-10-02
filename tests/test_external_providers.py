@@ -41,6 +41,16 @@ def test_client_sends_token_only_in_header_and_bounds():
     assert json.loads(seen['body'])=={'queries':'x'}
     assert seen['timeout']==3
 
+def test_client_validates_base_url():
+    with pytest.raises(ValueError, match="base_url must be an absolute http/https URL"):
+        ApifyActorClient(base_url="file:///etc/passwd")
+    with pytest.raises(ValueError, match="base_url must be an absolute http/https URL"):
+        ApifyActorClient(base_url="ftp://api.apify.com")
+    with pytest.raises(ValueError, match="base_url must be an absolute http/https URL"):
+        ApifyActorClient(base_url="/relative/path")
+    client = ApifyActorClient(base_url="https://api.apify.com/v2/")
+    assert client._base_url == "https://api.apify.com/v2"
+
 def test_client_validates_inputs_and_payload_shapes():
     c=ApifyActorClient(lambda *a: [])
     with pytest.raises(ValueError): c.run_sync_get_dataset_items('a/b',{},token='')
