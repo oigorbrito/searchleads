@@ -5,7 +5,7 @@ from datetime import datetime
 import hashlib, json, re
 from typing import Any, Callable, Iterable, Mapping
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 from searchleads.domain import Evidence, Source, utc_now
 from searchleads.persistence import EvidenceEnvelopeConsistencyError, EvidenceEnvelopeIntegrityError, SQLiteRepository
@@ -34,6 +34,15 @@ def _interface_language(language_code:str,country_code:str)->str:
     language=language_code.strip(); country=country_code.strip().lower()
     return "pt-BR" if language.lower()=="pt" and country=="br" else language
 
+def _require_api_url(url: str) -> str:
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise ValueError("base_url must be an absolute http/https URL") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("base_url must be an absolute http/https URL")
+    return url.rstrip("/")
+
 def _http_post_json(url:str,headers:Mapping[str,str],body:bytes,timeout:float)->Any:
     request=Request(url,data=body,headers=dict(headers),method="POST")
     try:
@@ -45,7 +54,8 @@ def _http_post_json(url:str,headers:Mapping[str,str],body:bytes,timeout:float)->
 
 class ApifyActorClient:
     def __init__(self,transport:JsonPostTransport|None=None,*,base_url:str=APIFY_API_BASE_URL)->None:
-        self._transport=transport or _http_post_json; self._base_url=base_url.rstrip("/")
+        self._transport=transport or _http_post_json
+        self._base_url=_require_api_url(base_url)
     def run_sync_get_dataset_items(self,actor_id:str,run_input:Mapping[str,Any],*,token:str,timeout_seconds:float=120.0,max_items:int=200)->tuple[Mapping[str,Any],...]:
         actor=_normalized_actor_id(actor_id)
         if not token.strip(): raise ValueError("Apify token must be non-blank")
