@@ -202,12 +202,16 @@ def _decode_value(value: Any) -> Any:
 
 def encode_record(record: Record) -> str:
     """Serialize a supported immutable domain record to deterministic JSON."""
-    field_names = _RECORD_FIELD_NAMES.get(type(record))
-    if field_names is None or not is_dataclass(record):
-        raise PersistenceEncodingError(f"unsupported record type: {type(record).__name__}")
+    rec_type = type(record)
+    field_names = _RECORD_FIELD_NAMES.get(rec_type)
+    if field_names is None:
+        if rec_type not in _ID_FIELDS or not is_dataclass(record):
+            raise PersistenceEncodingError(f"unsupported record type: {rec_type.__name__}")
+        field_names = tuple(f.name for f in fields(rec_type))
+        _RECORD_FIELD_NAMES[rec_type] = field_names
     document = {
         "codec_version": _CODEC_VERSION,
-        "record_type": type(record).__name__,
+        "record_type": rec_type.__name__,
         "fields": {name: _encode_value(getattr(record, name)) for name in field_names},
     }
     return json.dumps(document, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
