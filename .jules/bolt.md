@@ -1,0 +1,3 @@
+## 2025-05-18 - String Normalization Caching in Entity Resolution
+**Learning:** Company entity resolution blocking and pairwise feature comparisons perform redundant NFKC/NFKD unicode folding (`_fold`) and candidate fact normalization (`_wu4`). Because entity resolution runs blocking key generation and feature matching across large candidate sets with repeating field values (cities, states, domains, phone numbers), repeated normalization without caching is a major CPU bottleneck (~7x speedup with LRU cache).
+**Action:** Memoize pure string normalization and folding functions (`_fold` and `_wu4`) using `functools.lru_cache` in entity resolution modules.

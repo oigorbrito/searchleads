@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -113,6 +114,8 @@ class BlockingMetrics:
     reduction_ratio: float
 
 
+# Memoize unicode folding to avoid redundant NFKC/NFKD normalization during ER pairwise comparisons
+@lru_cache(maxsize=4096)
 def _fold(value: str | None) -> str | None:
     if value is None:
         return None
@@ -150,6 +153,8 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+# Memoize fact normalization to avoid redundant CandidateFact creation & normalization during ER feature comparison
+@lru_cache(maxsize=4096)
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
