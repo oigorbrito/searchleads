@@ -68,6 +68,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [[ -z "${PROJECT_TOKEN:-}" ]]; then
+            echo "PROJECT_TOKEN (secrets.PROJECT4_ADD_PAT) is missing or empty; skipping Project 4 sync."
+            exit 0
+          fi
+
           # Done is fail-closed. If the completed Issue has closing PRs, every
           # closing PR must be merged and the newest pull-request CI run for
           # that exact PR head SHA must be completed/success. Any missing,
