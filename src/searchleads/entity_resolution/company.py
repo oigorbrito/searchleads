@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -256,6 +257,10 @@ def evaluate(pairs: Iterable[LabeledPair], *, strategy: Strategy, threshold: flo
     return EvaluationMetrics(tp, fp, tn, fn, precision, recall, f1, fmr)
 
 
+# Memoize blocking key computation for immutable CompanyRecord instances.
+# Eliminates redundant string normalization and candidate fact normalization
+# during O(N^2) blocking evaluations across large record corpora.
+@lru_cache(maxsize=4096)
 def blocking_keys(record: CompanyRecord) -> frozenset[str]:
     keys: set[str] = set()
     if registry := _registry(record): keys.add(f"registry:{registry[0]}:{registry[1]}")
