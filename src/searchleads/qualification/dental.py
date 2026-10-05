@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from functools import lru_cache
 import hashlib
 import re
 import unicodedata
@@ -30,10 +31,19 @@ _INTENT_FIELD='education_intent'
 _REQUIRED_CONFLICT_FIELDS=_TITLE_FIELDS|_GEO_FIELDS
 
 
+@lru_cache(maxsize=2048)
+def _fold_str(text: str) -> str:
+    norm=unicodedata.normalize('NFKC',text).casefold()
+    norm=''.join(ch for ch in unicodedata.normalize('NFKD',norm) if not unicodedata.combining(ch))
+    return ' '.join(norm.split())
+
+
+# Bolt performance optimization: Memoize string folding in dental qualification policy
+# evaluation to avoid redundant NFKC/NFKD unicodedata normalization on repeated candidate facts.
 def _fold(value: object) -> str:
-    text=unicodedata.normalize('NFKC',str(value)).casefold()
-    text=''.join(ch for ch in unicodedata.normalize('NFKD',text) if not unicodedata.combining(ch))
-    return ' '.join(text.split())
+    if value is None:
+        return ""
+    return _fold_str(str(value))
 
 
 def _effective_candidate_value(fact: CandidateFact) -> object:

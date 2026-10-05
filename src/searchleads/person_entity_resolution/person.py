@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from functools import lru_cache
 import re
 import unicodedata
 from typing import Iterable, Sequence
@@ -116,6 +117,9 @@ class PersonResolutionMetrics:
     positive_review_recall: float
 
 
+# Bolt performance optimization: Memoize Unicode folding for person entity resolution to
+# avoid redundant NFKC/NFKD normalizations during record comparisons.
+@lru_cache(maxsize=2048)
 def _fold(value: str) -> str:
     text = " ".join(unicodedata.normalize("NFKC", value).split()).casefold()
     return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
