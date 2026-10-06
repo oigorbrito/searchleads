@@ -80,7 +80,7 @@ class TransportRegression(unittest.TestCase):
                        PR_NUMBER="156", SOURCE_HEAD=SOURCE_HEAD, READINESS_VERSION=version,
                        GITHUB_EVENT_NAME=event, GITHUB_OUTPUT=str(task / "output"),
                        GITHUB_STEP_SUMMARY=str(task / "summary"))
-            result = subprocess.run(["bash", "-c", query_block()], cwd=task, env=env,
+            result = subprocess.run(["/bin/bash"], input=query_block(), cwd=task, env=env,
                                     text=True, capture_output=True, timeout=10)
             observations = [line for line in result.stdout.splitlines()
                             if line.startswith("OBSERVATION ")]
