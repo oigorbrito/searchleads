@@ -91,43 +91,51 @@ jobs:
             }
           }'
 
-          gh api graphql \
-            -f query="$query" \
-            -F owner="$OWNER" \
-            -F name="$REPO" \
-            -F number="$PR_NUMBER" \
-            > response.json
-
-          jq -e '.data.repository.pullRequest != null' response.json >/dev/null
-
-          if [[ "$READINESS_VERSION" == v2 ]]; then
-            source .github/scripts/repository-steward-readiness-classifier-v2.sh
-            if extracted="$(readiness_extract_v2 response.json)"; then
-              IFS=$'\t' read -r state draft base head head_sha mergeable merge_state review checks <<< "$extracted"
-              decision="$(readiness_classify_v2 "$state" "$draft" "$merge_state" "$mergeable" "$checks" "$review")"
+          for attempt in 0 1 2 3 4 5 6; do
+            gh api graphql \
+              -f query="$query" \
+              -F owner="$OWNER" \
+              -F name="$REPO" \
+              -F number="$PR_NUMBER" \
+              > response.json
+  
+            jq -e '.data.repository.pullRequest != null' response.json >/dev/null
+  
+            if [[ "$READINESS_VERSION" == v2 ]]; then
+              source .github/scripts/repository-steward-readiness-classifier-v2.sh
+              if extracted="$(readiness_extract_v2 response.json)"; then
+                IFS=$'\t' read -r state draft base head head_sha mergeable merge_state review checks <<< "$extracted"
+                decision="$(readiness_classify_v2 "$state" "$draft" "$merge_state" "$mergeable" "$checks" "$review")"
+              else
+                state=UNKNOWN draft=UNKNOWN base=UNKNOWN head=UNKNOWN head_sha=UNKNOWN
+                mergeable=UNKNOWN merge_state=UNKNOWN review=UNKNOWN checks=UNKNOWN
+                decision=READINESS_UNKNOWN
+              fi
             else
-              state=UNKNOWN draft=UNKNOWN base=UNKNOWN head=UNKNOWN head_sha=UNKNOWN
-              mergeable=UNKNOWN merge_state=UNKNOWN review=UNKNOWN checks=UNKNOWN
+              state="$(jq -r '.data.repository.pullRequest.state' response.json)"
+              draft="$(jq -r '.data.repository.pullRequest.isDraft' response.json)"
+              base="$(jq -r '.data.repository.pullRequest.baseRefName' response.json)"
+              head="$(jq -r '.data.repository.pullRequest.headRefName' response.json)"
+              head_sha="$(jq -r '.data.repository.pullRequest.headRefOid' response.json)"
+              mergeable="$(jq -r '.data.repository.pullRequest.mergeable' response.json)"
+              merge_state="$(jq -r '.data.repository.pullRequest.mergeStateStatus' response.json)"
+              review="$(jq -r '.data.repository.pullRequest.reviewDecision // "NONE"' response.json)"
+              checks="$(jq -r '.data.repository.pullRequest.statusCheckRollup.state // "NONE"' response.json)"
+              decision="$(readiness_classify "$state" "$draft" "$merge_state" "$mergeable" "$checks")"
+            fi
+  
+            if [[ "$GITHUB_EVENT_NAME" == workflow_run && "$head_sha" != "$SOURCE_HEAD" ]]; then
               decision=READINESS_UNKNOWN
             fi
-          else
-            state="$(jq -r '.data.repository.pullRequest.state' response.json)"
-            draft="$(jq -r '.data.repository.pullRequest.isDraft' response.json)"
-            base="$(jq -r '.data.repository.pullRequest.baseRefName' response.json)"
-            head="$(jq -r '.data.repository.pullRequest.headRefName' response.json)"
-            head_sha="$(jq -r '.data.repository.pullRequest.headRefOid' response.json)"
-            mergeable="$(jq -r '.data.repository.pullRequest.mergeable' response.json)"
-            merge_state="$(jq -r '.data.repository.pullRequest.mergeStateStatus' response.json)"
-            review="$(jq -r '.data.repository.pullRequest.reviewDecision // "NONE"' response.json)"
-            checks="$(jq -r '.data.repository.pullRequest.statusCheckRollup.state // "NONE"' response.json)"
-            decision="$(readiness_classify "$state" "$draft" "$merge_state" "$mergeable" "$checks")"
-          fi
-
-          if [[ "$GITHUB_EVENT_NAME" == workflow_run && "$head_sha" != "$SOURCE_HEAD" ]]; then
-            decision=READINESS_UNKNOWN
-          fi
-
-          echo "OBSERVATION state=$state draft=$draft mergeStateStatus=$merge_state mergeable=$mergeable reviewDecision=$review checks=$checks base=$base head=$head head_sha=$head_sha decision=$decision protocol=$READINESS_VERSION"
+  
+            echo "OBSERVATION state=$state draft=$draft mergeStateStatus=$merge_state mergeable=$mergeable reviewDecision=$review checks=$checks base=$base head=$head head_sha=$head_sha decision=$decision protocol=$READINESS_VERSION attempt=$attempt"
+  
+            if [[ "$GITHUB_EVENT_NAME" == workflow_run && "$READINESS_VERSION" == v2 && "$decision" == NOT_READY_CHECKS && "$checks" == PENDING && "$attempt" -lt 6 ]]; then
+              sleep 10
+              continue
+            fi
+            break
+          done
 
           {
             echo "## Repository Steward Readiness Observer"
