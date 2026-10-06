@@ -1,0 +1,28 @@
+name: Repository Steward Installation Diagnostics
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/repository-steward-installation-diagnostics.yml'
+
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  codacy-annotation:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_REPOSITORY: ${{ github.repository }}
+      CHECK_ID: '112479077492'
+      EXPECTED_HEAD: '53a77324701ae72b1ddbb33e02e7a916c96a2e5c'
+    steps:
+      - name: Read existing check annotation without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$TARGET_REPOSITORY/check-runs/$CHECK_ID" > check.json
+          jq -e --arg head "$EXPECTED_HEAD" '.head_sha == $head and .name == "Codacy Static Code Analysis"' check.json >/dev/null
+          gh api "repos/$TARGET_REPOSITORY/check-runs/$CHECK_ID/annotations" > annotations.json
+          jq -c '.[] | {path,start_line,end_line,annotation_level,message,title}' annotations.json
