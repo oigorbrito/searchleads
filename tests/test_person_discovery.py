@@ -138,6 +138,15 @@ def test_invalid_people_page_url_rejected(url: str) -> None:
     with pytest.raises(ValueError): discover_person_roles_from_html(url, page_for())
 
 
+@pytest.mark.parametrize("url", [
+    "https://user:password@example.com/leadership",
+    "http://user@example.com/leadership",
+])
+def test_people_page_url_with_credentials_is_rejected(url: str) -> None:
+    with pytest.raises(ValueError, match="embedded credentials"):
+        discover_person_roles_from_html(url, page_for())
+
+
 def test_html_must_be_text() -> None:
     with pytest.raises(TypeError): discover_person_roles_from_html(URL, b"x")  # type: ignore[arg-type]
 

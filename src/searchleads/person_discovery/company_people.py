@@ -230,6 +230,8 @@ def discover_person_roles_from_html(url: str, html: str, *, contact_window_event
     parsed = urlsplit(url)
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
         raise ValueError("url must be an absolute http/https URL")
+    if parsed.username or parsed.password:
+        raise ValueError("url must not contain embedded credentials")
     if not isinstance(html, str):
         raise TypeError("html must be text")
     if contact_window_events < 1:
