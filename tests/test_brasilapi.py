@@ -363,6 +363,12 @@ def test_http_transport_rejects_non_decodable_text(monkeypatch: pytest.MonkeyPat
         http_get(f"{BASE_URL}/{CNPJ}", timeout=1)
 
 
+@pytest.mark.parametrize("invalid_url", ["file:///etc/passwd", "ftp://example.com/file", "relative/path", "http://", "https:///no-host"])
+def test_http_get_rejects_non_http_urls(invalid_url: str) -> None:
+    with pytest.raises(ValueError, match="url must be an absolute http/https URL"):
+        http_get(invalid_url)
+
+
 def test_headers_dict_handles_object_without_items() -> None:
     assert _headers_dict(object()) == {}
 

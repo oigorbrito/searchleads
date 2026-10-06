@@ -5,7 +5,7 @@ from datetime import datetime
 import hashlib, json, re
 from typing import Any, Callable, Iterable, Mapping
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 from searchleads.domain import Evidence, Source, utc_now
 from searchleads.persistence import EvidenceEnvelopeConsistencyError, EvidenceEnvelopeIntegrityError, SQLiteRepository
@@ -35,6 +35,12 @@ def _interface_language(language_code:str,country_code:str)->str:
     return "pt-BR" if language.lower()=="pt" and country=="br" else language
 
 def _http_post_json(url:str,headers:Mapping[str,str],body:bytes,timeout:float)->Any:
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("url must be an absolute http/https URL")
+    except ValueError as exc:
+        raise ApifyTransportError(f"Apify request failed: {exc}") from exc
     request=Request(url,data=body,headers=dict(headers),method="POST")
     try:
         with urlopen(request,timeout=timeout) as response:
