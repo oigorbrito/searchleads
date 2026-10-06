@@ -52,12 +52,12 @@ readiness_extract_v2() {
 }
 
 readiness_response_classify_v2() {
-  local extracted state draft base head head_sha mergeable merge_state review checks
+  local extracted state draft _base _head _head_sha mergeable merge_state review checks
   if ! extracted="$(readiness_extract_v2 "$1")"; then
     printf '%s' READINESS_UNKNOWN
     return
   fi
-  IFS=$'\t' read -r state draft base head head_sha mergeable merge_state review checks <<< "$extracted"
+  IFS=$'\t' read -r state draft _base _head _head_sha mergeable merge_state review checks <<< "$extracted"
   readiness_classify_v2 "$state" "$draft" "$merge_state" "$mergeable" "$checks" "$review"
 }
 
