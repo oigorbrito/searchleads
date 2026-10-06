@@ -154,3 +154,8 @@ def test_http_transport_success_decodes_json(monkeypatch):
         def read(self): return b'[{"ok":true}]'
     monkeypatch.setattr(m,'urlopen',lambda *a,**k: Response())
     assert _http_post_json('https://x.test',{},b'{}',1)==[{'ok':True}]
+
+@pytest.mark.parametrize("invalid_url", ["file:///etc/passwd", "ftp://example.com", "http://", "relative/path"])
+def test_http_post_json_rejects_non_http_urls(invalid_url: str) -> None:
+    with pytest.raises(ApifyTransportError, match="url must be an absolute http/https URL"):
+        _http_post_json(invalid_url, {}, b"{}", 1)
