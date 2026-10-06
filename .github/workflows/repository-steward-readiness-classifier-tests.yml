@@ -30,3 +30,6 @@ jobs:
 
       - name: Run current-head association matrix
         run: bash .github/scripts/repository-steward-readiness-run-association-tests.sh
+
+      - name: Run actual-workflow bounded transport regression
+        run: python3 .github/scripts/repository-steward-readiness-transport-tests.py
