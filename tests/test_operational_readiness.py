@@ -92,6 +92,8 @@ def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> N
     assert configuration.repository_path == repo_path
     assert configuration.backup_path == backup_path
     assert configuration.log_level == "DEBUG"
+    assert configuration.secret_token == "secret-token"
+    assert "secret-token" not in repr(configuration)
     assert configuration.classification_map()["SEARCHLEADS_REPOSITORY_PATH"] == (
         ConfigurationClassification.REQUIRED,
         ConfigurationClassification.NON_SECRET,
