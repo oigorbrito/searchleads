@@ -64,6 +64,12 @@ def test_config_and_provider_validation():
     with pytest.raises(ValueError): ApifyGoogleSearchConfig(timeout_seconds=0)
     with pytest.raises(ValueError): ApifyGoogleSearchProvider('')
 
+def test_provider_repr_masks_secret_token():
+    provider = ApifyGoogleSearchProvider('sk_live_secret_token_abc123')
+    repr_str = repr(provider)
+    assert 'sk_live_secret_token_abc123' not in repr_str
+    assert 'token=\'***\'' in repr_str
+
 def payload_for(term='dentista CRO Brasil',organic=None,url='https://www.google.com/search?q=dentista'):
     return [{'searchQuery':{'term':term,'url':url},'organicResults': organic if organic is not None else [{'title':'Dra Ana Dentista CRO-SP 12345','url':'https://clinic.example/ana','description':'Blefaroplastia','position':1}]}]
 
