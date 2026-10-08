@@ -83,6 +83,8 @@ class ApifyGoogleSearchProvider:
     def __init__(self,token:str,*,client:ApifyActorClient|None=None,config:ApifyGoogleSearchConfig=ApifyGoogleSearchConfig())->None:
         if not token.strip(): raise ValueError("Apify token must be non-blank")
         self._token=token.strip(); self._client=client or ApifyActorClient(); self.config=config
+    def __repr__(self)->str:
+        return f"ApifyGoogleSearchProvider(provider_id={self.provider_id!r}, token='***', config={self.config!r})"
     @staticmethod
     def _query_key(value:str)->str: return " ".join(value.split()).casefold()
     def search(self,repository:SQLiteRepository,queries:Iterable[WebSearchQuery],*,retrieved_at:datetime|None=None)->WebSearchBatch:

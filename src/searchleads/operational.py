@@ -529,6 +529,20 @@ class OperationalConfiguration:
     deployment_mode: str = "local"
     log_level: str = "INFO"
 
+    def __repr__(self) -> str:
+        token_repr = "'***'" if self.secret_token is not None else "None"
+        return (
+            f"OperationalConfiguration("
+            f"repository_path={self.repository_path!r}, "
+            f"backup_path={self.backup_path!r}, "
+            f"runtime_source_id={self.runtime_source_id!r}, "
+            f"runtime_source_url={self.runtime_source_url!r}, "
+            f"secret_token={token_repr}, "
+            f"schema_version={self.schema_version!r}, "
+            f"deployment_mode={self.deployment_mode!r}, "
+            f"log_level={self.log_level!r})"
+        )
+
     FIELD_CATALOG: ClassVar[tuple[ConfigurationField, ...]] = (
         ConfigurationField(
             "SEARCHLEADS_REPOSITORY_PATH",
