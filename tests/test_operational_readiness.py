@@ -134,6 +134,24 @@ def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> N
     assert unsupported_schema.value.failure_class is OperationalFailureClass.SCHEMA_ERROR
 
 
+def test_operational_configuration_verify_secret_token_constant_time(tmp_path: Path) -> None:
+    repo_path = (tmp_path / "searchleads.sqlite").resolve()
+    config_with_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token="super-secret-token",
+    )
+    config_no_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token=None,
+    )
+
+    assert config_with_secret.verify_secret_token("super-secret-token") is True
+    assert config_with_secret.verify_secret_token("wrong-secret-token") is False
+    assert config_with_secret.verify_secret_token(None) is False
+    assert config_no_secret.verify_secret_token("super-secret-token") is False
+    assert config_no_secret.verify_secret_token(None) is False
+
+
 def test_operational_runtime_health_readiness_and_failure_modes(tmp_path: Path) -> None:
     repository_path = tmp_path / "operational.sqlite"
     repository = SQLiteRepository(repository_path)

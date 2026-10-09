@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import StrEnum
+import hmac
 import json
 from pathlib import Path
 from typing import Any, Callable, ClassVar, Mapping
@@ -637,6 +638,12 @@ class OperationalConfiguration:
             deployment_mode=deployment_mode,
             log_level=log_level,
         )
+
+    def verify_secret_token(self, provided_token: str | None) -> bool:
+        """Verify provided secret token using constant-time comparison to prevent timing side-channel attacks."""
+        if self.secret_token is None or provided_token is None:
+            return False
+        return hmac.compare_digest(self.secret_token, provided_token)
 
     def classification_map(self) -> dict[str, tuple[ConfigurationClassification, ...]]:
         return {field.env_var: field.classifications for field in self.FIELD_CATALOG}
