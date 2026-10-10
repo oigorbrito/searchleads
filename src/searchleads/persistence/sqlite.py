@@ -379,11 +379,13 @@ class SQLiteRepository:
             )
 
     def _set_schema_version(self, version: int) -> None:
+        if not isinstance(version, int) or isinstance(version, bool):
+            raise TypeError("schema version must be an integer")
         self._connection.execute(
             "UPDATE schema_meta SET schema_version = ? WHERE singleton = 1",
             (version,),
         )
-        self._connection.execute(f"PRAGMA user_version = {version}")
+        self._connection.execute(f"PRAGMA user_version = {int(version)}")
 
     def _columns(self, table: str) -> set[str]:
         if table not in {"schema_meta", "domain_records", "evidence_records", "schema_migrations"}:

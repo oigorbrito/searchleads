@@ -505,3 +505,13 @@ def test_company_aggregate_reference_snapshots_do_not_create_insertion_cycle() -
     with SQLiteRepository() as repo:
         assert repo.save(company) is True
         assert repo.load(Company, "company") == company
+
+
+def test_set_schema_version_validates_integer() -> None:
+    with SQLiteRepository() as repo:
+        repo._set_schema_version(2)
+        assert repo.schema_version == 2
+        with pytest.raises(TypeError, match="schema version must be an integer"):
+            repo._set_schema_version("2; DROP TABLE schema_meta;")  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="schema version must be an integer"):
+            repo._set_schema_version(True)  # type: ignore[arg-type]
