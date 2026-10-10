@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -113,6 +114,8 @@ class BlockingMetrics:
     reduction_ratio: float
 
 
+# Memoize string folding/normalization to avoid redundant unicode NFKC/NFKD processing
+@lru_cache(maxsize=1024)
 def _fold(value: str | None) -> str | None:
     if value is None:
         return None
@@ -150,6 +153,8 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+# Memoize candidate fact normalization projections for domain and phone fields
+@lru_cache(maxsize=1024)
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
@@ -256,6 +261,8 @@ def evaluate(pairs: Iterable[LabeledPair], *, strategy: Strategy, threshold: flo
     return EvaluationMetrics(tp, fp, tn, fn, precision, recall, f1, fmr)
 
 
+# Memoize blocking key computation per CompanyRecord
+@lru_cache(maxsize=2048)
 def blocking_keys(record: CompanyRecord) -> frozenset[str]:
     keys: set[str] = set()
     if registry := _registry(record): keys.add(f"registry:{registry[0]}:{registry[1]}")
@@ -285,8 +292,10 @@ def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
-    for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+    # Pre-compute blocking keys per record to avoid O(N^2) redundant blocking_keys calls during pair combinations
+    record_keys = [blocking_keys(r) for r in records]
+    for (i, left), (j, right) in combinations(enumerate(records), 2):
+        if record_keys[i] & record_keys[j]:
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
