@@ -505,3 +505,23 @@ def test_wave09_manual_authorization_revocation_blocks_send_ready_proof() -> Non
     assert not revoked.active
     assert proof.result.ready is False
     assert proof.result.state is SendReadyState.COMPLIANCE_BLOCKED
+
+
+def test_operational_configuration_repr_redacts_secret_token(tmp_path: Path) -> None:
+    repo_path = tmp_path / "app.db"
+    config_with_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token="super_secret_value_12345",
+        schema_version=3,
+    )
+    repr_str = repr(config_with_secret)
+    assert "super_secret_value_12345" not in repr_str
+    assert "secret_token='***'" in repr_str
+
+    config_without_secret = OperationalConfiguration(
+        repository_path=repo_path,
+        secret_token=None,
+        schema_version=3,
+    )
+    repr_str_none = repr(config_without_secret)
+    assert "secret_token=None" in repr_str_none
