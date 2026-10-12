@@ -139,10 +139,23 @@ def test_invalid_mailto_is_ignored() -> None:
     assert discover_contacts_from_html(URL, '<a href="mailto:a@invalid">bad</a>') == ()
 
 
-@pytest.mark.parametrize("url", ["example.com/contact", "ftp://example.com/contact", "http://", "https://[bad"])
+@pytest.mark.parametrize("url", [
+    "example.com/contact",
+    "ftp://example.com/contact",
+    "http://",
+    "https://[bad",
+    "https://user:pass@example.com/contact",
+    "http://admin@example.com/",
+])
 def test_invalid_page_url_is_rejected(url: str) -> None:
     with pytest.raises(ValueError):
         discover_contacts_from_html(url, HTML)
+
+
+def test_normalized_http_url_rejects_credentials() -> None:
+    from searchleads.contact_discovery.company_page import _normalized_http_url
+    assert _normalized_http_url("https://example.com", "https://user:pass@example.com/contact") is None
+    assert _normalized_http_url("https://user:pass@example.com", "/contact") is None
 
 
 def test_html_must_be_text() -> None:
