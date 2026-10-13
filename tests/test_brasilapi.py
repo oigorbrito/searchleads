@@ -392,3 +392,20 @@ def test_content_address_collision_guard_rejects_inconsistent_existing_evidence(
         monkeypatch.setattr(repo, "load_evidence", lambda evidence_id: fake)
         with pytest.raises(BrasilAPIAcquisitionError):
             adapter.ingest(CNPJ, repo)
+
+
+@pytest.mark.parametrize(
+    "invalid_url",
+    [
+        "file:///etc/passwd",
+        "ftp://example.com/resource",
+        "",
+        "   ",
+        123,
+        "http:///no-host",
+        "https://user:pass@brasilapi.com.br/api/cnpj/v1/123",
+    ],
+)
+def test_http_get_rejects_invalid_or_non_http_urls(invalid_url: object) -> None:
+    with pytest.raises(BrasilAPIAcquisitionError):
+        http_get(invalid_url)  # type: ignore[arg-type]
