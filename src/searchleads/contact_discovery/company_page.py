@@ -85,7 +85,12 @@ def _require_page_url(url: str) -> None:
         parsed = urlsplit(url)
     except ValueError as exc:
         raise ValueError("url must be an absolute http/https URL") from exc
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+    if (
+        parsed.scheme.lower() not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
         raise ValueError("url must be an absolute http/https URL")
 
 
