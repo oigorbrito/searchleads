@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+import functools
 import hashlib
 import re
 import unicodedata
@@ -29,11 +30,21 @@ _GEO_FIELDS=frozenset({'country','state'})
 _INTENT_FIELD='education_intent'
 _REQUIRED_CONFLICT_FIELDS=_TITLE_FIELDS|_GEO_FIELDS
 
+_CEOF_RE = re.compile(r'(?<![a-z])ceof(?![a-z])')
+_HOF_RE = re.compile(r'(?<![a-z])hof(?![a-z])')
+
+
+@functools.lru_cache(maxsize=2048)
+def _fold_str(text: str) -> str:
+    # Inner LRU cached string folding to avoid expensive NFKC/NFKD unicodedata normalization on string inputs
+    normalized = unicodedata.normalize('NFKC', text).casefold()
+    cleaned = ''.join(ch for ch in unicodedata.normalize('NFKD', normalized) if not unicodedata.combining(ch))
+    return ' '.join(cleaned.split())
+
 
 def _fold(value: object) -> str:
-    text=unicodedata.normalize('NFKC',str(value)).casefold()
-    text=''.join(ch for ch in unicodedata.normalize('NFKD',text) if not unicodedata.combining(ch))
-    return ' '.join(text.split())
+    # Public wrapper to safely handle unhashable objects while benefiting from LRU caching on str(value)
+    return _fold_str(str(value))
 
 
 def _effective_candidate_value(fact: CandidateFact) -> object:
@@ -53,9 +64,9 @@ def _unique(values: Iterable[object]) -> tuple[object,...]:
 
 def _classify_title(value: object) -> str|None:
     text=_fold(value)
-    if 'cirurgia estetica orofacial' in text or re.search(r'(?<![a-z])ceof(?![a-z])',text): return 'CEOF'
+    if 'cirurgia estetica orofacial' in text or _CEOF_RE.search(text): return 'CEOF'
     if any(x in text for x in ('bucomax','buco maxilo','buco-maxilo','cirurgia e traumatologia bucomaxilofacial')): return 'BUCOMAXILLOFACIAL'
-    if any(x in text for x in ('harmonizacao orofacial','harmonizacao facial')) or re.search(r'(?<![a-z])hof(?![a-z])',text): return 'HOF_OR_FACIAL_ACTIVITY'
+    if any(x in text for x in ('harmonizacao orofacial','harmonizacao facial')) or _HOF_RE.search(text): return 'HOF_OR_FACIAL_ACTIVITY'
     if any(x in text for x in ('dentista','cirurgiao-dentista','cirurgiao dentista','odontolog')): return 'GENERAL_DENTIST'
     if any(x in text for x in ('ortodont','endodont','periodont','implantodont','odontopediatr','estomatolog','protesista','prostodont')): return 'DENTAL_SPECIALIST'
     return None
