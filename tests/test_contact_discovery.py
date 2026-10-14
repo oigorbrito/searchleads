@@ -139,7 +139,14 @@ def test_invalid_mailto_is_ignored() -> None:
     assert discover_contacts_from_html(URL, '<a href="mailto:a@invalid">bad</a>') == ()
 
 
-@pytest.mark.parametrize("url", ["example.com/contact", "ftp://example.com/contact", "http://", "https://[bad"])
+@pytest.mark.parametrize("url", [
+    "example.com/contact",
+    "ftp://example.com/contact",
+    "http://",
+    "https://[bad",
+    "http://user:pass@example.com/contact",
+    "https://user@example.com/contact",
+])
 def test_invalid_page_url_is_rejected(url: str) -> None:
     with pytest.raises(ValueError):
         discover_contacts_from_html(url, HTML)
