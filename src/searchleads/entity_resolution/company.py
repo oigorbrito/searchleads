@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -113,7 +114,9 @@ class BlockingMetrics:
     reduction_ratio: float
 
 
+@lru_cache(maxsize=2048)
 def _fold(value: str | None) -> str | None:
+    """Normalize diacritics, case, and whitespace in strings, cached for speed."""
     if value is None:
         return None
     text = " ".join(unicodedata.normalize("NFKC", value).split()).casefold()
@@ -130,7 +133,8 @@ def _similarity(left: str | None, right: str | None) -> float | None:
     a, b = _fold(left), _fold(right)
     if not a or not b:
         return None
-    ta, tb = set(_tokens(a)), set(_tokens(b))
+    # a and b are already folded strings, extract tokens directly to avoid re-folding
+    ta, tb = set(re.findall(r"[a-z0-9]+", a)), set(re.findall(r"[a-z0-9]+", b))
     jac = len(ta & tb) / len(ta | tb) if ta and tb else 0.0
     return max(SequenceMatcher(None, a, b).ratio(), jac)
 
@@ -150,7 +154,9 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+@lru_cache(maxsize=2048)
 def _wu4(field: str, value: str | None) -> str | None:
+    """Normalize candidate field value using V1 normalizers, cached for speed."""
     if value is None:
         return None
     result = normalize_candidate_fact(CandidateFact(
@@ -285,8 +291,10 @@ def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
-    for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+    # Precompute blocking keys for all records to avoid recomputing per pair in the O(N^2) loop
+    keys = [blocking_keys(record) for record in records]
+    for (i, left), (j, right) in combinations(enumerate(records), 2):
+        if keys[i] & keys[j]:
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
