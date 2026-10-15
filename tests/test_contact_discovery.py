@@ -145,6 +145,22 @@ def test_invalid_page_url_is_rejected(url: str) -> None:
         discover_contacts_from_html(url, HTML)
 
 
+@pytest.mark.parametrize("ssrf_url", [
+    "http://127.0.0.1/contact",
+    "https://localhost/contact",
+    "http://sub.localhost/contact",
+    "http://169.254.169.254/latest/meta-data/",
+    "http://10.0.0.1/contact",
+    "http://172.16.0.1/contact",
+    "http://192.168.1.1/contact",
+    "http://[::1]/contact",
+    "http://0.0.0.0/contact",
+])
+def test_ssrf_private_and_local_urls_are_rejected(ssrf_url: str) -> None:
+    with pytest.raises(ValueError, match="local or private networks"):
+        discover_contacts_from_html(ssrf_url, HTML)
+
+
 def test_html_must_be_text() -> None:
     with pytest.raises(TypeError):
         discover_contacts_from_html(URL, b"html")  # type: ignore[arg-type]

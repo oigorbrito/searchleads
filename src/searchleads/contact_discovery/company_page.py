@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from html.parser import HTMLParser
 import hashlib
+import ipaddress
 import re
 from typing import Callable, Mapping
 from urllib.error import HTTPError, URLError
@@ -80,6 +81,24 @@ class ContactDiscoveryResult:
 PageTransport = Callable[[str], HTTPPageObservation]
 
 
+def _is_private_or_local_host(host: str) -> bool:
+    host_lower = host.casefold().rstrip(".")
+    if host_lower == "localhost" or host_lower.endswith(".localhost"):
+        return True
+    try:
+        ip = ipaddress.ip_address(host_lower)
+        return (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        )
+    except ValueError:
+        return False
+
+
 def _require_page_url(url: str) -> None:
     try:
         parsed = urlsplit(url)
@@ -87,6 +106,8 @@ def _require_page_url(url: str) -> None:
         raise ValueError("url must be an absolute http/https URL") from exc
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
         raise ValueError("url must be an absolute http/https URL")
+    if _is_private_or_local_host(parsed.hostname):
+        raise ValueError("url hostname must not refer to local or private networks")
 
 
 def _decode_body(body: bytes, headers: object) -> str:
