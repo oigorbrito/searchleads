@@ -154,3 +154,7 @@ def test_http_transport_success_decodes_json(monkeypatch):
         def read(self): return b'[{"ok":true}]'
     monkeypatch.setattr(m,'urlopen',lambda *a,**k: Response())
     assert _http_post_json('https://x.test',{},b'{}',1)==[{'ok':True}]
+
+def test_http_transport_rejects_non_http_scheme():
+    with pytest.raises(ApifyTransportError, match="URL scheme 'file' is not allowed"):
+        _http_post_json('file:///etc/passwd', {}, b'{}', 1.0)

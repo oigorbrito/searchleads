@@ -392,3 +392,8 @@ def test_content_address_collision_guard_rejects_inconsistent_existing_evidence(
         monkeypatch.setattr(repo, "load_evidence", lambda evidence_id: fake)
         with pytest.raises(BrasilAPIAcquisitionError):
             adapter.ingest(CNPJ, repo)
+
+
+def test_http_get_rejects_non_http_scheme() -> None:
+    with pytest.raises(BrasilAPIAcquisitionError, match="invalid URL scheme 'file'"):
+        http_get("file:///etc/passwd")
