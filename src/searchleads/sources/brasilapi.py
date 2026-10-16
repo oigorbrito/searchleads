@@ -16,6 +16,7 @@ import json
 import re
 from typing import Callable, Mapping
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from searchleads.domain import CandidateFact, Company, DecisionClass, Evidence, Provenance, Source, utc_now
@@ -137,6 +138,10 @@ def _headers_dict(headers: object) -> dict[str, str]:
 
 def http_get(url: str, *, timeout: float = 20.0) -> HTTPObservation:
     """Acquire one BrasilAPI response with an explicit identifying User-Agent."""
+
+    parsed = urlsplit(url)
+    if parsed.scheme.casefold() not in {"http", "https"}:
+        raise BrasilAPIAcquisitionError(f"failed to acquire {url}: invalid URL scheme '{parsed.scheme}'")
 
     request = _build_request(url)
     try:
