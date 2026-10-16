@@ -282,12 +282,20 @@ def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
 
 def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     records = [record for p in pairs for record in (p.left, p.right)]
-    truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
+    # Precompute blocking keys per record to avoid O(N^2) re-computation of text normalization & regexes
+    keys_map = {id(r): blocking_keys(r) for r in records}
+    # Precompute duplicate pair ID tuple sets (min_id, max_id) to avoid frozenset construction in the loop
+    truth = {
+        (p.left.record_id, p.right.record_id) if p.left.record_id < p.right.record_id else (p.right.record_id, p.left.record_id)
+        for p in pairs if p.is_duplicate
+    }
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if keys_map[id(left)] & keys_map[id(right)]:
             candidates += 1
-            covered += frozenset((left.record_id, right.record_id)) in truth
+            pair_key = (left.record_id, right.record_id) if left.record_id < right.record_id else (right.record_id, left.record_id)
+            if pair_key in truth:
+                covered += 1
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
                            total, candidates, 1 - candidates / total if total else 0.0)
