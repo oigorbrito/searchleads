@@ -52,6 +52,21 @@ def test_csv_one_row_and_audit_cells():
     assert json.loads(rows[0]['facts'])['canonical'][0]['fact_id']=='can-state'
     assert json.loads(rows[0]['provenances'])[0]['provenance_id'].startswith('prov-')
 
+@pytest.mark.parametrize('formula_prefix', ['=', '+', '-', '@', '\t', '\r'])
+def test_csv_injection_mitigation(formula_prefix):
+    malicious_id = f"{formula_prefix}1+1"
+    b = base_bundle(
+        company=Company('c1'),
+        lead=Lead('l1', 'c1', LeadStage.REVIEW, QualificationStatus.UNKNOWN, (f"{formula_prefix}1+1",), NOW)
+    )
+    text = export_csv(b)
+    rows = list(csv.DictReader(io.StringIO(text)))
+    assert len(rows) == 1
+    # Check that any cell starting with formula_prefix is sanitized with a leading single quote
+    for val in rows[0].values():
+        if val.startswith(formula_prefix):
+            pytest.fail(f"Unsanitized formula found in CSV cell: {val}")
+
 def test_company_without_lead_exports():
     b=base_bundle(lead=None)
     data=to_export_dict(b); assert data['lead'] is None
