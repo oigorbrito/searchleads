@@ -505,3 +505,18 @@ def test_wave09_manual_authorization_revocation_blocks_send_ready_proof() -> Non
     assert not revoked.active
     assert proof.result.ready is False
     assert proof.result.state is SendReadyState.COMPLIANCE_BLOCKED
+
+
+def test_operational_configuration_redacts_secret_token_in_repr(tmp_path: Path) -> None:
+    repo_path = (tmp_path / "searchleads.sqlite").resolve()
+    secret = "super-secret-token-12345"
+    configuration = OperationalConfiguration.from_mapping(
+        {
+            "SEARCHLEADS_REPOSITORY_PATH": str(repo_path),
+            "SEARCHLEADS_SCHEMA_VERSION": "3",
+            "SEARCHLEADS_SECRET_TOKEN": secret,
+        }
+    )
+    assert configuration.secret_token == secret
+    assert secret not in repr(configuration)
+    assert secret not in str(configuration)
