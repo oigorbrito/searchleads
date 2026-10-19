@@ -85,20 +85,22 @@ def _normalize_host(host: str) -> str:
     host = host.rstrip(".")
     if not host:
         raise NormalizationError("host is blank")
-    try:
-        ip = ipaddress.ip_address(host)
-    except ValueError:
-        if _NON_IP_DIGITS_RE.fullmatch(host):
-            raise NormalizationError("host looks like an invalid IP literal")
+    # Fast path: only attempt IP address parsing if host contains a colon (IPv6) or consists solely of digits/dots (IPv4 candidate)
+    if ":" in host or _NON_IP_DIGITS_RE.fullmatch(host):
         try:
-            normalized = host.encode("idna").decode("ascii").lower()
-        except UnicodeError as exc:
-            raise NormalizationError("host cannot be converted to IDNA") from exc
-        labels = normalized.split(".")
-        if len(normalized) > 253 or any(_HOST_LABEL.fullmatch(label) is None for label in labels):
-            raise NormalizationError("host is invalid")
-        return normalized
-    return ip.compressed.lower()
+            ip = ipaddress.ip_address(host)
+            return ip.compressed.lower()
+        except ValueError:
+            if _NON_IP_DIGITS_RE.fullmatch(host):
+                raise NormalizationError("host looks like an invalid IP literal")
+    try:
+        normalized = host.encode("idna").decode("ascii").lower()
+    except UnicodeError as exc:
+        raise NormalizationError("host cannot be converted to IDNA") from exc
+    labels = normalized.split(".")
+    if len(normalized) > 253 or any(_HOST_LABEL.fullmatch(label) is None for label in labels):
+        raise NormalizationError("host is invalid")
+    return normalized
 
 
 def _normalize_domain(value: Any) -> tuple[str, str]:
@@ -208,6 +210,14 @@ _NORMALIZERS: dict[str, Normalizer] = {
 }
 
 
+def normalize_field_value(field_name: str, raw_value: Any) -> tuple[Any, str] | None:
+    """Normalize a raw field value directly using V1 rules without CandidateFact wrapping."""
+    normalizer = _NORMALIZERS.get(field_name)
+    if normalizer is None:
+        return None
+    return normalizer(raw_value)
+
+
 def normalize_candidate_fact(fact: CandidateFact) -> NormalizationResult:
     """Return a non-destructive normalized projection for one candidate fact."""
 
@@ -268,5 +278,6 @@ __all__ = [
     "NormalizationStatus",
     "normalize_candidate_fact",
     "normalize_candidate_facts",
+    "normalize_field_value",
     "normalize_persisted_candidate",
 ]
