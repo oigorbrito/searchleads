@@ -9,8 +9,7 @@ import re
 import unicodedata
 from typing import Iterable, Sequence
 
-from searchleads.domain import CandidateFact
-from searchleads.normalization import NormalizationStatus, normalize_candidate_fact
+from searchleads.normalization import NormalizationError, normalize_field_value
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,15 +152,13 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
-    result = normalize_candidate_fact(CandidateFact(
-        fact_id=f"er:{field}", subject_id="er:observation", field_name=field,
-        raw_value=value, normalized_value=None, evidence_ids=("er:evidence",),
-        provenance_id="er:provenance",
-    ))
-    if result.status not in {NormalizationStatus.NORMALIZED, NormalizationStatus.UNCHANGED}:
+    try:
+        res = normalize_field_value(field, value)
+    except NormalizationError:
         return None
-    assert result.normalized_fact is not None
-    normalized = result.normalized_fact.normalized_value
+    if res is None:
+        return None
+    normalized, _ = res
     return normalized if isinstance(normalized, str) else str(normalized)
 
 
