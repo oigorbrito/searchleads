@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -150,6 +151,7 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+@lru_cache(maxsize=2048)
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
@@ -256,6 +258,9 @@ def evaluate(pairs: Iterable[LabeledPair], *, strategy: Strategy, threshold: flo
     return EvaluationMetrics(tp, fp, tn, fn, precision, recall, f1, fmr)
 
 
+# Memoize blocking key calculations per immutable CompanyRecord instance to prevent
+# redundant text parsing and normalization across pairwise evaluation loops.
+@lru_cache(maxsize=2048)
 def blocking_keys(record: CompanyRecord) -> frozenset[str]:
     keys: set[str] = set()
     if registry := _registry(record): keys.add(f"registry:{registry[0]}:{registry[1]}")
@@ -282,11 +287,13 @@ def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
 
 def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     records = [record for p in pairs for record in (p.left, p.right)]
+    # Precompute blocking keys for all unique records to reduce blocking key calculations from O(N^2) to O(N).
+    record_keys = {record.record_id: blocking_keys(record) for record in records}
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if bool(record_keys[left.record_id] & record_keys[right.record_id]):
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
