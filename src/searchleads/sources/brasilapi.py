@@ -16,6 +16,7 @@ import json
 import re
 from typing import Callable, Mapping
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from searchleads.domain import CandidateFact, Company, DecisionClass, Evidence, Provenance, Source, utc_now
@@ -137,6 +138,13 @@ def _headers_dict(headers: object) -> dict[str, str]:
 
 def http_get(url: str, *, timeout: float = 20.0) -> HTTPObservation:
     """Acquire one BrasilAPI response with an explicit identifying User-Agent."""
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise BrasilAPIAcquisitionError(f"invalid URL {url!r}") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise BrasilAPIAcquisitionError(f"URL must be an absolute HTTP or HTTPS URL: {url!r}")
 
     request = _build_request(url)
     try:
