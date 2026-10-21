@@ -9,8 +9,7 @@ import re
 import unicodedata
 from typing import Iterable, Sequence
 
-from searchleads.domain import CandidateFact
-from searchleads.normalization import NormalizationStatus, normalize_candidate_fact
+from searchleads.normalization import NormalizationError, _NORMALIZERS
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,18 +150,18 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
 
 
 def _wu4(field: str, value: str | None) -> str | None:
+    # Direct normalization optimization: invokes field normalizers directly to bypass
+    # transient CandidateFact/NormalizationResult dataclass instantiation overhead.
     if value is None:
         return None
-    result = normalize_candidate_fact(CandidateFact(
-        fact_id=f"er:{field}", subject_id="er:observation", field_name=field,
-        raw_value=value, normalized_value=None, evidence_ids=("er:evidence",),
-        provenance_id="er:provenance",
-    ))
-    if result.status not in {NormalizationStatus.NORMALIZED, NormalizationStatus.UNCHANGED}:
+    normalizer = _NORMALIZERS.get(field)
+    if normalizer is None:
         return None
-    assert result.normalized_fact is not None
-    normalized = result.normalized_fact.normalized_value
-    return normalized if isinstance(normalized, str) else str(normalized)
+    try:
+        normalized_value, _ = normalizer(value)
+    except NormalizationError:
+        return None
+    return normalized_value if isinstance(normalized_value, str) else str(normalized_value)
 
 
 def _exact(left: str | None, right: str | None) -> bool | None:
@@ -273,20 +272,41 @@ def is_blocked_candidate(left: CompanyRecord, right: CompanyRecord) -> bool:
 
 
 def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
-    positives = [p for p in pairs if p.is_duplicate]
-    cp = sum(is_blocked_candidate(p.left, p.right) for p in positives)
-    candidates = sum(is_blocked_candidate(p.left, p.right) for p in pairs)
-    return BlockingMetrics(len(positives), cp, cp / len(positives) if positives else 0.0,
-                           len(pairs), candidates, 1 - candidates / len(pairs) if pairs else 0.0)
+    # Single-pass blocking evaluation over pairs to avoid duplicate checks for positive pairs.
+    total_pairs = len(pairs)
+    if not total_pairs:
+        return BlockingMetrics(0, 0, 0.0, 0, 0, 0.0)
+    positives_count = 0
+    cp = 0
+    candidates = 0
+    for p in pairs:
+        blocked = is_blocked_candidate(p.left, p.right)
+        if blocked:
+            candidates += 1
+        if p.is_duplicate:
+            positives_count += 1
+            if blocked:
+                cp += 1
+    return BlockingMetrics(
+        positives_count,
+        cp,
+        cp / positives_count if positives_count else 0.0,
+        total_pairs,
+        candidates,
+        1 - candidates / total_pairs,
+    )
 
 
 def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
+    # Performance optimization: precompute blocking_keys once per record using object IDs
+    # to eliminate O(N^2) redundant blocking key computations during pairwise combinations.
     records = [record for p in pairs for record in (p.left, p.right)]
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
+    keys_by_id = {id(r): blocking_keys(r) for r in records}
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if keys_by_id[id(left)] & keys_by_id[id(right)]:
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
