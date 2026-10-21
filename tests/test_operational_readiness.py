@@ -160,6 +160,9 @@ def test_operational_runtime_health_readiness_and_failure_modes(tmp_path: Path) 
     response = adapter.acquire(request)
     assert response.status_code == 200
 
+    with pytest.raises(ValueError):
+        AcquisitionRequest("request-2", "file:///etc/passwd", source.source_id, NOW, "acquisition")
+
     runtime.shutdown()
     assert runtime.stopped_at is not None
     repository.close()

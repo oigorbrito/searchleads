@@ -16,6 +16,7 @@ import json
 import re
 from typing import Callable, Mapping
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from searchleads.domain import CandidateFact, Company, DecisionClass, Evidence, Provenance, Source, utc_now
@@ -67,6 +68,12 @@ class HTTPObservation:
     def __post_init__(self) -> None:
         if not self.url.strip():
             raise ValueError("url must not be blank")
+        try:
+            parsed = urlsplit(self.url)
+        except ValueError as exc:
+            raise ValueError("url is invalid") from exc
+        if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("url must be an absolute http or https URL")
         if self.status_code < 100 or self.status_code > 599:
             raise ValueError("status_code must be a valid HTTP status")
         if self.captured_at.tzinfo is None:
@@ -137,6 +144,14 @@ def _headers_dict(headers: object) -> dict[str, str]:
 
 def http_get(url: str, *, timeout: float = 20.0) -> HTTPObservation:
     """Acquire one BrasilAPI response with an explicit identifying User-Agent."""
+
+    # Security: validate URL scheme to prevent file:// or non-HTTP protocol exposure
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise BrasilAPIAcquisitionError(f"invalid URL: {url}") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+        raise BrasilAPIAcquisitionError("url must be an absolute http or https URL")
 
     request = _build_request(url)
     try:
