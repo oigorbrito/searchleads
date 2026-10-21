@@ -95,14 +95,25 @@ def test_request_has_explicit_user_agent_and_json_accept_header() -> None:
 
 
 def test_http_observation_requires_valid_url_status_and_aware_time() -> None:
+    valid_url = f"{BASE_URL}/{CNPJ}"
     with pytest.raises(ValueError):
         HTTPObservation(" ", 200, "{}", NOW)
     with pytest.raises(ValueError):
-        HTTPObservation("x", 99, "{}", NOW)
+        HTTPObservation("file:///etc/passwd", 200, "{}", NOW)
     with pytest.raises(ValueError):
-        HTTPObservation("x", 600, "{}", NOW)
+        HTTPObservation("ftp://example.com/data", 200, "{}", NOW)
     with pytest.raises(ValueError):
-        HTTPObservation("x", 200, "{}", datetime(2026, 8, 24, 20, 30))
+        HTTPObservation(valid_url, 99, "{}", NOW)
+    with pytest.raises(ValueError):
+        HTTPObservation(valid_url, 600, "{}", NOW)
+    with pytest.raises(ValueError):
+        HTTPObservation(valid_url, 200, "{}", datetime(2026, 8, 24, 20, 30))
+
+
+@pytest.mark.parametrize("unsafe_url", ["file:///etc/passwd", "ftp://example.test", "gopher://example.test", "http:///no-host"])
+def test_http_get_rejects_unsafe_url_schemes(unsafe_url: str) -> None:
+    with pytest.raises(BrasilAPIAcquisitionError):
+        http_get(unsafe_url)
 
 
 def test_successful_ingestion_persists_raw_evidence_before_source_facts() -> None:

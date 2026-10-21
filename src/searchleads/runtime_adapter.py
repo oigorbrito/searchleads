@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Callable, Protocol
+from urllib.parse import urlsplit
 
 from searchleads.domain import Evidence, Source, utc_now
 from searchleads.sources.brasilapi import HTTPObservation
@@ -21,6 +22,12 @@ class AcquisitionRequest:
             raise ValueError("request_id must not be blank")
         if not self.url.strip():
             raise ValueError("url must not be blank")
+        try:
+            parsed = urlsplit(self.url)
+        except ValueError as exc:
+            raise ValueError("url is invalid") from exc
+        if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("url must be an absolute http or https URL")
         if not self.source_id.strip():
             raise ValueError("source_id must not be blank")
         if self.requested_at.tzinfo is None:
