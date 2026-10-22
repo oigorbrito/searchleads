@@ -273,10 +273,18 @@ def is_blocked_candidate(left: CompanyRecord, right: CompanyRecord) -> bool:
 
 
 def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
-    positives = [p for p in pairs if p.is_duplicate]
-    cp = sum(is_blocked_candidate(p.left, p.right) for p in positives)
-    candidates = sum(is_blocked_candidate(p.left, p.right) for p in pairs)
-    return BlockingMetrics(len(positives), cp, cp / len(positives) if positives else 0.0,
+    # Single-pass evaluation over pairs to avoid duplicate calls to is_blocked_candidate
+    positives = 0
+    cp = 0
+    candidates = 0
+    for pair in pairs:
+        if pair.is_duplicate:
+            positives += 1
+        if is_blocked_candidate(pair.left, pair.right):
+            candidates += 1
+            if pair.is_duplicate:
+                cp += 1
+    return BlockingMetrics(positives, cp, cp / positives if positives else 0.0,
                            len(pairs), candidates, 1 - candidates / len(pairs) if pairs else 0.0)
 
 
@@ -284,10 +292,12 @@ def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     records = [record for p in pairs for record in (p.left, p.right)]
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
+    # Precompute blocking_keys once per record to reduce blocking_keys calls from O(N^2) to O(N)
+    record_keys = [blocking_keys(record) for record in records]
     candidates = covered = 0
-    for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+    for i, j in combinations(range(len(records)), 2):
+        if record_keys[i] & record_keys[j]:
             candidates += 1
-            covered += frozenset((left.record_id, right.record_id)) in truth
+            covered += frozenset((records[i].record_id, records[j].record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
                            total, candidates, 1 - candidates / total if total else 0.0)
