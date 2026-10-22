@@ -312,6 +312,17 @@ def test_network_error_transport_raises_acquisition_error(monkeypatch: pytest.Mo
         http_get(f"{BASE_URL}/{CNPJ}", timeout=1)
 
 
+@pytest.mark.parametrize("invalid_url", [
+    "https://evil.com/api/cnpj/v1/33683111000280",
+    "http://brasilapi.com.br/api/cnpj/v1/33683111000280",
+    "https://brasilapi.com.br/other",
+    "https://brasilapi.com.br.evil.com/api/cnpj/v1",
+])
+def test_http_get_rejects_untrusted_urls(invalid_url: str) -> None:
+    with pytest.raises(BrasilAPIAcquisitionError, match="URL must be a BrasilAPI endpoint"):
+        http_get(invalid_url, timeout=1)
+
+
 def test_http_success_transport_reads_body_and_headers(monkeypatch: pytest.MonkeyPatch) -> None:
     headers = Message()
     headers["Content-Type"] = "application/json; charset=utf-8"

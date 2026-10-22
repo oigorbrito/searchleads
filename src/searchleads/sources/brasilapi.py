@@ -138,6 +138,9 @@ def _headers_dict(headers: object) -> dict[str, str]:
 def http_get(url: str, *, timeout: float = 20.0) -> HTTPObservation:
     """Acquire one BrasilAPI response with an explicit identifying User-Agent."""
 
+    if not url.startswith(f"{BASE_URL}/") and url != BASE_URL:
+        raise BrasilAPIAcquisitionError(f"URL must be a BrasilAPI endpoint starting with {BASE_URL}")
+
     request = _build_request(url)
     try:
         with urlopen(request, timeout=timeout) as response:
