@@ -1,0 +1,3 @@
+## 2026-03-31 - Precomputing blocking keys map in entity resolution evaluate_blocking_corpus
+**Learning:** Calling `is_blocked_candidate(left, right)` inside `combinations(records, 2)` recomputed `blocking_keys` $2 \times N(N-1)/2 = O(N^2)$ times with expensive regex/unicode normalization per call. Pre-computing a `key_map` map of `record_id -> blocking_keys(record)` beforehand reduced calls to $O(N)$ and sped up corpus evaluation by ~70x (from 1.78s to 0.025s for 5 calls).
+**Action:** Always pre-compute per-entity properties before nested pairwise or $O(N^2)$ combinations loops rather than computing them inside the loop.
