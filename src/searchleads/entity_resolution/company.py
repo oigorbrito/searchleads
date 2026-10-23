@@ -281,13 +281,20 @@ def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
 
 
 def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
-    records = [record for p in pairs for record in (p.left, p.right)]
+    # Deduplicate records by identity to avoid redundant blocking key generation
+    records_by_id = {record.record_id: record for p in pairs for record in (p.left, p.right)}
+    records = list(records_by_id.values())
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
+
+    # Pre-calculate blocking keys map once per distinct record to optimize corpus pairwise loop (O(N) instead of O(N^2))
+    key_map = {r.record_id: blocking_keys(r) for r in records}
+
     candidates = covered = 0
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if key_map[left.record_id] & key_map[right.record_id]:
             candidates += 1
-            covered += frozenset((left.record_id, right.record_id)) in truth
+            if frozenset((left.record_id, right.record_id)) in truth:
+                covered += 1
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
                            total, candidates, 1 - candidates / total if total else 0.0)
