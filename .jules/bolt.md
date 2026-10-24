@@ -1,0 +1,3 @@
+## 2025-05-18 - Memoizing Unicode folding and field normalization in Entity Resolution
+**Learning:** Company and Person entity resolution algorithms repeatedly compute Unicode NFKC/NFKD string folding (`_fold`), tokenization (`_tokens`), and CandidateFact normalization (`_wu4`) for identical record field values across thousands of candidate comparison pairs and blocking checks. Caching these pure, deterministic functions using `functools.lru_cache` eliminates millions of redundant regex, NFKD decomposition, and `unicodedata.combining` calls.
+**Action:** Use `@lru_cache` on pure text string normalizers and folding helpers in high-frequency ER matching loops.
