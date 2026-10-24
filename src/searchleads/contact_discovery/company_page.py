@@ -87,6 +87,9 @@ def _require_page_url(url: str) -> None:
         raise ValueError("url must be an absolute http/https URL") from exc
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
         raise ValueError("url must be an absolute http/https URL")
+    # Security: Reject embedded user credentials in URLs to prevent secret exposure
+    if parsed.username or parsed.password:
+        raise ValueError("url must not contain user credentials")
 
 
 def _decode_body(body: bytes, headers: object) -> str:
@@ -198,7 +201,8 @@ def _normalized_http_url(base_url: str, href: str) -> str | None:
         parsed = urlsplit(absolute)
     except ValueError:
         return None
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+    # Security: Reject URLs with embedded credentials
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
         return None
     scheme = parsed.scheme.lower()
     host = parsed.hostname.casefold().rstrip(".")

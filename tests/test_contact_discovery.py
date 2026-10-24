@@ -145,6 +145,22 @@ def test_invalid_page_url_is_rejected(url: str) -> None:
         discover_contacts_from_html(url, HTML)
 
 
+@pytest.mark.parametrize("url", [
+    "http://user:secret@example.com/contact",
+    "https://user@example.com/contact",
+    "https://:secret@example.com/contact",
+])
+def test_urls_with_embedded_credentials_are_rejected(url: str) -> None:
+    with pytest.raises(ValueError, match="user credentials"):
+        discover_contacts_from_html(url, HTML)
+
+
+def test_social_links_with_embedded_credentials_are_ignored() -> None:
+    html = '<a href="https://user:pass@www.linkedin.com/company/acme/">LinkedIn</a>'
+    found = discover_contacts_from_html(URL, html)
+    assert not any(x.kind is ContactKind.LINKEDIN for x in found)
+
+
 def test_html_must_be_text() -> None:
     with pytest.raises(TypeError):
         discover_contacts_from_html(URL, b"html")  # type: ignore[arg-type]
