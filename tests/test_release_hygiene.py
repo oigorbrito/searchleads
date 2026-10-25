@@ -48,6 +48,25 @@ def test_repository_hygiene_detects_strong_secret_without_echoing_value() -> Non
     assert "GITHUB_CLASSIC_PAT" in violation.detail
 
 
+def test_repository_hygiene_detects_openai_and_slack_secrets() -> None:
+    openai_secret = "sk-proj-" + "a" * 30
+    slack_secret = "xoxb-" + "1" * 12
+
+    assessment_openai = assess_repository_hygiene({"config.txt": f"OPENAI_KEY={openai_secret}\n"})
+    assert not assessment_openai.ready
+    violation_openai = assessment_openai.violations[0]
+    assert violation_openai.code == "STRONG_SECRET_PATTERN"
+    assert openai_secret not in violation_openai.detail
+    assert "OPENAI_API_KEY" in violation_openai.detail
+
+    assessment_slack = assess_repository_hygiene({"config.txt": f"SLACK_TOKEN={slack_secret}\n"})
+    assert not assessment_slack.ready
+    violation_slack = assessment_slack.violations[0]
+    assert violation_slack.code == "STRONG_SECRET_PATTERN"
+    assert slack_secret not in violation_slack.detail
+    assert "SLACK_TOKEN" in violation_slack.detail
+
+
 def test_tracked_filename_hygiene_blocks_runtime_artifacts() -> None:
     assessment = assess_tracked_filenames(
         (
