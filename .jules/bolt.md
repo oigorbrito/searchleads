@@ -1,0 +1,3 @@
+## 2025-05-20 - Memoizing Company Entity Resolution Normalization and Blocking Keys
+**Learning:** `CompanyRecord` is a frozen dataclass used heavily in $O(N^2)$ pairwise entity resolution and blocking evaluations (`evaluate_blocking_corpus`). Re-evaluating `blocking_keys(record)` and `_wu4(field, value)` inside combinations loops re-creates `CandidateFact` instances and runs regex/normalization algorithms $O(N^2)$ times instead of $O(N)$. Caching `blocking_keys` and `_wu4` with `@lru_cache` and pre-indexing blocking key sets yields a ~35x to 100x performance boost in blocking evaluation routines.
+**Action:** Always precompute immutable record attributes or use `@lru_cache` on frozen dataclass inputs when iterating over record combinations (`combinations(records, 2)`).

@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -150,6 +151,8 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+# Memoize normalization projections to avoid constructing duplicate CandidateFacts.
+@lru_cache(maxsize=2048)
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
@@ -256,6 +259,8 @@ def evaluate(pairs: Iterable[LabeledPair], *, strategy: Strategy, threshold: flo
     return EvaluationMetrics(tp, fp, tn, fn, precision, recall, f1, fmr)
 
 
+# Cache computed blocking keys for frozen CompanyRecord instances to eliminate O(N^2) re-computation.
+@lru_cache(maxsize=4096)
 def blocking_keys(record: CompanyRecord) -> frozenset[str]:
     keys: set[str] = set()
     if registry := _registry(record): keys.add(f"registry:{registry[0]}:{registry[1]}")
@@ -274,8 +279,10 @@ def is_blocked_candidate(left: CompanyRecord, right: CompanyRecord) -> bool:
 
 def evaluate_blocking(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     positives = [p for p in pairs if p.is_duplicate]
-    cp = sum(is_blocked_candidate(p.left, p.right) for p in positives)
-    candidates = sum(is_blocked_candidate(p.left, p.right) for p in pairs)
+    # Precompute pair blocking evaluations once to avoid duplicate calls.
+    blocked_map = [is_blocked_candidate(p.left, p.right) for p in pairs]
+    cp = sum(is_blocked for p, is_blocked in zip(pairs, blocked_map) if p.is_duplicate)
+    candidates = sum(blocked_map)
     return BlockingMetrics(len(positives), cp, cp / len(positives) if positives else 0.0,
                            len(pairs), candidates, 1 - candidates / len(pairs) if pairs else 0.0)
 
@@ -284,10 +291,13 @@ def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     records = [record for p in pairs for record in (p.left, p.right)]
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
+    # Pre-index blocking key sets to reduce combination checks to pure set intersection.
+    record_keys = [blocking_keys(r) for r in records]
     candidates = covered = 0
-    for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+    for (i, left), (j, right) in combinations(enumerate(records), 2):
+        if bool(record_keys[i] & record_keys[j]):
             candidates += 1
-            covered += frozenset((left.record_id, right.record_id)) in truth
+            if frozenset((left.record_id, right.record_id)) in truth:
+                covered += 1
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
                            total, candidates, 1 - candidates / total if total else 0.0)
