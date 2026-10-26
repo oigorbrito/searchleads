@@ -168,3 +168,12 @@ def test_evidence_source_and_review_evidence_integrity():
     with pytest.raises(ValueError,match='evidence e1 references'): to_export_dict(replace(b,evidence=(bad,b.evidence[1])))
     review=replace(b.review_items[0],evidence_ids=('missing',))
     with pytest.raises(ValueError,match='review item r1 references'): to_export_dict(replace(b,review_items=(review,)))
+
+def test_csv_formula_injection_sanitized():
+    for formula_prefix in ("=", "+", "-", "@", "\t", "\r"):
+        l = Lead(f"{formula_prefix}lead_id", "c1", LeadStage.REVIEW, QualificationStatus.UNKNOWN, (), NOW)
+        b = base_bundle(lead=l)
+        text = export_csv(b)
+        rows = list(csv.DictReader(io.StringIO(text)))
+        assert rows[0]["company_id"] == "c1"
+        assert rows[0]["lead_id"] == f"'{formula_prefix}lead_id"

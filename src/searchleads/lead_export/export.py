@@ -195,10 +195,17 @@ def _cell(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
+def _sanitize_csv_value(value: str) -> str:
+    # Escape formula trigger characters to prevent CSV formula injection attacks
+    if value.startswith(("=", "+", "-", "@", "\t", "\r")):
+        return f"'{value}"
+    return value
+
+
 def export_csv(bundle: LeadExportBundle) -> str:
     data = to_export_dict(bundle)
     lead = bundle.lead
-    row = {
+    raw_row = {
         "schema_version": SCHEMA_VERSION,
         "company_id": bundle.company.company_id,
         "lead_id": lead.lead_id if lead else "",
@@ -217,6 +224,7 @@ def export_csv(bundle: LeadExportBundle) -> str:
         "evidence": _cell(data["evidence"]),
         "review_items": _cell(data["review_items"]),
     }
+    row = {k: _sanitize_csv_value(v) for k, v in raw_row.items()}
     output = io.StringIO(newline="")
     writer = csv.DictWriter(output, fieldnames=tuple(row), lineterminator="\n")
     writer.writeheader()
