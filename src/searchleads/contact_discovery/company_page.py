@@ -285,10 +285,12 @@ def discover_contacts_from_html(url: str, html: str) -> tuple[DiscoveredContact,
         if social := _social_contact(url, stripped):
             found.append(social)
 
-    for match in _EMAIL_RE.finditer(text):
-        email = match.group(1).strip()
-        if _valid_email(email):
-            found.append(DiscoveredContact(ContactKind.EMAIL, email))
+    # Fast path check: skip regex matching if string contains no '@' character
+    if "@" in text:
+        for match in _EMAIL_RE.finditer(text):
+            email = match.group(1).strip()
+            if _valid_email(email):
+                found.append(DiscoveredContact(ContactKind.EMAIL, email))
     for match in _PHONE_LABEL_RE.finditer(text):
         if phone := _phone(match.group(1)):
             found.append(DiscoveredContact(ContactKind.PHONE, phone))

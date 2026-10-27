@@ -213,10 +213,12 @@ def _contacts_in_window(base_url: str, events: list[_Event]) -> tuple[PersonCont
             if profile := _profile_url(base_url, event.value):
                 found.append(PersonContactObservation(ContactKind.PROFESSIONAL_PROFILE, profile))
         else:
-            for match in _EMAIL_RE.finditer(event.value):
-                email = match.group(1)
-                if _valid_email(email):
-                    found.append(PersonContactObservation(ContactKind.EMAIL, email))
+            # Fast path check: skip regex matching if string contains no '@' character
+            if "@" in event.value:
+                for match in _EMAIL_RE.finditer(event.value):
+                    email = match.group(1)
+                    if _valid_email(email):
+                        found.append(PersonContactObservation(ContactKind.EMAIL, email))
             for match in _PHONE_RE.finditer(event.value):
                 if phone := _clean_phone(match.group(1)):
                     found.append(PersonContactObservation(ContactKind.PHONE, phone))
