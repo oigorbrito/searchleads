@@ -296,6 +296,13 @@ def test_schema_version_is_persisted(tmp_path) -> None:
     assert version == SCHEMA_VERSION
 
 
+def test_set_schema_version_validates_type_and_range() -> None:
+    with SQLiteRepository() as repo:
+        for invalid_version in ["1; DROP TABLE schema_meta; --", "1", -1, 1.5, True]:
+            with pytest.raises(TypeError):
+                repo._set_schema_version(invalid_version)
+
+
 def test_unsupported_schema_version_is_rejected(tmp_path) -> None:
     path = tmp_path / "future.sqlite3"
     connection = sqlite3.connect(path)

@@ -379,6 +379,9 @@ class SQLiteRepository:
             )
 
     def _set_schema_version(self, version: int) -> None:
+        # Enforce strict non-negative integer validation for PRAGMA user_version to prevent SQL injection
+        if type(version) is not int or version < 0:
+            raise TypeError("version must be a non-negative integer")
         self._connection.execute(
             "UPDATE schema_meta SET schema_version = ? WHERE singleton = 1",
             (version,),
