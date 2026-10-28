@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from functools import lru_cache
 import re
 import unicodedata
 from typing import Iterable, Sequence
@@ -116,11 +117,15 @@ class PersonResolutionMetrics:
     positive_review_recall: float
 
 
+# Memoize string normalization and contact parsing helpers to avoid re-executing
+# unicodedata transformations, regex substitutions, and URL split operations.
+@lru_cache(maxsize=2048)
 def _fold(value: str) -> str:
     text = " ".join(unicodedata.normalize("NFKC", value).split()).casefold()
     return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
 
+@lru_cache(maxsize=2048)
 def _email(value: str) -> str | None:
     value = value.strip().casefold()
     if value.count("@") != 1 or any(ch.isspace() for ch in value):
@@ -129,11 +134,13 @@ def _email(value: str) -> str | None:
     return value if local and "." in domain and not domain.startswith(".") and not domain.endswith(".") else None
 
 
+@lru_cache(maxsize=2048)
 def _phone(value: str) -> str | None:
     digits = re.sub(r"\D", "", value)
     return digits if 8 <= len(digits) <= 15 else None
 
 
+@lru_cache(maxsize=2048)
 def _profile(value: str) -> str | None:
     try:
         parsed = urlsplit(value.strip())

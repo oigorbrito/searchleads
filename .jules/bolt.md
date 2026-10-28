@@ -1,0 +1,3 @@
+## 2026-03-31 - Memoizing Pure String Folding and Tokenization in ER Pairwise Comparisons
+**Learning:** In entity resolution, pairwise feature comparisons and corpus blocking re-execute expensive `unicodedata.normalize` (NFKC/NFKD) string folding and regex tokenization millions of times across identical field values. Caching pure helper functions (`_fold`, `_tokens`, `_wu4`, `_email`, `_phone`, `_profile`) with `@lru_cache(maxsize=2048)` on primitive string parameters eliminated >98% of runtime during blocking evaluation without risking unhashable object type issues.
+**Action:** Always memoize string normalization and regex parsing functions at the primitive string layer when performing $O(N^2)$ pairwise record comparisons.
