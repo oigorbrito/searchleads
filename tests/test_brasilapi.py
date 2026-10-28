@@ -303,6 +303,12 @@ def test_http_error_transport_returns_observation_for_persistence(monkeypatch: p
     assert result.headers["content-type"].startswith("application/json")
 
 
+@pytest.mark.parametrize("invalid_url", ["file:///etc/passwd", "ftp://example.com/data", "http://", "invalid-url"])
+def test_http_transport_rejects_non_http_urls(invalid_url: str) -> None:
+    with pytest.raises(BrasilAPIAcquisitionError, match="url must be an absolute http/https URL"):
+        http_get(invalid_url, timeout=1)
+
+
 def test_network_error_transport_raises_acquisition_error(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "searchleads.sources.brasilapi.urlopen",
