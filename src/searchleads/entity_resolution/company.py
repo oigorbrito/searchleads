@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import StrEnum
+from functools import lru_cache
 from itertools import combinations
 import re
 import unicodedata
@@ -113,6 +114,9 @@ class BlockingMetrics:
     reduction_ratio: float
 
 
+# Memoize string folding and tokenization to avoid repeated NFKC/NFKD unicodedata normalization
+# and regex parsing during quadratic pairwise record evaluation.
+@lru_cache(maxsize=2048)
 def _fold(value: str | None) -> str | None:
     if value is None:
         return None
@@ -122,6 +126,7 @@ def _fold(value: str | None) -> str | None:
     return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
 
+@lru_cache(maxsize=2048)
 def _tokens(value: str | None) -> tuple[str, ...]:
     return tuple(re.findall(r"[a-z0-9]+", folded)) if (folded := _fold(value)) else ()
 
@@ -150,6 +155,8 @@ def _registry(record: CompanyRecord) -> tuple[str, str] | None:
     return (namespace, compact) if re.fullmatch(r"[0-9A-Z]{14}", compact) else None
 
 
+# Memoize CandidateFact field normalization in ER feature comparisons.
+@lru_cache(maxsize=2048)
 def _wu4(field: str, value: str | None) -> str | None:
     if value is None:
         return None
@@ -285,8 +292,10 @@ def evaluate_blocking_corpus(pairs: Sequence[LabeledPair]) -> BlockingMetrics:
     truth = {frozenset((p.left.record_id, p.right.record_id)) for p in pairs if p.is_duplicate}
     total = len(records) * (len(records) - 1) // 2
     candidates = covered = 0
+    # Pre-map blocking keys per record ID to avoid re-fetching in combinations loop.
+    key_map = {r.record_id: blocking_keys(r) for r in records}
     for left, right in combinations(records, 2):
-        if is_blocked_candidate(left, right):
+        if key_map[left.record_id] & key_map[right.record_id]:
             candidates += 1
             covered += frozenset((left.record_id, right.record_id)) in truth
     return BlockingMetrics(len(truth), covered, covered / len(truth) if truth else 0.0,
