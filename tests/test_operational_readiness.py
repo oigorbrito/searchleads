@@ -136,59 +136,57 @@ def test_operational_configuration_classifies_and_validates(tmp_path: Path) -> N
 
 def test_operational_runtime_health_readiness_and_failure_modes(tmp_path: Path) -> None:
     repository_path = tmp_path / "operational.sqlite"
-    repository = SQLiteRepository(repository_path)
-    seed = _seed_repository(repository)
-    source = seed["source"]
-    adapter = ReferenceAcquisitionRuntimeAdapter(
-        source,
-        lambda url: HTTPObservation(url, 200, '{"ok":true}', NOW, {"content-type": "application/json"}),
-    )
-    configuration = OperationalConfiguration(
-        repository_path=repository_path,
-        schema_version=repository.schema_version,
-        deployment_mode="local",
-        log_level="INFO",
-    )
-    runtime = OperationalRuntime(configuration, repository=repository, runtime_adapter=adapter)
+    with SQLiteRepository(repository_path) as repository:
+        seed = _seed_repository(repository)
+        source = seed["source"]
+        adapter = ReferenceAcquisitionRuntimeAdapter(
+            source,
+            lambda url: HTTPObservation(url, 200, '{"ok":true}', NOW, {"content-type": "application/json"}),
+        )
+        configuration = OperationalConfiguration(
+            repository_path=repository_path,
+            schema_version=repository.schema_version,
+            deployment_mode="local",
+            log_level="INFO",
+        )
+        runtime = OperationalRuntime(configuration, repository=repository, runtime_adapter=adapter)
 
-    assert runtime.health_report().status is ProcessHealth.NOT_STARTED
-    runtime.startup()
-    assert runtime.health_report().status is ProcessHealth.HEALTHY
-    assert runtime.readiness_report().ready
+        assert runtime.health_report().status is ProcessHealth.NOT_STARTED
+        runtime.startup()
+        assert runtime.health_report().status is ProcessHealth.HEALTHY
+        assert runtime.readiness_report().ready
 
-    request = AcquisitionRequest("request-1", "https://example.test/acquire", source.source_id, NOW, "acquisition")
-    response = adapter.acquire(request)
-    assert response.status_code == 200
+        request = AcquisitionRequest("request-1", "https://example.test/acquire", source.source_id, NOW, "acquisition")
+        response = adapter.acquire(request)
+        assert response.status_code == 200
 
-    runtime.shutdown()
-    assert runtime.stopped_at is not None
-    repository.close()
+        runtime.shutdown()
+        assert runtime.stopped_at is not None
 
 
 def test_operational_runtime_reports_dependency_and_init_failures(tmp_path: Path) -> None:
     repository_path = tmp_path / "failure.sqlite"
-    repository = SQLiteRepository(repository_path)
-    _seed_repository(repository)
-    configuration = OperationalConfiguration(repository_path=repository_path, schema_version=repository.schema_version)
+    with SQLiteRepository(repository_path) as repository:
+        _seed_repository(repository)
+        configuration = OperationalConfiguration(repository_path=repository_path, schema_version=repository.schema_version)
 
-    dependency_failure = OperationalRuntime(configuration, repository=repository, runtime_adapter=None)
-    with pytest.raises(OperationalError) as dependency_error:
-        dependency_failure.startup()
-    assert dependency_error.value.failure_class is OperationalFailureClass.DEPENDENCY_ERROR
-    assert dependency_failure.health_report().status is ProcessHealth.BROKEN
-    assert not dependency_failure.readiness_report().ready
+        dependency_failure = OperationalRuntime(configuration, repository=repository, runtime_adapter=None)
+        with pytest.raises(OperationalError) as dependency_error:
+            dependency_failure.startup()
+        assert dependency_error.value.failure_class is OperationalFailureClass.DEPENDENCY_ERROR
+        assert dependency_failure.health_report().status is ProcessHealth.BROKEN
+        assert not dependency_failure.readiness_report().ready
 
-    init_failure = OperationalRuntime(
-        configuration,
-        repository=repository,
-        runtime_adapter=object(),
-        startup_checks=(lambda: (_ for _ in ()).throw(RuntimeError("boom")),),
-    )
-    with pytest.raises(RuntimeError):
-        init_failure.startup()
-    assert init_failure.health_report().status is ProcessHealth.BROKEN
-    assert not init_failure.readiness_report().ready
-    repository.close()
+        init_failure = OperationalRuntime(
+            configuration,
+            repository=repository,
+            runtime_adapter=object(),
+            startup_checks=(lambda: (_ for _ in ()).throw(RuntimeError("boom")),),
+        )
+        with pytest.raises(RuntimeError):
+            init_failure.startup()
+        assert init_failure.health_report().status is ProcessHealth.BROKEN
+        assert not init_failure.readiness_report().ready
 
 
 def test_sqlite_backup_restore_round_trip(tmp_path: Path) -> None:
@@ -505,3 +503,26 @@ def test_wave09_manual_authorization_revocation_blocks_send_ready_proof() -> Non
     assert not revoked.active
     assert proof.result.ready is False
     assert proof.result.state is SendReadyState.COMPLIANCE_BLOCKED
+
+
+def test_backup_closes_its_target_connection(tmp_path: Path, monkeypatch) -> None:
+    import sqlite3
+
+    import searchleads.persistence.sqlite as sqlite_module
+
+    opened: list[sqlite3.Connection] = []
+    real_connect = sqlite_module.sqlite3.connect
+
+    def recording_connect(*args, **kwargs):
+        connection = real_connect(*args, **kwargs)
+        opened.append(connection)
+        return connection
+
+    monkeypatch.setattr(sqlite_module.sqlite3, "connect", recording_connect)
+    with SQLiteRepository(tmp_path / "source.sqlite") as repository:
+        _seed_repository(repository)
+        repository.backup_to(tmp_path / "backup.sqlite")
+
+    target = opened[-1]
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        target.execute("SELECT 1")

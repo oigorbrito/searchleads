@@ -34,3 +34,28 @@ def test_existing_v3_column_with_missing_envelope_digest_fails_closed(tmp_path) 
 
     with pytest.raises(EvidenceEnvelopeIntegrityError, match="envelope storage digest is missing"):
         SQLiteRepository(path)
+
+
+def test_failed_open_closes_the_connection_it_acquired(monkeypatch) -> None:
+    import searchleads.persistence.sqlite as sqlite_module
+
+    opened: list[sqlite3.Connection] = []
+    real_connect = sqlite_module.sqlite3.connect
+
+    def recording_connect(*args, **kwargs):
+        connection = real_connect(*args, **kwargs)
+        opened.append(connection)
+        return connection
+
+    def failing_schema(self) -> None:
+        raise RuntimeError("forced schema failure")
+
+    monkeypatch.setattr(sqlite_module.sqlite3, "connect", recording_connect)
+    monkeypatch.setattr(SQLiteRepository, "_initialize_schema", failing_schema)
+
+    with pytest.raises(RuntimeError, match="forced schema failure"):
+        SQLiteRepository()
+
+    assert len(opened) == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        opened[0].execute("SELECT 1")

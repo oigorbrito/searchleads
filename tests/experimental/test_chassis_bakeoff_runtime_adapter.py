@@ -81,7 +81,6 @@ async def _adapter_probe(actions: tuple[AutomationAction, ...]) -> tuple[list[Ad
     @crawler.router.default_handler
     async def handler(context) -> None:
         metadata = context.request.user_data["searchleads"]
-        crawlee_metadata = context.request.user_data.get("__crawlee", {})
         observations.append(
             AdapterObservation(
                 action_id=metadata["action_id"],
@@ -89,7 +88,8 @@ async def _adapter_probe(actions: tuple[AutomationAction, ...]) -> tuple[list[Ad
                 action_kind=metadata["action_kind"],
                 locator=context.request.url,
                 request_unique_key=context.request.unique_key,
-                max_retries=crawlee_metadata.get("maxRetries"),
+                # crawlee 1.x exposes __crawlee as a typed field; read the public property.
+                max_retries=context.request.max_retries,
             )
         )
 

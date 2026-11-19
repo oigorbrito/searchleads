@@ -248,9 +248,14 @@ class SQLiteRepository:
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
         self._connection = sqlite3.connect(self.path)
-        self._connection.row_factory = sqlite3.Row
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        self._initialize_schema()
+        try:
+            self._connection.row_factory = sqlite3.Row
+            self._connection.execute("PRAGMA foreign_keys = ON")
+            self._initialize_schema()
+        except BaseException:
+            # Fail-closed opens must not leak the handle they already acquired.
+            self._connection.close()
+            raise
 
     def __enter__(self) -> "SQLiteRepository":
         return self
@@ -652,9 +657,13 @@ class SQLiteRepository:
         destination_path = Path(destination)
         if destination_path.parent and not destination_path.parent.exists():
             destination_path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(destination_path) as target_connection:
+        # sqlite3's context manager only commits/rolls back; it does not close.
+        target_connection = sqlite3.connect(destination_path)
+        try:
             self._connection.backup(target_connection)
             target_connection.commit()
+        finally:
+            target_connection.close()
         return destination_path
 
     @staticmethod

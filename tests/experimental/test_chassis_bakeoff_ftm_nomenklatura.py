@@ -99,7 +99,8 @@ def test_ftm_statement_layer_preserves_per_fact_dataset_and_origin() -> None:
         "https://brasilapi.com.br/api/cnpj/v1/12345678000190",
         "https://clinic-a.example.org/",
     }
-    assert entity.get("name") == ["Clinica Facial A Ltda", "Clinica Facial A"]
+    # StatementEntity.get builds its list from a set, so its order depends on PYTHONHASHSEED.
+    assert sorted(entity.get("name")) == ["Clinica Facial A", "Clinica Facial A Ltda"]
 
 
 def test_person_company_relationship_is_a_modeling_choice_not_a_searchleads_advantage() -> None:

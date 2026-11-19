@@ -64,3 +64,19 @@ def test_tracked_filename_hygiene_blocks_runtime_artifacts() -> None:
         "var/searchleads.sqlite",
         "src/searchleads/__pycache__/module.pyc",
     }
+
+
+def test_repository_hygiene_blocks_direct_send_calls_and_ses_client() -> None:
+    assessment = assess_repository_hygiene(
+        {
+            "src/searchleads/notify.py": "def go(server, msg):\n    server.sendmail('a', 'b', msg)\n",
+            "src/searchleads/chat.py": "def go(channel, msg):\n    channel.send_message(msg)\n",
+            "src/searchleads/ses.py": "import boto3\nclient = boto3.client('ses')\n",
+        }
+    )
+
+    assert not assessment.ready
+    found = {(item.code, item.path) for item in assessment.violations}
+    assert ("DIRECT_SEND_PATH", "src/searchleads/notify.py") in found
+    assert ("DIRECT_SEND_PATH", "src/searchleads/chat.py") in found
+    assert ("DIRECT_SEND_PATH", "src/searchleads/ses.py") in found

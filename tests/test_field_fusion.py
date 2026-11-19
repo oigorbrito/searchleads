@@ -23,7 +23,8 @@ def fact(fid:str,value,*,normalized=None,evidence='ev-1',at=T1,subject='company-
 def test_empty_is_explicit():
     out=fuse_candidate_facts([])
     assert out.status is FusionStatus.EMPTY and out.subject_id is None and out.supports==()
-    assert persist_fusion_outcome(SQLiteRepository(),out)==()
+    with SQLiteRepository() as repo:
+        assert persist_fusion_outcome(repo,out)==()
 
 def test_empty_outcome_rejects_derived_data():
     with pytest.raises(ValueError): FusionOutcome(FusionStatus.EMPTY,'c',None,())
@@ -118,23 +119,26 @@ def seed(repository:SQLiteRepository, items:list[CandidateFact]):
 
 def test_persist_canonical_saves_provenance_before_canonical():
     items=[fact('f1','A',evidence='e1'),fact('f2','A',evidence='e2')]
-    repo=SQLiteRepository(); seed(repo,items); out=fuse_candidate_facts(items)
-    assert persist_fusion_outcome(repo,out)==(True,True)
-    assert repo.load(Provenance,out.provenance.provenance_id)==out.provenance
-    assert repo.load(CanonicalFact,out.canonical_fact.fact_id)==out.canonical_fact
-    assert persist_fusion_outcome(repo,out)==(False,False)
+    with SQLiteRepository() as repo:
+        seed(repo,items); out=fuse_candidate_facts(items)
+        assert persist_fusion_outcome(repo,out)==(True,True)
+        assert repo.load(Provenance,out.provenance.provenance_id)==out.provenance
+        assert repo.load(CanonicalFact,out.canonical_fact.fact_id)==out.canonical_fact
+        assert persist_fusion_outcome(repo,out)==(False,False)
 
 def test_persist_conflict_does_not_create_provenance():
     items=[fact('f1','A',evidence='e1'),fact('f2','B',evidence='e2')]
-    repo=SQLiteRepository(); seed(repo,items); out=fuse_candidate_facts(items)
-    assert persist_fusion_outcome(repo,out)==(True,)
-    assert repo.load(Conflict,out.conflict.conflict_id)==out.conflict
+    with SQLiteRepository() as repo:
+        seed(repo,items); out=fuse_candidate_facts(items)
+        assert persist_fusion_outcome(repo,out)==(True,)
+        assert repo.load(Conflict,out.conflict.conflict_id)==out.conflict
 
 def test_fuse_persisted_candidates_and_missing_id():
     items=[fact('f1','A',evidence='e1'),fact('f2','A',evidence='e2')]
-    repo=SQLiteRepository(); seed(repo,items)
-    assert fuse_persisted_candidates(repo,['f2','f1']).canonical_fact.value=='A'
-    with pytest.raises(ValueError,match='missing candidate fact'): fuse_persisted_candidates(repo,['missing'])
+    with SQLiteRepository() as repo:
+        seed(repo,items)
+        assert fuse_persisted_candidates(repo,['f2','f1']).canonical_fact.value=='A'
+        with pytest.raises(ValueError,match='missing candidate fact'): fuse_persisted_candidates(repo,['missing'])
 
 def scenario_facts(scenario):
     return [fact(f"{scenario['scenario_id']}:f:{i}",c['raw'],normalized=c['normalized'],evidence=c['evidence']) for i,c in enumerate(scenario['candidates'],1)]

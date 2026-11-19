@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import sys
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/'src'))
-from searchleads.domain import Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, Lead, QualificationStatus
+from searchleads.domain import Conflict, ConflictStatus, ContactKind, ContactPoint, ContactStatus, Lead, LeadStage, QualificationStatus
 from searchleads.entity_resolution import CompanyRecord, ResolutionDisposition, TriageDecision
 from searchleads.selective_review import review_company_match, review_conflict, review_contact, review_person_match, review_qualification
 CASES=json.loads((ROOT/'tests'/'fixtures'/'selective_review_v1.json').read_text(encoding='utf-8'))
@@ -15,8 +15,14 @@ def route(c):
     if c['type']=='conflict':
         status=ConflictStatus(c['state']); selected='f1' if status is ConflictStatus.RESOLVED else None
         return review_conflict(Conflict('conf','company','legal_name',('f1','f2'),status,selected),high_impact=c.get('high_impact',False),evidence_ids=('ev1',))
-    if c['type']=='contact': return review_contact(ContactPoint('ct','company',ContactKind.EMAIL,'x@example.com',('ev1',),ContactStatus(c['state']),NOW))
-    if c['type']=='lead': return review_qualification(Lead('lead','company',qualification_status=QualificationStatus(c['state']),qualification_reasons=('ICP unresolved',)),high_value=c.get('high_value',False))
+    if c['type']=='contact':
+        status=ContactStatus(c['state']); kwargs={}
+        if status is not ContactStatus.DISCOVERED: kwargs.update(validation_evidence_ids=('ev1',),validated_at=NOW)
+        return review_contact(ContactPoint('ct','company',ContactKind.EMAIL,'x@example.com',('ev1',),status,NOW,**kwargs))
+    if c['type']=='lead':
+        qualification=QualificationStatus(c['state'])
+        stage={QualificationStatus.UNKNOWN:LeadStage.CANDIDATE,QualificationStatus.QUALIFIED:LeadStage.QUALIFIED,QualificationStatus.NOT_QUALIFIED:LeadStage.DISQUALIFIED}[qualification]
+        return review_qualification(Lead('lead','company',stage=stage,qualification_status=qualification,qualification_reasons=('ICP unresolved',)),high_value=c.get('high_value',False))
     raise ValueError(c['type'])
 def main():
     tp=fp=tn=fn=high=0

@@ -77,7 +77,7 @@ async def _persistence_probe(storage_dir: str) -> tuple[str, str, str, int, int]
         recovered = await second_queue.fetch_next_request()
         assert recovered is not None
         metadata = recovered.user_data["searchleads"]
-        max_retries = recovered.user_data["__crawlee"]["maxRetries"]
+        max_retries = recovered.max_retries
         await second_queue.mark_request_as_handled(recovered)
         queue_metadata = await second_queue.get_metadata()
         return (

@@ -88,10 +88,15 @@ def test_searchleads_min_interval_is_per_cache_key_not_per_domain() -> None:
 async def _crawlee_domain_throttling_probe() -> tuple[str, str, bool]:
     storage = MemoryStorageClient()
     inner = await RequestQueue.open(name="runtime-throttle-inner", storage_client=storage)
+
+    async def open_in_memory(*, alias=None, storage_client=None, configuration=None):
+        # crawlee passes its own default storage_client; force the in-memory client so ./storage is never written.
+        return await RequestQueue.open(alias=alias, storage_client=storage, configuration=configuration)
+
     throttler = ThrottlingRequestManager(
         inner=inner,
         domains=["api.example.test"],
-        request_manager_opener=RequestQueue.open,
+        request_manager_opener=open_in_memory,
     )
     try:
         throttler.set_crawl_delay("https://api.example.test/company/1", 60)

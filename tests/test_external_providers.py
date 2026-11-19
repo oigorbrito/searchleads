@@ -6,6 +6,19 @@ from searchleads.persistence import SQLiteRepository
 from searchleads.external_providers import *
 from searchleads.external_providers.apify import _normalized_actor_id,_interface_language,_http_post_json
 
+@pytest.fixture
+def open_repo():
+    """Open SQLite repositories per test and close them deterministically (no GC-time ResourceWarning)."""
+    opened = []
+    def factory():
+        repository = SQLiteRepository()
+        opened.append(repository)
+        return repository
+    yield factory
+    for repository in opened:
+        repository.close()
+
+
 NOW=datetime(2026,8,26,5,0,tzinfo=timezone.utc)
 
 def q(i=1,text='dentista CRO Brasil',country='BR',lang='pt'):
@@ -73,27 +86,27 @@ def provider_with_payload(payload,seen=None,config=None):
         return payload
     return ApifyGoogleSearchProvider('tok',client=ApifyActorClient(transport),config=config or ApifyGoogleSearchConfig())
 
-def test_empty_search_does_not_call_transport():
+def test_empty_search_does_not_call_transport(open_repo):
     calls=[]
     p=ApifyGoogleSearchProvider('tok',client=ApifyActorClient(lambda *a:calls.append(a)))
-    assert p.search(SQLiteRepository(),()).hits==() and calls==[]
+    assert p.search(open_repo(),()).hits==() and calls==[]
 
-def test_provider_bounds_unique_ids_and_batch_locale():
+def test_provider_bounds_unique_ids_and_batch_locale(open_repo):
     p=provider_with_payload([],config=ApifyGoogleSearchConfig(max_queries=1))
-    with pytest.raises(ValueError): p.search(SQLiteRepository(),(q(1),q(2)))
-    with pytest.raises(ValueError): p.search(SQLiteRepository(),(q(1),q(1)))
-    with pytest.raises(ValueError): provider_with_payload([]).search(SQLiteRepository(),(q(1,country='BR'),q(2,country='US')))
-    with pytest.raises(ValueError): provider_with_payload([]).search(SQLiteRepository(),(q(1,lang='pt'),q(2,lang='en')))
+    with pytest.raises(ValueError): p.search(open_repo(),(q(1),q(2)))
+    with pytest.raises(ValueError): p.search(open_repo(),(q(1),q(1)))
+    with pytest.raises(ValueError): provider_with_payload([]).search(open_repo(),(q(1,country='BR'),q(2,country='US')))
+    with pytest.raises(ValueError): provider_with_payload([]).search(open_repo(),(q(1,lang='pt'),q(2,lang='en')))
 
-def test_provider_builds_expected_bounded_actor_input():
+def test_provider_builds_expected_bounded_actor_input(open_repo):
     seen={}; p=provider_with_payload([],seen)
-    p.search(SQLiteRepository(),(q(),),retrieved_at=NOW)
+    p.search(open_repo(),(q(),),retrieved_at=NOW)
     assert seen['body']['countryCode']=='br' and seen['body']['languageCode']=='pt-BR'
     assert seen['body']['maxPagesPerQuery']==1
     assert seen['body']['saveHtml'] is False and seen['body']['includeUnfilteredResults'] is False
 
-def test_provider_persists_raw_evidence_before_projection_and_replays_idempotently():
-    repo=SQLiteRepository(); p=provider_with_payload(payload_for())
+def test_provider_persists_raw_evidence_before_projection_and_replays_idempotently(open_repo):
+    repo=open_repo(); p=provider_with_payload(payload_for())
     batch=p.search(repo,(q(),),retrieved_at=NOW)
     assert len(batch.evidence)==1 and len(batch.hits)==1
     e=batch.evidence[0]
@@ -103,34 +116,34 @@ def test_provider_persists_raw_evidence_before_projection_and_replays_idempotent
     again=p.search(repo,(q(),),retrieved_at=NOW)
     assert again.evidence[0].evidence_id==e.evidence_id
 
-def test_provider_projects_only_matching_query_and_valid_hits():
+def test_provider_projects_only_matching_query_and_valid_hits(open_repo):
     payload=[
       {'searchQuery':{'term':'other'},'organicResults':[{'title':'X','url':'https://x.test'}]},
       {'searchQuery':{'term':'dentista CRO Brasil'},'organicResults':[{'title':'','url':'https://bad.test'},{'title':'Good','url':'','position':2},{'title':'Good','url':'https://good.test','description':'s','position':0}]}
     ]
-    b=provider_with_payload(payload).search(SQLiteRepository(),(q(),),retrieved_at=NOW)
+    b=provider_with_payload(payload).search(open_repo(),(q(),),retrieved_at=NOW)
     assert len(b.hits)==1 and b.hits[0].url=='https://good.test' and b.hits[0].position is None
 
-def test_provider_accepts_query_fallback_and_empty_organic_results():
+def test_provider_accepts_query_fallback_and_empty_organic_results(open_repo):
     payload=[{'query':'dentista CRO Brasil'}]
-    b=provider_with_payload(payload).search(SQLiteRepository(),(q(),),retrieved_at=NOW)
+    b=provider_with_payload(payload).search(open_repo(),(q(),),retrieved_at=NOW)
     assert len(b.evidence)==1 and b.hits==()
 
-def test_provider_rejects_bad_organic_shapes_and_naive_time():
-    with pytest.raises(ApifyPayloadError): provider_with_payload([{'query':'dentista CRO Brasil','organicResults':{}}]).search(SQLiteRepository(),(q(),),retrieved_at=NOW)
-    with pytest.raises(ApifyPayloadError): provider_with_payload([{'query':'dentista CRO Brasil','organicResults':[1]}]).search(SQLiteRepository(),(q(),),retrieved_at=NOW)
-    with pytest.raises(ValueError): provider_with_payload([]).search(SQLiteRepository(),(q(),),retrieved_at=datetime(2026,1,1))
+def test_provider_rejects_bad_organic_shapes_and_naive_time(open_repo):
+    with pytest.raises(ApifyPayloadError): provider_with_payload([{'query':'dentista CRO Brasil','organicResults':{}}]).search(open_repo(),(q(),),retrieved_at=NOW)
+    with pytest.raises(ApifyPayloadError): provider_with_payload([{'query':'dentista CRO Brasil','organicResults':[1]}]).search(open_repo(),(q(),),retrieved_at=NOW)
+    with pytest.raises(ValueError): provider_with_payload([]).search(open_repo(),(q(),),retrieved_at=datetime(2026,1,1))
 
-def test_provider_detects_content_address_collision():
-    repo=SQLiteRepository(); p=provider_with_payload(payload_for())
+def test_provider_detects_content_address_collision(open_repo):
+    repo=open_repo(); p=provider_with_payload(payload_for())
     b=p.search(repo,(q(),),retrieved_at=NOW); e=b.evidence[0]
     tampered=type(e)(e.evidence_id,e.source_id,'https://tampered.test',e.captured_at,e.raw_payload,e.content_digest,e.metadata)
     repo._connection.execute("UPDATE evidence_records SET envelope_json = ? WHERE evidence_id = ?", (__import__('searchleads.persistence.sqlite',fromlist=['encode_record']).encode_record(__import__('dataclasses').replace(tampered,raw_payload=None)),e.evidence_id)); repo._connection.commit()
     with pytest.raises(ApifyPayloadError,match='collision'): p.search(repo,(q(),),retrieved_at=NOW)
 
-def test_dental_bridge_preserves_pending_candidate_and_evidence_link():
+def test_dental_bridge_preserves_pending_candidate_and_evidence_link(open_repo):
     from searchleads.dental_discovery import build_dental_discovery_queries
-    repo=SQLiteRepository(); expected=build_dental_discovery_queries(max_queries=1)[0].query
+    repo=open_repo(); expected=build_dental_discovery_queries(max_queries=1)[0].query
     p=provider_with_payload(payload_for(term=expected))
     result=discover_dental_candidates_with_provider(repo,p,max_queries=1,retrieved_at=NOW)
     assert len(result.queries)==1 and len(result.observations)==1 and len(result.candidates)==1
